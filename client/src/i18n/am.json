@@ -1,0 +1,819 @@
+
+{
+  "home": {
+    "badge": "🌱 የዘመናዊ ከተማ ተነሳሽነት",
+    "title": "የቆሻሻ አያያዝ ስርዓት",
+    "description": "እንኳን ወደ ደብረ ማርቆስ ማዘጋጃ ቤት የድር ላይ የቆሻሻ አያያዝ ስርዓት በደህና መጡ።",
+    "wasteCollection": "የቆሻሻ ማሰባሰብ",
+    "getStarted": "ጀምር",
+    "createAccount": "መለያ ፍጠር",
+    "footer": "© 2026 ደብረ ማርቆስ ማዘጋጃ ቤት።"
+  },
+
+  "login": {
+    "title": "እንኳን ደህና መጡ",
+    "subtitle": "ወደ መለያዎ ይግቡ",
+
+    "email": "ኢሜይል",
+    "emailPlaceholder": "ኢሜይልዎን ያስገቡ",
+
+    "password": "የይለፍ ቃል",
+    "passwordPlaceholder": "የይለፍ ቃልዎን ያስገቡ",
+
+    "forgotPassword": "የይለፍ ቃል ረሱ?",
+
+    "button": "ግባ",
+    "loggingIn": "በመግባት ላይ...",
+
+    "noAccount": "መለያ የለዎትም?",
+    "createAccount": "መለያ ይፍጠሩ",
+
+    "accountInactiveTitle": "መለያው ንቁ አይደለም",
+    "accountInactive": "መለያዎ ንቁ አይደለም። እባክዎ አስተዳዳሪውን ያግኙ።",
+
+    "inactiveMessage": "መለያዎ ንቁ አይደለም። እባክዎ አስተዳዳሪውን ያግኙ።",
+
+    "administratorContact": "የአስተዳዳሪ አድራሻ",
+    "adminContact": "የአስተዳዳሪ አድራሻ",
+
+    "name": "ስም",
+    "phone": "ስልክ",
+
+    "required": "ኢሜይል እና የይለፍ ቃል ያስፈልጋሉ።",
+    "requiredFields": "ኢሜይል እና የይለፍ ቃል ያስፈልጋሉ።",
+
+    "invalidResponse": "የመግቢያ ምላሹ ትክክል አይደለም።",
+    "invalidCredentials": "ኢሜይል ወይም የይለፍ ቃል ትክክል አይደለም።",
+    "accessDenied": "መዳረሻ ተከልክሏል።",
+    "failed": "መግባት አልተሳካም። እባክዎ እንደገና ይሞክሩ።",
+
+    "invalidRole": "የተሳሳተ የተጠቃሚ ሚና: {{role}}።",
+
+    "showPassword": "የይለፍ ቃል አሳይ",
+    "hidePassword": "የይለፍ ቃል ደብቅ"
+  },
+
+  "forgotPassword": {
+    "title": "የይለፍ ቃል ረስተዋል?",
+    "subtitle": "የይለፍ ቃልዎን ለመቀየር የኢሜይል አድራሻዎን ወይም ስልክ ቁጥርዎን ያስገቡ።",
+
+    "fields": {
+      "identifier": "ኢሜይል ወይም ስልክ ቁጥር"
+    },
+
+    "placeholders": {
+      "identifier": "ኢሜይል ወይም ስልክ ቁጥርዎን ያስገቡ"
+    },
+
+    "helpText": "የተመዘገቡበትን ኢሜይል ወይም ስልክ ቁጥር መጠቀም ይችላሉ።",
+
+    "buttons": {
+      "continue": "ቀጥል",
+      "processing": "በማስኬድ ላይ..."
+    },
+
+    "backToLogin": "ወደ መግቢያ ተመለስ",
+
+    "success": "የይለፍ ቃል መቀየሪያ ጥያቄዎ በተሳካ ሁኔታ ተልኳል።",
+
+    "validation": {
+      "identifierRequired": "እባክዎ ኢሜይልዎን ወይም ስልክ ቁጥርዎን ያስገቡ።",
+      "identifierInvalid": "እባክዎ ትክክለኛ የGmail አድራሻ ወይም ትክክለኛ የስልክ ቁጥር ያስገቡ።",
+      "tokenNotReturned": "የይለፍ ቃል መቀየሪያ ቶከን ከሰርቨሩ አልተመለሰም።"
+    },
+
+    "errors": {
+      "unable": "ጥያቄዎን ማስኬድ አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
+    }
+  },
+
+  "resetPassword": {
+    "title": "የይለፍ ቃል ቀይር",
+    "subtitle": "ለመለያዎ አዲስ የይለፍ ቃል ይፍጠሩ።",
+    "resettingFor": "የይለፍ ቃል የሚቀየረው ለ:",
+
+    "fields": {
+      "password": "አዲስ የይለፍ ቃል",
+      "confirmPassword": "አዲሱን የይለፍ ቃል ያረጋግጡ"
+    },
+
+    "placeholders": {
+      "password": "አዲስ የይለፍ ቃል ያስገቡ",
+      "confirmPassword": "አዲሱን የይለፍ ቃል እንደገና ያስገቡ"
+    },
+
+    "passwordHint": "የይለፍ ቃሉ ቢያንስ 6 ቁምፊዎች መሆን አለበት።",
+
+    "buttons": {
+      "reset": "የይለፍ ቃል ቀይር",
+      "resetting": "የይለፍ ቃል በመቀየር ላይ..."
+    },
+
+    "showPassword": "የይለፍ ቃሉን አሳይ",
+    "hidePassword": "የይለፍ ቃሉን ደብቅ",
+
+    "backToLogin": "ወደ መግቢያ ተመለስ",
+    "redirecting": "ወደ መግቢያ በመመለስ ላይ...",
+    "success": "የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል።",
+
+    "validation": {
+      "tokenInvalid": "ልክ ያልሆነ ወይም የጠፋ የይለፍ ቃል መቀየሪያ ቶከን።",
+      "passwordRequired": "እባክዎ አዲሱን የይለፍ ቃል ያስገቡ።",
+      "passwordMin": "የይለፍ ቃሉ ቢያንስ 6 ቁምፊዎች መሆን አለበት።",
+      "passwordMax": "የይለፍ ቃሉ ከ50 ቁምፊዎች መብለጥ የለበትም።",
+      "confirmPasswordRequired": "እባክዎ አዲሱን የይለፍ ቃል ያረጋግጡ።",
+      "passwordMismatch": "የይለፍ ቃሎቹ አይዛመዱም።"
+    },
+
+    "invalidLink": {
+      "title": "ልክ ያልሆነ የመቀየሪያ ሊንክ",
+      "description": "ይህ የይለፍ ቃል መቀየሪያ ሊንክ ልክ ያልሆነ፣ የጠፋ ወይም ጊዜው ያለፈበት ነው።",
+      "requestNewToken": "አዲስ የመቀየሪያ ቶከን ይጠይቁ"
+    },
+
+    "errors": {
+      "failed": "የይለፍ ቃሉን መቀየር አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
+    }
+  },
+
+"register": {
+"title": "መለያ ይፍጠሩ",
+"subtitle": "ለቆሻሻ አያያዝ አገልግሎት ይመዝገቡ",
+
+"resident": {
+"title": "ነዋሪ",
+"description": "እንደ ነዋሪ ይመዝገቡ፣ የቆሻሻ ማሰባሰቢያ መርሃ ግብሮችን ይመልከቱ፣ አስተያየት ይላኩ እና ማሳወቂያዎችን ይቀበሉ።",
+"button": "እንደ ነዋሪ ይመዝገቡ"
+},
+
+"business": {
+"title": "የንግድ ባለቤት",
+"description": "ንግድዎን ይመዝግቡ እና በሚያስፈልግዎት ጊዜ የቆሻሻ ማሰባሰቢያ አገልግሎት ይጠይቁ።",
+"button": "እንደ ንግድ ባለቤት ይመዝገቡ"
+},
+
+"residentForm": {
+"title": "የነዋሪ ምዝገባ",
+"subtitle": "የነዋሪ መለያዎን ይፍጠሩ"
+},
+
+"businessForm": {
+"title": "የንግድ ባለቤት ምዝገባ",
+"subtitle": "የንግድ መለያዎን ይፍጠሩ"
+},
+
+"fields": {
+"fullName": "ሙሉ ስም",
+"phone": "ስልክ ቁጥር",
+"email": "ኢሜይል አድራሻ",
+"password": "የይለፍ ቃል",
+"confirmPassword": "የይለፍ ቃል ያረጋግጡ",
+"kifleKetema": "ክፍለ ከተማ",
+"kebele": "ቀበሌ",
+"sefer": "ሰፈር",
+"businessName": "የንግድ ስም",
+"ownerName": "የባለቤቱ ስም",
+"businessType": "የንግድ አይነት",
+"businessDescription": "የንግድ መግለጫ"
+},
+
+"placeholders": {
+"fullName": "ሙሉ ስምዎን ያስገቡ",
+"phone": "ስልክ ቁጥርዎን ያስገቡ",
+"email": "ኢሜይል አድራሻዎን ያስገቡ",
+"password": "የይለፍ ቃል ያስገቡ",
+"confirmPassword": "የይለፍ ቃልዎን ያረጋግጡ",
+"kifleKetema": "ክፍለ ከተማ ይምረጡ",
+"kebele": "ቀበሌ ይምረጡ",
+"sefer": "ሰፈር ይምረጡ",
+"businessName": "የንግድ ስም ያስገቡ",
+"ownerName": "የባለቤቱን ስም ያስገቡ",
+"businessType": "የንግድ አይነት ይምረጡ",
+"businessDescription": "የንግድዎን አይነት ይግለጹ"
+},
+
+"locations": {
+"Abima": "አብማ",
+"Menkorer": "መንቆረር",
+"Nigus Teklehaymanot": "ንጉስ ተክለሃይማኖት",
+"Tedila Gualu": "ተድላ ጓሉ",
+
+
+"Kebele 01": "ቀበሌ 01",
+"Kebele 02": "ቀበሌ 02",
+"Kebele 03": "ቀበሌ 03",
+"Kebele 04": "ቀበሌ 04",
+"Kebele 05": "ቀበሌ 05",
+"Kebele 06": "ቀበሌ 06",
+"Kebele 07": "ቀበሌ 07",
+"Kebele 08": "ቀበሌ 08",
+"Kebele 09": "ቀበሌ 09",
+"Kebele 10": "ቀበሌ 10",
+"Kebele 11": "ቀበሌ 11",
+"Kebele 12": "ቀበሌ 12",
+"Kebele 13": "ቀበሌ 13",
+"Kebele 14": "ቀበሌ 14",
+"Kebele 15": "ቀበሌ 15",
+"Kebele 16": "ቀበሌ 16",
+"Kebele 17": "ቀበሌ 17",
+"Kebele 18": "ቀበሌ 18",
+
+"Sefer 01": "ሰፈር 01",
+"Sefer 02": "ሰፈር 02",
+"Sefer 03": "ሰፈር 03",
+"Sefer 04": "ሰፈር 04"
+
+
+},
+
+"businessTypes": {
+"Cafe": "ካፌ",
+"Restaurant": "ሬስቶራንት",
+"Hotel": "ሆቴል",
+"Jambo": "ጃምቦ",
+"Gulit": "ጉሊት",
+"Government Office": "የመንግስት ቢሮ",
+"Kera": "ቄራ",
+"Other": "ሌላ"
+},
+
+"buttons": {
+"register": "ይመዝገቡ",
+"registering": "በመመዝገብ ላይ...",
+"registerBusiness": "ንግድ ይመዝግቡ"
+},
+
+"alreadyAccount": "አስቀድመው መለያ አለዎት?",
+"login": "ይግቡ",
+
+"success": "ምዝገባዎ በተሳካ ሁኔታ ተጠናቋል!",
+"failed": "ምዝገባው አልተሳካም።",
+"unable": "መመዝገብ አልተቻለም። እባክዎ እንደገና ይሞክሩ።",
+
+"businessSuccess": "የንግድ ምዝገባው በተሳካ ሁኔታ ተጠናቋል!",
+"businessFailed": "የንግድ ምዝገባው አልተሳካም።",
+"businessUnable": "የንግድ ምዝገባ ማከናወን አልተቻለም።",
+
+"validation": {
+"fullNameRequired": "ሙሉ ስም ያስፈልጋል።",
+"fullNameMin": "ሙሉ ስም ቢያንስ 3 ፊደላት መሆን አለበት።",
+"fullNameMax": "ሙሉ ስም ከ50 ፊደላት መብለጥ የለበትም።",
+"fullNameLetters": "ሙሉ ስም ፊደላትና ክፍተት ብቻ መያዝ አለበት።",
+
+"phoneRequired": "ስልክ ቁጥር ያስፈልጋል።",
+"phoneInvalid": "ስልክ ቁጥር በ09 መጀመር እና በትክክል 10 አሃዞች መሆን አለበት።",
+
+"emailRequired": "ኢሜይል ያስፈልጋል።",
+"emailInvalid": "እባክዎ ትክክለኛ Gmail አድራሻ ያስገቡ።",
+
+"passwordRequired": "የይለፍ ቃል ያስፈልጋል።",
+"passwordMin": "የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።",
+"passwordMax": "የይለፍ ቃል ከ50 ቁምፊዎች መብለጥ የለበትም።",
+
+"confirmPasswordRequired": "የይለፍ ቃል ማረጋገጫ ያስፈልጋል።",
+"passwordMismatch": "የይለፍ ቃሎቹ አይመሳሰሉም።",
+
+"kifleKetemaRequired": "ክፍለ ከተማ ያስፈልጋል።",
+"invalidKifleKetema": "እባክዎ ትክክለኛ ክፍለ ከተማ ይምረጡ።",
+
+"kebeleRequired": "ቀበሌ ያስፈልጋል።",
+"invalidKebele": "እባክዎ ትክክለኛ ቀበሌ ይምረጡ።",
+
+"seferRequired": "ሰፈር ያስፈልጋል።",
+"invalidSefer": "እባክዎ ትክክለኛ ሰፈር ይምረጡ።",
+
+"businessNameRequired": "የንግድ ስም ማስገባት አለብዎት።",
+"businessNameMin": "የንግድ ስም ቢያንስ 3 ቁምፊዎች ሊኖረው ይገባል።",
+"businessNameMax": "የንግድ ስም ከ100 ቁምፊዎች መብለጥ አይችልም።",
+
+"ownerNameRequired": "የባለቤቱን ስም ማስገባት አለብዎት።",
+"ownerNameMin": "የባለቤቱ ስም ቢያንስ 3 ቁምፊዎች ሊኖረው ይገባል።",
+"ownerNameMax": "የባለቤቱ ስም ከ100 ቁምፊዎች መብለጥ የለበትም።",
+"ownerNameLetters": "የባለቤቱ ስም ፊደላትና ክፍተት ብቻ መያዝ ይችላል።",
+
+"businessTypeRequired": "የንግድ አይነት መምረጥ አለብዎት።",
+"invalidBusinessType": "እባክዎ ትክክለኛ የንግድ አይነት ይምረጡ።",
+
+"businessDescriptionRequired": "እባክዎ የንግድዎን አይነት ይግለጹ።",
+"businessDescriptionMin": "የንግድ መግለጫው ቢያንስ 3 ቁምፊዎች ሊኖሩት ይገባል።",
+"businessDescriptionMax": "የንግድ መግለጫው ከ100 ቁምፊዎች መብለጥ አይችልም።",
+
+"correctFields": "እባክዎ በቀይ የተመለከቱትን መስኮች ያስተካክሉ።"
+
+
+}
+},
+
+
+
+
+  "businessDashboard": {
+    "welcome": "እንኳን ደህና መጡ",
+    "businessOwner": "የንግድ ባለቤት",
+    "business": "ንግድ",
+    "portalOverview": "ፖርታል አጠቃላይ እይታ",
+
+    "logout": "ውጣ",
+
+    "loading": "ዳሽቦርዱ በመጫን ላይ...",
+    "loadingDescription": "የንግድዎ መረጃ በመጫን ላይ ነው።",
+
+    "unableToLoad": "የንግድ መረጃ መጫን አልተቻለም",
+    "profileNotFound": "የንግድ መረጃ አልተገኘም።",
+    "profileLoadFailed": "የንግድ መረጃ መጫን አልተቻለም።",
+    "tryAgain": "እንደገና ሞክር",
+    "notSet": "አልተገለጸም",
+
+    "quickActions": "ፈጣን አማራጮች",
+
+    "quickActionsDescription": "በፍጥነት ወደሚያስፈልጉዎት የንግድ አገልግሎቶች ይድረሱ።",
+
+    "actions": {
+      "schedule": {
+        "title": "የማሰባሰቢያ መርሃ ግብር",
+        "description": "የሚቀጥለውን የቆሻሻ ማሰባሰቢያ መርሃ ግብር ይመልከቱ።"
+      },
+
+      "request": {
+        "title": "ጥያቄ ያቅርቡ",
+        "description": "በሚፈልጉበት ጊዜ የቆሻሻ ማሰባሰብ ጥያቄ ያቅርቡ።"
+      },
+
+      "feedback": {
+        "title": "አስተያየት ይስጡ",
+        "description": "ስለ ቆሻሻ ማሰባሰቢያ አገልግሎቱ ያለዎትን ልምድ ያካፍሉ።"
+      },
+
+      "myRequests": {
+        "title": "የእኔ ጥያቄዎች",
+        "description": "ሁሉንም ያቀረቧቸውን የማሰባሰብ ጥያቄዎች ይመልከቱ።"
+      },
+
+      "profile": {
+        "title": "የእኔ መገለጫ",
+        "description": "የንግድዎን መረጃ ይመልከቱ እና ያዘምኑ።"
+      }
+    },
+
+    "businessInformation": "የንግድ መረጃ",
+
+    "businessInformationDescription": "የተመዘገበው የንግድዎ መረጃ",
+
+    "fields": {
+      "businessName": "የንግድ ስም",
+      "ownerName": "የባለቤት ስም",
+      "businessType": "የንግድ ዓይነት",
+      "phone": "ስልክ ቁጥር",
+      "email": "የኢሜይል አድራሻ",
+      "kifleKetema": "ክፍለ ከተማ",
+      "kebele": "ቀበሌ",
+      "sefer": "ሰፈር"
+    }
+  },
+
+
+"feedback": {
+  "title": "አስተያየት እና ቅሬታ",
+  "description": "ስለ ቆሻሻ ማሰባሰቢያ አገልግሎቱ ያለዎትን ልምድ ያካፍሉ ወይም ችግር ያሳውቁ።",
+
+  "form": {
+    "title": "አስተያየትዎን ያስገቡ",
+    "description": "የእርስዎ ቀበሌ እና ሰፈር መረጃ ከነዋሪ መገለጫዎ በራስ-ሰር ይወሰዳል።"
+  },
+
+  "fields": {
+    "category": "የአስተያየት ምድብ",
+    "kebele": "ቀበሌ",
+    "sefer": "ሰፈር",
+    "rating": "ደረጃ",
+    "comment": "አስተያየት"
+  },
+
+  "categories": {
+    "serviceQuality": "የአገልግሎት ጥራት",
+    "delay": "የማሰባሰብ መዘግየት",
+    "collector": "የሰብሳቢ አገልግሎት",
+    "schedule": "የማሰባሰቢያ መርሃ ግብር",
+    "other": "ሌላ"
+  },
+
+  "ratings": {
+    "excellent": "★★★★★ በጣም ጥሩ",
+    "veryGood": "★★★★☆ በጣም ጥሩ",
+    "good": "★★★☆☆ ጥሩ",
+    "fair": "★★☆☆☆ መካከለኛ",
+    "poor": "★☆☆☆☆ ደካማ"
+  },
+
+  "placeholders": {
+    "comment": "አስተያየትዎን፣ ቅሬታዎን ወይም ስለ አገልግሎቱ ያለዎትን ልምድ ይግለጹ..."
+  },
+
+  "beforeSubmitting": {
+    "title": "ከማስገባትዎ በፊት",
+    "description": "የእርስዎ ቀበሌ እና ሰፈር በራስ-ሰር ከአስተያየትዎ ጋር ይካተታሉ።"
+  },
+
+  "buttons": {
+    "submit": "አስተያየት ላክ",
+    "submitting": "በመላክ ላይ..."
+  },
+
+  "notAssigned": "አልተመደበም",
+
+  "validation": {
+    "kebeleMissing": "የቀበሌ መረጃዎ የለም። እባክዎ አስተዳዳሪውን ያግኙ።",
+    "seferMissing": "የሰፈር መረጃዎ የለም። እባክዎ አስተዳዳሪውን ያግኙ።",
+    "commentRequired": "እባክዎ አስተያየትዎን ያስገቡ።",
+    "ratingRequired": "እባክዎ ደረጃ ይምረጡ።"
+  },
+
+  "success": "አስተያየትዎ በተሳካ ሁኔታ ተልኳል።",
+
+  "errors": {
+    "unable": "አስተያየትዎን መላክ አልተቻለም። እባክዎ እንደገና ይሞክሩ።"
+  }
+},
+
+"myRequests": {
+  "title": "የእኔ የማሰባሰብ ጥያቄዎች",
+  "subtitle": "ያቀረቧቸውን የቆሻሻ ማሰባሰቢያ ጥያቄዎች እና ሁኔታቸውን ይመልከቱ።",
+
+  "fields": {
+    "kifleKetema": "ክፍለ ከተማ",
+    "kebele": "ቀበሌ",
+    "sefer": "ሰፈር",
+    "collectionDate": "የማሰባሰቢያ ቀን",
+    "collectorName": "የሰብሳቢው ስም",
+    "collectorPhone": "የሰብሳቢው ስልክ"
+  },
+
+  "collector": {
+    "title": "የተመደበ ቆሻሻ ሰብሳቢ"
+  },
+
+  "status": {
+    "pending": "በመጠባበቅ ላይ",
+    "approved": "ጸድቋል",
+    "assigned": "ሰብሳቢ ተመድቧል",
+    "inProgress": "በሂደት ላይ",
+    "collected": "ተሰብስቧል",
+    "completed": "ተጠናቋል",
+    "rejected": "ውድቅ ተደርጓል",
+    "cancelled": "ተሰርዟል"
+  },
+
+  "actions": {
+    "collectionFinished": "የቆሻሻ ማሰባሰብ ተጠናቋል",
+    "confirmCollection": "ማሰባሰቡን አረጋግጥ",
+    "confirming": "በማረጋገጥ ላይ...",
+    "collectionCompleted": "የቆሻሻ ማሰባሰብ ተጠናቋል",
+    "collectorAssigned": "ቆሻሻ ሰብሳቢ ተመድቧል",
+    "collectionInProgress": "የቆሻሻ ማሰባሰብ በሂደት ላይ ነው",
+    "waitingApproval": "ለማጽደቅ በመጠባበቅ ላይ",
+    "requestApproved": "ጥያቄው ጸድቋል",
+    "requestRejected": "ጥያቄው ውድቅ ተደርጓል",
+    "requestCancelled": "ጥያቄው ተሰርዟል"
+  },
+
+  "messages": {
+    "collectionConfirmed": "የቆሻሻ ማሰባሰቡ በተሳካ ሁኔታ ተረጋግጧል።",
+    "confirmFailed": "የቆሻሻ ማሰባሰቡን ማረጋገጥ አልተቻለም።"
+  },
+
+  "empty": {
+    "title": "የማሰባሰብ ጥያቄ የለም",
+    "description": "እስካሁን ምንም የቆሻሻ ማሰባሰቢያ ጥያቄ አላቀረቡም።"
+  },
+
+  "common": {
+    "loading": "ጥያቄዎች በመጫን ላይ...",
+    "notAvailable": "-"
+  }
+},
+
+
+  "common": {
+    "notSet": "አልተመዘገበም",
+    "kifleKetema": "ክፍለ ከተማ",
+    "kebele": "ቀበሌ",
+    "sefer": "ሰፈር",
+    "description": "መግለጫ",
+    "latitude": "ኬክሮስ",
+    "longitude": "ኬንትሮስ",
+    "location": "አካባቢ",
+    "meters": "ሜትር",
+    "submitting": "በመላክ ላይ..."
+  },
+
+  "onDemand": {
+    "title": "የአስቸኳይ ማሰባሰቢያ ጥያቄ",
+    "subtitle": "የቆሻሻ ማሰባሰቢያ አገልግሎት ጥያቄዎን ያስገቡ።",
+
+    "businessProfileCouldNotLoad": "የንግድ መገለጫው ሊጫን አልቻለም።",
+    "failedToLoadBusiness": "የንግድ መረጃ መጫን አልተሳካም።",
+
+    "geolocationNotSupported": "የአካባቢ መለየት አገልግሎት በዚህ መሣሪያ አይደገፍም።",
+    "unableToRetrieveLocation": "የአሁኑን አካባቢ ማግኘት አልተቻለም።",
+
+    "businessInformationNotLoaded": "የንግድ መረጃ አልተጫነም።",
+    "kifleKetemaNotRegistered": "የክፍለ ከተማ መረጃ አልተመዘገበም።",
+    "kebeleNotRegistered": "የቀበሌ መረጃ አልተመዘገበም።",
+    "seferNotRegistered": "የሰፈር መረጃ አልተመዘገበም።",
+
+    "selectPreferredDate": "እባክዎ የሚፈልጉትን የማሰባሰቢያ ቀን ይምረጡ።",
+
+    "requestSubmitted": "የማሰባሰቢያ ጥያቄዎ በተሳካ ሁኔታ ተልኳል።",
+    "unableToSubmit": "የማሰባሰቢያ ጥያቄውን መላክ አልተቻለም።",
+
+    "loadingBusinessInformation": "የንግድ መረጃ በመጫን ላይ...",
+
+    "businessLocation": "የንግድ ቦታ",
+    "registeredBusinessLocation": "በመዝገብ ላይ የተመዘገበው የንግድ ቦታ",
+
+    "preferredCollectionDate": "የሚመረጥ የማሰባሰቢያ ቀን",
+
+    "descriptionPlaceholder": "ተጨማሪ መረጃ ካለ እዚህ ያስገቡ...",
+
+    "submitRequest": "ጥያቄ ላክ",
+
+    "mapInstruction": "በካርታው ላይ የማሰባሰቢያ ቦታውን ይምረጡ ወይም ምልክቱን ያንቀሳቅሱ።",
+
+    "detectingLocation": "አካባቢዎን በመለየት ላይ...",
+
+    "selectedDetails": "የተመረጠ ዝርዝር",
+    "notSelectedYet": "እስካሁን አልተመረጠም።",
+
+    "gpsAccuracy": "የGPS ትክክለኛነት"
+  },
+ 
+"profile": {
+  "title": "የንግድ ድርጅት መገለጫ",
+
+  "subtitle":
+    "የንግድ ድርጅትዎን መረጃ፣ አድራሻ እና የይለፍ ቃል ይመልከቱ እና ያዘምኑ።",
+
+  "businessInformation": {
+    "title": "የንግድ ድርጅት መረጃ",
+
+    "description":
+      "የተመዘገበውን የንግድ ድርጅት መረጃ ያዘምኑ።"
+  },
+
+  "fields": {
+    "businessName": "የንግድ ድርጅት ስም",
+    "ownerName": "የባለቤቱ ስም",
+    "businessType": "የንግድ አይነት",
+    "phoneNumber": "ስልክ ቁጥር",
+    "email": "ኢሜይል አድራሻ",
+    "kifleKetema": "ክፍለ ከተማ",
+    "kebele": "ቀበሌ",
+    "sefer": "ሰፈር"
+  },
+
+  "placeholders": {
+    "businessName":
+      "የንግድ ድርጅት ስም ያስገቡ",
+
+    "ownerName":
+      "የባለቤቱን ሙሉ ስም ያስገቡ",
+
+    "businessType":
+      "ለምሳሌ፦ ሆቴል፣ ካፌ",
+
+    "phoneNumber":
+      "09XXXXXXXX",
+
+    "email":
+      "example@gmail.com",
+
+    "selectKifleKetema":
+      "ክፍለ ከተማ ይምረጡ",
+
+    "selectKebele":
+      "ቀበሌ ይምረጡ",
+
+    "selectSefer":
+      "ሰፈር ይምረጡ"
+  },
+
+  "location": {
+    "title": "የንግድ ድርጅት አድራሻ"
+  },
+
+  "buttons": {
+    "saving":
+      "ለውጦችን በማስቀመጥ ላይ...",
+
+    "updateProfile":
+      "መገለጫን አዘምን"
+  },
+
+  "password": {
+    "title": "የይለፍ ቃል ቀይር",
+
+    "description":
+      "የመለያዎን የይለፍ ቃል በደህንነት ያዘምኑ።",
+
+    "currentPassword":
+      "የአሁኑ የይለፍ ቃል",
+
+    "newPassword":
+      "አዲስ የይለፍ ቃል",
+
+    "confirmPassword":
+      "አዲሱን የይለፍ ቃል ያረጋግጡ",
+
+    "currentPlaceholder":
+      "የአሁኑን የይለፍ ቃል ያስገቡ",
+
+    "newPlaceholder":
+      "አዲስ የይለፍ ቃል ያስገቡ",
+
+    "confirmPlaceholder":
+      "አዲሱን የይለፍ ቃል ያረጋግጡ",
+
+    "changing":
+      "የይለፍ ቃል በመቀየር ላይ...",
+
+    "change":
+      "የይለፍ ቃል ቀይር"
+  },
+
+  "validation": {
+    "businessNameRequired":
+      "የንግድ ድርጅት ስም ያስፈልጋል።",
+
+    "ownerNameRequired":
+      "የባለቤቱ ስም ያስፈልጋል።",
+
+    "phoneInvalid":
+      "የስልክ ቁጥሩ 10 አሃዞች መሆን እና በ09 መጀመር አለበት።",
+
+    "emailInvalid":
+      "እባክዎ ትክክለኛ Gmail ኢሜይል ያስገቡ።",
+
+    "kifleKetemaRequired":
+      "ክፍለ ከተማ ያስፈልጋል።",
+
+    "kebeleRequired":
+      "ቀበሌ ያስፈልጋል።",
+
+    "seferRequired":
+      "ሰፈር ያስፈልጋል።",
+
+    "currentPasswordRequired":
+      "የአሁኑ የይለፍ ቃል ያስፈልጋል።",
+
+    "newPasswordLength":
+      "አዲሱ የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት።",
+
+    "passwordMismatch":
+      "አዲሱ የይለፍ ቃል እና የማረጋገጫ ይለፍ ቃል አይመሳሰሉም።"
+  },
+
+  "messages": {
+    "profileNotLoaded":
+      "የንግድ ድርጅቱ መገለጫ ሊጫን አልቻለም።",
+
+    "loadFailed":
+      "የንግድ ድርጅቱን መገለጫ መጫን አልተቻለም።",
+
+    "updateFailed":
+      "መገለጫውን ማዘመን አልተቻለም።",
+
+    "profileUpdated":
+      "የንግድ ድርጅቱ መገለጫ በተሳካ ሁኔታ ታድሷል!",
+
+    "passwordChanged":
+      "የይለፍ ቃሉ በተሳካ ሁኔታ ተቀይሯል!",
+
+    "passwordChangeFailed":
+      "የይለፍ ቃሉን መቀየር አልተቻለም።"
+  }
+},
+
+"schedule": {
+  "title": "የቆሻሻ ማሰባሰቢያ መርሃ ግብር",
+
+  "subtitle":
+    "ለእርስዎ የተመደበውን የቆሻሻ ማሰባሰቢያ መርሃ ግብር ይመልከቱ።",
+
+  "empty":
+    "ምንም የማሰባሰቢያ መርሃ ግብር አልተገኘም።",
+
+  "fields": {
+    "kifleKetema": "ክፍለ ከተማ",
+    "kebele": "ቀበሌ",
+    "sefer": "ሰፈር",
+    "frequency": "የማሰባሰብ ድግግሞሽ",
+    "collectionTime": "የማሰባሰቢያ ሰዓት",
+    "collector": "ሰብሳቢ",
+    "phone": "ስልክ"
+  },
+
+  "status": {
+    "active": "ንቁ",
+    "inactive": "ንቁ አይደለም"
+  },
+
+  "common": {
+    "notAvailable": "የለም",
+    "notAssigned": "አልተመደበም"
+  }
+},
+
+ 
+"assignedCollections": {
+  "title": "የተመደቡ የማሰባሰቢያ ስራዎች",
+
+  "loading": "የተመደቡ የማሰባሰቢያ ስራዎች በመጫን ላይ...",
+
+  "empty": {
+    "requests": "ምንም የተመደበ የማሰባሰቢያ ስራ የለም።",
+    "schedules": "ምንም የማሰባሰቢያ መርሃ ግብር አልተመደበልዎትም።"
+  },
+
+  "request": {
+    "owner": "ባለቤት",
+    "phone": "ስልክ",
+    "kifleKetema": "ክፍለ ከተማ",
+    "kebele": "ቀበሌ",
+    "sefer": "ሰፈር",
+    "description": "መግለጫ",
+    "date": "ቀን",
+    "status": "ሁኔታ"
+  },
+
+  "actions": {
+    "startCollection": "ማሰባሰብ ጀምር",
+    "completeCollection": "ማሰባሰብ አጠናቅ",
+    "updating": "በማዘመን ላይ..."
+  },
+
+  "messages": {
+    "collectionStarted": "የማሰባሰብ ስራው በተሳካ ሁኔታ ተጀምሯል።",
+    "collectionCompleted": "የማሰባሰብ ስራው በተሳካ ሁኔታ ተጠናቋል።",
+    "waitingBusinessConfirmation": "የንግድ ድርጅቱን ማረጋገጫ በመጠባበቅ ላይ",
+    "collectionCompletedStatus": "የማሰባሰብ ስራው ተጠናቋል"
+  },
+
+  "schedule": {
+    "title": "የእኔ የማሰባሰቢያ መርሃ ግብር",
+    "day": "ቀን",
+    "kifleKetema": "ክፍለ ከተማ",
+    "kebele": "ቀበሌ",
+    "sefer": "ሰፈር",
+    "time": "ሰዓት",
+    "frequency": "ድግግሞሽ"
+  },
+
+  "errors": {
+    "startCollectionFailed": "ማሰባሰብ መጀመር አልተቻለም።",
+    "completeCollectionFailed": "ማሰባሰብን ማጠናቀቅ አልተቻለም።"
+  }
+},
+
+"collectorDashboard": {
+  "welcomeBack": "እንኳን ደህና መጡ፣ {{name}} 👋",
+  "portalOverview": "የቆሻሻ ማሰባሰቢያ ሰራተኛ ፖርታል አጠቃላይ መረጃ",
+
+  "logout": "ውጣ",
+
+  "loading": "የቆሻሻ ማሰባሰቢያ ሰራተኛ ዳሽቦርድ በመጫን ላይ...",
+
+  "collectorInformation": "የቆሻሻ ማሰባሰቢያ ሰራተኛ መረጃ",
+
+  "role": "ሚና",
+  "collector": "የቆሻሻ ማሰባሰቢያ ሰራተኛ",
+
+  "assignedKifleKetema": "የተመደበበት ክፍለ ከተማ",
+  "notAssigned": "አልተመደበም",
+
+  "quickActions": "ፈጣን እርምጃዎች",
+
+  "assignedTasks": {
+    "title": "የተመደቡ ስራዎች",
+    "description": "የተመደቡልዎትን የቆሻሻ ማሰባሰቢያ ስራዎች ይመልከቱ እና ያስተዳድሩ።"
+  },
+
+  "profile": {
+    "title": "የእኔ መገለጫ",
+    "description": "የቆሻሻ ማሰባሰቢያ ሰራተኛ መለያ መረጃዎን ይመልከቱ እና ያዘምኑ።"
+  },
+
+  "errors": {
+    "loadFailed": "የቆሻሻ ማሰባሰቢያ ሰራተኛ ዳሽቦርድን መጫን አልተቻለም።",
+    "tryAgain": "እባክዎ እንደገና ይሞክሩ።"
+  },
+
+  "stats": {
+    "todayTasks": "የዛሬ ስራዎች",
+    "completedToday": "ዛሬ የተጠናቀቁ",
+    "pendingTasks": "በመጠባበቅ ላይ ያሉ ስራዎች"
+  }
+}
+
+
+
+}

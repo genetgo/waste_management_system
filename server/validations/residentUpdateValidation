@@ -1,0 +1,71 @@
+const Joi = require("joi");
+
+const residentUpdateValidation = Joi.object({
+    full_name: Joi.string()
+        .trim()
+        .min(3)
+        .max(50)
+        .pattern(/^[A-Za-zÀ-ÿ\s]+$/)
+        .messages({
+            "string.min":
+                "Full name must be at least 3 characters.",
+            "string.max":
+                "Full name cannot exceed 50 characters.",
+            "string.pattern.base":
+                "Full name can contain letters and spaces only.",
+        }),
+
+    phone_number: Joi.string()
+        .trim()
+        .pattern(/^09\d{8}$/)
+        .messages({
+            "string.pattern.base":
+                "Phone number must be exactly 10 digits and start with 09.",
+        }),
+
+    email: Joi.string()
+        .trim()
+        .pattern(
+            /^[A-Za-z0-9._%+-]+@gmail\.com$/i
+        )
+        .messages({
+            "string.pattern.base":
+                "Please enter a valid Gmail address.",
+        }),
+
+    kifle_ketema: Joi.string()
+        .trim()
+        .valid(
+            "Abima",
+            "Menkorer",
+            "Nigus Teklehaymanot",
+            "Tedila Gualu"
+        )
+        .messages({
+            "any.only":
+                "Please select a valid Kifle Ketema.",
+        }),
+
+    kebele: Joi.string()
+        .trim()
+        .pattern(/^Kebele\s+\d{1,2}$/i)
+        .messages({
+            "string.pattern.base":
+                "Kebele must be in the format Kebele 01.",
+        }),
+
+    sefer: Joi.string()
+        .trim()
+        .pattern(/^Sefer\s+\d{1,2}$/i)
+        .messages({
+            "string.pattern.base":
+                "Sefer must be in the format Sefer 01.",
+        }),
+
+    profile_image: Joi.string()
+        .allow(null, "")
+        .optional(),
+}).options({
+    abortEarly: false,
+    allowUnknown: false,
+});

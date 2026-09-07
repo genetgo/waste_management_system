@@ -1,0 +1,11 @@
+// src/constants/roles.js
+
+const ROLES = {
+  RESIDENT: "RESIDENT",
+  BUSINESS_OWNER: "BUSINESS_OWNER",
+  COLLECTOR: "COLLECTOR",
+  MUNICIPAL_ADMIN: "MUNICIPAL_ADMIN",
+  SYSTEM_ADMIN: "SYSTEM_ADMIN",
+};
+
+export default ROLES;

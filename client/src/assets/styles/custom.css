@@ -1,0 +1,32 @@
+/* Custom Styles for Assets */
+
+/* Debre Markos Brand Color Palette Variables */
+:root {
+  --dm-green-50: #ecfdf5;
+  --dm-green-600: #059669;
+  --dm-green-800: #065f46;
+  --dm-yellow-500: #f59e0b;
+}
+
+/* Custom Notification Pulse Dot */
+.notification-dot {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 10px;
+  height: 10px;
+  background-color: #ef4444;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+}
+
+/* Responsive Custom Scrollbar for Asset Galleries/Tables */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--dm-green-600);
+  border-radius: 10px;
+}
