@@ -1,854 +1,735 @@
-
 {
-  "home": {
-    "badge": "🌱 Smart City Initiative",
-    "title": "Waste Management System",
-    "description": "Welcome to the Debre Markos Municipality Web-Based Waste Management System.",
-    "wasteCollection": "Waste Collection",
-    "getStarted": "Get Started",
-    "createAccount": "Create Account",
-    "footer": "© 2026 Debre Markos Municipality."
-  },
+"home": {
+"badge": "Smart City Initiative",
+"title": "Waste Management System",
+"description": "Welcome to the Debre Markos Municipality Web-Based Waste Management System.",
+"wasteCollection": "Waste Collection",
+"login": "Login",
+"createAccount": "Create Account",
+"scheduleView": "Schedule View",
+"feedback": "Feedback",
+"footer": "© 2026 Debre Markos Municipality."
+},
 
-  
 "login": {
-  "title": "Welcome Back",
-  "subtitle": "Sign in to your account",
-
-  "email": "Email",
-  "emailPlaceholder": "Enter your email",
-
-  "password": "Password",
-  "passwordPlaceholder": "Enter your password",
-
-  "forgotPassword": "Forgot Password?",
-
-  "button": "Login",
-  "loggingIn": "Logging in...",
-
-  "noAccount": "Don't have an account?",
-  "createAccount": "Create Account",
-
-  "accountInactiveTitle": "Account Inactive",
-  "accountInactive": "Your account is inactive. Please contact the administrator.",
-
-  "inactiveMessage": "Your account is inactive. Please contact the administrator.",
-
-  "administratorContact": "Administrator Contact",
-  "adminContact": "Administrator Contact",
-
-  "name": "Name",
-  "phone": "Phone",
-
-  "required": "Email and password are required.",
-  "requiredFields": "Email and password are required.",
-
-  "invalidResponse": "Invalid login response.",
-  "invalidCredentials": "Email or password is incorrect.",
-  "accessDenied": "Access denied.",
-  "failed": "Login failed. Please try again.",
-
-  "invalidRole": "Invalid user role: {{role}}.",
-
-  "showPassword": "Show password",
-  "hidePassword": "Hide password"
+"title": "Welcome Back",
+"subtitle": "Sign in to your account",
+"email": "Email",
+"emailPlaceholder": "Enter your email",
+"password": "Password",
+"passwordPlaceholder": "Enter your password",
+"forgotPassword": "Forgot Password?",
+"button": "Login",
+"loggingIn": "Logging in...",
+"noAccount": "Don't have an account?",
+"createAccount": "Create Account",
+"accountInactiveTitle": "Account Inactive",
+"accountInactive": "Your account is inactive. Please contact the administrator.",
+"inactiveMessage": "Your account is inactive. Please contact the administrator.",
+"administratorContact": "Administrator Contact",
+"adminContact": "Administrator Contact",
+"name": "Name",
+"phone": "Phone",
+"required": "Email and password are required.",
+"requiredFields": "Email and password are required.",
+"invalidResponse": "Invalid login response.",
+"invalidCredentials": "Email or password is incorrect.",
+"accessDenied": "Access denied.",
+"failed": "Login failed. Please try again.",
+"invalidRole": "Invalid user role: {{role}}.",
+"showPassword": "Show password",
+"hidePassword": "Hide password"
 },
 
 "forgotPassword": {
-  "title": "Forgot Password?",
-  "subtitle": "Enter your email address or phone number to reset your password.",
-
-  "fields": {
-    "identifier": "Email or Phone Number"
-  },
-
-  "placeholders": {
-    "identifier": "Enter your email or phone number"
-  },
-
-  "helpText": "You can use either your registered email or phone number.",
-
-  "buttons": {
-    "continue": "Continue",
-    "processing": "Processing..."
-  },
-
-  "backToLogin": "Back to Login",
-
-  "success": "Password reset request submitted successfully.",
-
-  "validation": {
-    "identifierRequired": "Please enter your email or phone number.",
-    "identifierInvalid": "Please enter a valid Gmail address or a valid phone number.",
-    "tokenNotReturned": "Reset token was not returned by the server."
-  },
-
-  "errors": {
-    "unable": "Unable to process your request. Please try again."
-  }
+"title": "Forgot Password?",
+"subtitle": "Enter your email address or phone number to reset your password.",
+"fields": {
+"identifier": "Email or Phone Number"
+},
+"placeholders": {
+"identifier": "Enter your email or phone number"
+},
+"helpText": "You can use either your registered email or phone number.",
+"buttons": {
+"continue": "Continue",
+"processing": "Processing..."
+},
+"backToLogin": "Back to Login",
+"success": "Password reset request submitted successfully.",
+"validation": {
+"identifierRequired": "Please enter your email or phone number.",
+"identifierInvalid": "Please enter a valid Gmail address or a valid phone number.",
+"tokenNotReturned": "Reset token was not returned by the server."
+},
+"errors": {
+"unable": "Unable to process your request. Please try again."
+}
 },
 
 "resetPassword": {
-  "title": "Reset Password",
-  "subtitle": "Create a new password for your account.",
-
-  "resettingFor": "Resetting password for:",
-
-  "fields": {
-    "password": "New Password",
-    "confirmPassword": "Confirm New Password"
-  },
-
-  "placeholders": {
-    "password": "Enter new password",
-    "confirmPassword": "Confirm new password"
-  },
-
-  "passwordHint": "Password must be at least 6 characters.",
-
-  "buttons": {
-    "reset": "Reset Password",
-    "resetting": "Resetting Password..."
-  },
-
-  "showPassword": "Show password",
-  "hidePassword": "Hide password",
-
-  "backToLogin": "Back to Login",
-
-  "redirecting": "Redirecting to login...",
-
-  "success": "Password reset successfully.",
-
-  "validation": {
-    "tokenInvalid": "Invalid or missing password reset token.",
-    "passwordRequired": "Please enter your new password.",
-    "passwordMin": "Password must be at least 6 characters.",
-    "passwordMax": "Password cannot exceed 50 characters.",
-    "confirmPasswordRequired": "Please confirm your new password.",
-    "passwordMismatch": "Passwords do not match."
-  },
-
-  "invalidLink": {
-    "title": "Invalid Reset Link",
-    "description": "This password reset link is invalid, missing, or expired.",
-    "requestNewToken": "Request New Reset Token"
-  },
-
-  "errors": {
-    "failed": "Failed to reset password. Please try again."
-  }
+"title": "Reset Password",
+"subtitle": "Create a new password for your account.",
+"resettingFor": "Resetting password for:",
+"fields": {
+"password": "New Password",
+"confirmPassword": "Confirm New Password"
+},
+"placeholders": {
+"password": "Enter new password",
+"confirmPassword": "Confirm new password"
+},
+"passwordHint": "Password must be at least 6 characters.",
+"buttons": {
+"reset": "Reset Password",
+"resetting": "Resetting Password..."
+},
+"showPassword": "Show password",
+"hidePassword": "Hide password",
+"backToLogin": "Back to Login",
+"redirecting": "Redirecting to login...",
+"success": "Password reset successfully.",
+"validation": {
+"tokenInvalid": "Invalid or missing password reset token.",
+"passwordRequired": "Please enter your new password.",
+"passwordMin": "Password must be at least 6 characters.",
+"passwordMax": "Password cannot exceed 50 characters.",
+"confirmPasswordRequired": "Please confirm your new password.",
+"passwordMismatch": "Passwords do not match."
+},
+"invalidLink": {
+"title": "Invalid Reset Link",
+"description": "This password reset link is invalid, missing, or expired.",
+"requestNewToken": "Request New Reset Token"
+},
+"errors": {
+"failed": "Failed to reset password. Please try again."
 }
-,
-
-  "register": {
-    "title": "Create Your Account",
-    "subtitle": "Select your account type to continue",
-
-    "resident": {
-      "title": "Resident",
-      "description": "Register as a resident to view collection schedules, send feedback and receive notifications.",
-      "button": "Register as Resident"
-    },
-
-    
-    "business": {
-      "title": "Business Owner",
-      "description": "Register your business and request waste collection services whenever needed.",
-      "button": "Register as Business Owner"
-    },
-
-    "residentForm": {
-      "title": "Resident Registration",
-      "subtitle": "Create your resident account"
-    },
-
-    "businessForm": {
-      "title": "Business Owner Registration",
-      "subtitle": "Create your business account"
-    },
-
-    "fields": {
-      "fullName": "Full Name",
-      "businessName": "Business Name",
-      "ownerName": "Owner Name",
-      "phone": "Phone Number",
-      "email": "Email Address",
-      "password": "Password",
-      "confirmPassword": "Confirm Password",
-      "businessType": "Business Type",
-      "businessDescription": "Business Description",
-      "kifleKetema": "Kifle Ketema",
-      "kebele": "Kebele",
-      "sefer": "Sefer"
-    },
-
-    "placeholders": {
-      "fullName": "Enter your full name",
-      "businessName": "Enter your business name",
-      "ownerName": "Enter the owner's name",
-      "phone": "Enter your phone number",
-      "email": "Enter your email address",
-      "password": "Enter your password",
-      "confirmPassword": "Confirm your password",
-      "businessType": "Select Business Type",
-      "businessDescription": "Describe your business",
-      "kifleKetema": "Select Kifle Ketema",
-      "kebele": "Select Kebele",
-      "sefer": "Select Sefer"
-    },
-
-    "businessTypes": {
-      "Cafe": "Cafe",
-      "Restaurant": "Restaurant",
-      "Hotel": "Hotel",
-      "Jambo": "Jambo",
-      "Gulit": "Gulit",
-      "Government Office": "Government Office",
-      "Kera": "Kera",
-      "Other": "Other"
-    },
-
-    "locations": {
-      "Abima": "Abima",
-      "Menkorer": "Menkorer",
-      "Nigus Teklehaymanot": "Nigus Teklehaymanot",
-      "Tedila Gualu": "Tedila Gualu",
-
-      "Kebele 01": "Kebele 01",
-      "Kebele 02": "Kebele 02",
-      "Kebele 03": "Kebele 03",
-      "Kebele 04": "Kebele 04",
-      "Kebele 05": "Kebele 05",
-      "Kebele 06": "Kebele 06",
-      "Kebele 07": "Kebele 07",
-      "Kebele 08": "Kebele 08",
-      "Kebele 09": "Kebele 09",
-      "Kebele 10": "Kebele 10",
-      "Kebele 11": "Kebele 11",
-      "Kebele 12": "Kebele 12",
-      "Kebele 13": "Kebele 13",
-      "Kebele 14": "Kebele 14",
-      "Kebele 15": "Kebele 15",
-      "Kebele 16": "Kebele 16",
-      "Kebele 17": "Kebele 17",
-      "Kebele 18": "Kebele 18",
-
-      "Sefer 01": "Sefer 01",
-      "Sefer 02": "Sefer 02",
-      "Sefer 03": "Sefer 03",
-      "Sefer 04": "Sefer 04"
-    },
-
-    "buttons": {
-      "register": "Register",
-      "registering": "Registering...",
-      "registerBusiness": "Register Business"
-    },
-
-    "alreadyAccount": "Already have an account?",
-    "login": "Login",
-
-    "success": "Registration successful!",
-    "failed": "Registration failed.",
-    "unable": "Unable to register. Please try again.",
-
-    "businessSuccess": "Business registration successful!",
-    "businessFailed": "Business registration failed.",
-    "businessUnable": "Unable to complete business registration. Please try again.",
-
-    "validation": {
-      "fullNameRequired": "Full name is required.",
-      "fullNameMin": "Full name must be at least 3 characters.",
-      "fullNameMax": "Full name cannot exceed 50 characters.",
-      "fullNameLetters": "Full name can contain letters and spaces only.",
-
-      "businessNameRequired": "Business name is required.",
-      "businessNameMin": "Business name must be at least 3 characters.",
-      "businessNameMax": "Business name cannot exceed 100 characters.",
-
-      "ownerNameRequired": "Owner name is required.",
-      "ownerNameMin": "Owner name must be at least 3 characters.",
-      "ownerNameMax": "Owner name cannot exceed 100 characters.",
-      "ownerNameLetters": "Owner name can contain letters and spaces only.",
-
-      "phoneRequired": "Phone number is required.",
-      "phoneInvalid": "Phone number must be exactly 10 digits and start with 09.",
-
-      "emailRequired": "Email is required.",
-      "emailInvalid": "Please enter a valid Gmail address.",
-
-      "passwordRequired": "Password is required.",
-      "passwordMin": "Password must be at least 6 characters.",
-      "passwordMax": "Password cannot exceed 50 characters.",
-
-      "confirmPasswordRequired": "Confirm password is required.",
-      "passwordMismatch": "Passwords do not match.",
-
-      "businessTypeRequired": "Business type is required.",
-      "invalidBusinessType": "Please select a valid business type.",
-
-      "businessDescriptionRequired": "Please describe your business.",
-      "businessDescriptionMin": "Business description must be at least 3 characters.",
-      "businessDescriptionMax": "Business description cannot exceed 100 characters.",
-
-      "kifleKetemaRequired": "Kifle Ketema is required.",
-      "invalidKifleKetema": "Please select a valid Kifle Ketema.",
-
-      "kebeleRequired": "Kebele is required.",
-      "invalidKebele": "Please select a valid Kebele.",
-
-      "seferRequired": "Sefer is required.",
-      "invalidSefer": "Please select a valid Sefer.",
-
-      "correctFields": "Please correct the highlighted fields."
-    }
-  },
-  
-
-
-"businessDashboard": {
-  "welcome": "Welcome",
-  "businessOwner": "Business Owner",
-  "business": "Business",
-  "portalOverview": "Portal Overview",
-
-  "logout": "Logout",
-
-  "loading": "Loading dashboard...",
-  "loadingDescription": "Your business information is being loaded.",
-
-  "unableToLoad": "Unable to Load Business Information",
-  "profileNotFound": "Business information not found.",
-  "profileLoadFailed": "Failed to load business information.",
-  "tryAgain": "Try Again",
-  "notSet": "Not Set",
-
-  "quickActions": "Quick Actions",
-
-  "quickActionsDescription":
-    "Quickly access the business services you need.",
-
-  "actions": {
-    "schedule": {
-      "title": "Collection Schedule",
-      "description":
-        "View your upcoming waste collection schedule."
-    },
-
-    "request": {
-      "title": "Make a Request",
-      "description":
-        "Submit a waste collection request whenever you need it."
-    },
-
-    "feedback": {
-      "title": "Give Feedback",
-      "description":
-        "Share your experience with the waste collection service."
-    },
-
-    "myRequests": {
-      "title": "My Requests",
-      "description":
-        "View all the waste collection requests you have submitted."
-    },
-
-    "profile": {
-      "title": "My Profile",
-      "description":
-        "View and update your business information."
-    }
-  },
-
-  "businessInformation": "Business Information",
-
-  "businessInformationDescription":
-    "Your registered business information",
-
-  "fields": {
-    "businessName": "Business Name",
-    "ownerName": "Owner Name",
-    "businessType": "Business Type",
-    "phone": "Phone Number",
-    "email": "Email Address",
-    "kifleKetema": "Sub-City",
-    "kebele": "Kebele",
-    "sefer": "Sefer"
-  }
 },
 
-"feedback": {
-  "title": "Feedback & Complaints",
-  "description": "Share your experience or report a problem with the waste collection service.",
+"register": {
+"title": "Create Your Account",
+"subtitle": "Select your account type to continue",
 
-  "form": {
-    "title": "Submit Your Feedback",
-    "description": "Your Kebele and Sefer are taken automatically from your resident profile."
-  },
 
-  "fields": {
-    "category": "Feedback Category",
-    "kebele": "Kebele",
-    "sefer": "Sefer",
-    "rating": "Rating",
-    "comment": "Feedback"
-  },
-
-  "placeholders": {
-    "comment": "Describe your feedback, complaint, or experience..."
-  },
-
-  "categories": {
-    "serviceQuality": "Service Quality",
-    "delay": "Collection Delay",
-    "collector": "Collector Service",
-    "schedule": "Collection Schedule",
-    "other": "Other"
-  },
-
-  "ratings": {
-    "excellent": "★★★★★  Excellent",
-    "veryGood": "★★★★☆  Very Good",
-    "good": "★★★☆☆  Good",
-    "fair": "★★☆☆☆  Fair",
-    "poor": "★☆☆☆☆  Poor"
-  },
-
-  "notAssigned": "Not assigned",
-
-  "info": {
-    "title": "Before submitting",
-    "description": "Your Kebele and Sefer are automatically included with your feedback."
-  },
-
-  "buttons": {
-    "submit": "Submit Feedback",
-    "submitting": "Submitting..."
-  },
-
-  "validation": {
-    "kebeleMissing": "Your Kebele information is missing. Please contact the administrator.",
-    "seferMissing": "Your Sefer information is missing. Please contact the administrator.",
-    "commentRequired": "Please enter your feedback.",
-    "ratingRequired": "Please select a rating."
-  },
-
-  "success": "Your feedback has been submitted successfully.",
-
-  "errors": {
-    "unableToSubmit": "Unable to submit your feedback. Please try again."
-  }
+"business": {
+  "title": "Business Owner",
+  "description": "Register your business and request waste collection services whenever needed.",
+  "button": "Register as Business Owner"
 },
 
-
-"myRequests": {
-  "title": "My Collection Requests",
-  "subtitle": "View your waste collection requests and their status.",
-
-  "fields": {
-    "kifleKetema": "Kifle Ketema",
-    "kebele": "Kebele",
-    "sefer": "Sefer",
-    "collectionDate": "Collection Date",
-    "collectorName": "Collector Name",
-    "collectorPhone": "Collector Phone"
-  },
-
-  "collector": {
-    "title": "Assigned Collector"
-  },
-
-  "status": {
-    "pending": "Pending",
-    "approved": "Approved",
-    "assigned": "Assigned",
-    "inProgress": "In Progress",
-    "collected": "Collected",
-    "completed": "Completed",
-    "rejected": "Rejected",
-    "cancelled": "Cancelled"
-  },
-
-  "actions": {
-    "collectionFinished": "Collection Finished",
-    "confirmCollection": "Confirm Collection",
-    "confirming": "Confirming...",
-    "collectionCompleted": "Collection Completed",
-    "collectorAssigned": "Collector Assigned",
-    "collectionInProgress": "Collection In Progress",
-    "waitingApproval": "Waiting for Approval",
-    "requestApproved": "Request Approved",
-    "requestRejected": "Request Rejected",
-    "requestCancelled": "Request Cancelled"
-  },
-
-  "messages": {
-    "collectionConfirmed": "Collection confirmed successfully.",
-    "confirmFailed": "Failed to confirm collection."
-  },
-
-  "empty": {
-    "title": "No Collection Requests",
-    "description": "You have not submitted any waste collection requests yet."
-  },
-
-  "common": {
-    "loading": "Loading requests...",
-    "notAvailable": "-"
-  }
+"businessForm": {
+  "title": "Business Owner Registration",
+  "subtitle": "Create your business account"
 },
 
-
- "common": {
-  "notSet": "Not Set",
+"fields": {
+  "businessName": "Business Name",
+  "ownerName": "Owner Name",
+  "phone": "Phone Number",
+  "email": "Email Address",
+  "password": "Password",
+  "confirmPassword": "Confirm Password",
+  "businessType": "Business Type",
+  "businessDescription": "Business Description",
   "kifleKetema": "Kifle Ketema",
   "kebele": "Kebele",
   "sefer": "Sefer",
-  "description": "Description",
-  "latitude": "Latitude",
-  "longitude": "Longitude",
-  "location": "Location",
-  "meters": "Meters",
-  "submitting": "Submitting..."
+  "houseNumber": "House Number"
 },
 
-"onDemand": {
-  "title": "On-Demand Collection Request",
-  "subtitle": "Submit your waste collection service request.",
-
-  "businessProfileCouldNotLoad":
-    "Business profile could not be loaded.",
-
-  "failedToLoadBusiness":
-    "Failed to load business information.",
-
-  "geolocationNotSupported":
-    "Geolocation is not supported by this device.",
-
-  "unableToRetrieveLocation":
-    "Unable to retrieve your current location.",
-
-  "businessInformationNotLoaded":
-    "Business information was not loaded.",
-
-  "kifleKetemaNotRegistered":
-    "Kifle Ketema information is not registered.",
-
-  "kebeleNotRegistered":
-    "Kebele information is not registered.",
-
-  "seferNotRegistered":
-    "Sefer information is not registered.",
-
-  "selectPreferredDate":
-    "Please select your preferred collection date.",
-
-  "requestSubmitted":
-    "Your collection request has been submitted successfully.",
-
-  "unableToSubmit":
-    "Unable to submit the collection request.",
-
-  "loadingBusinessInformation":
-    "Loading business information...",
-
-  "businessLocation":
-    "Business Location",
-
-  "registeredBusinessLocation":
-    "Registered Business Location",
-
-  "preferredCollectionDate":
-    "Preferred Collection Date",
-
-  "descriptionPlaceholder":
-    "Enter any additional information here...",
-
-  "submitRequest":
-    "Submit Request",
-
-  "mapInstruction":
-    "Select the collection location on the map or move the marker.",
-
-  "detectingLocation":
-    "Detecting your location...",
-
-  "selectedDetails":
-    "Selected Details",
-
-  "notSelectedYet":
-    "Not selected yet.",
-
-  "gpsAccuracy":
-    "GPS Accuracy"
-},
-  
-"profile": {
-  "title": "Business Profile",
-
-  "subtitle":
-    "View and update your business information, address, and password.",
-
-  "businessInformation": {
-    "title": "Business Information",
-
-    "description":
-      "Update your registered business details."
-  },
-
-  "fields": {
-    "businessName": "Business Name",
-    "ownerName": "Owner's Name",
-    "businessType": "Business Type",
-    "phoneNumber": "Phone Number",
-    "email": "Email Address",
-    "kifleKetema": "Sub-City",
-    "kebele": "Kebele",
-    "sefer": "Sefer"
-  },
-
-  "placeholders": {
-    "businessName":
-      "Enter business name",
-
-    "ownerName":
-      "Enter owner's full name",
-
-    "businessType":
-      "e.g. Hotel, Cafe",
-
-    "phoneNumber":
-      "09XXXXXXXX",
-
-    "email":
-      "example@gmail.com",
-
-    "selectKifleKetema":
-      "Select Sub-City",
-
-    "selectKebele":
-      "Select Kebele",
-
-    "selectSefer":
-      "Select Sefer"
-  },
-
-  "location": {
-    "title": "Business Location"
-  },
-
-  "buttons": {
-    "saving":
-      "Saving Changes...",
-
-    "updateProfile":
-      "Update Profile"
-  },
-
-  "password": {
-    "title": "Change Password",
-
-    "description":
-      "Update your account password securely.",
-
-    "currentPassword":
-      "Current Password",
-
-    "newPassword":
-      "New Password",
-
-    "confirmPassword":
-      "Confirm New Password",
-
-    "currentPlaceholder":
-      "Enter current password",
-
-    "newPlaceholder":
-      "Enter new password",
-
-    "confirmPlaceholder":
-      "Confirm new password",
-
-    "changing":
-      "Changing Password...",
-
-    "change":
-      "Change Password"
-  },
-
-  "validation": {
-    "businessNameRequired":
-      "Business name is required.",
-
-    "ownerNameRequired":
-      "Owner name is required.",
-
-    "phoneInvalid":
-      "Phone number must be exactly 10 digits and start with 09.",
-
-    "emailInvalid":
-      "Please enter a valid Gmail address.",
-
-    "kifleKetemaRequired":
-      "Sub-City is required.",
-
-    "kebeleRequired":
-      "Kebele is required.",
-
-    "seferRequired":
-      "Sefer is required.",
-
-    "currentPasswordRequired":
-      "Current password is required.",
-
-    "newPasswordLength":
-      "New password must be at least 6 characters.",
-
-    "passwordMismatch":
-      "New password and confirmation password do not match."
-  },
-
-  "messages": {
-    "profileNotLoaded":
-      "Business profile could not be loaded.",
-
-    "loadFailed":
-      "Failed to load business profile.",
-
-    "updateFailed":
-      "Failed to update profile.",
-
-    "profileUpdated":
-      "Business profile updated successfully!",
-
-    "passwordChanged":
-      "Password changed successfully!",
-
-    "passwordChangeFailed":
-      "Failed to change password."
-  }
+"placeholders": {
+  "businessName": "Enter your business name",
+  "ownerName": "Enter the owner's name",
+  "phone": "Enter your phone number",
+  "email": "Enter your email address",
+  "password": "Enter your password",
+  "confirmPassword": "Confirm your password",
+  "businessType": "Select Business Type",
+  "businessDescription": "Describe your business",
+  "kifleKetema": "Select Kifle Ketema",
+  "kebele": "Select Kebele",
+  "sefer": "Select Sefer",
+  "houseNumber": "Enter house number"
 },
 
-"schedule": {
-  "title": "Waste Collection Schedule",
-
-  "subtitle":
-    "Your assigned waste collection schedule.",
-
-  "empty":
-    "No collection schedule available.",
-
-  "fields": {
-    "kifleKetema": "Kifle Ketema",
-    "kebele": "Kebele",
-    "sefer": "Sefer",
-    "frequency": "Frequency",
-    "collectionTime": "Collection Time",
-    "collector": "Collector",
-    "phone": "Phone"
-  },
-
-  "status": {
-    "active": "Active",
-    "inactive": "Inactive"
-  },
-
-  "common": {
-    "notAvailable": "N/A",
-    "notAssigned": "Not Assigned"
-  }
+"businessTypes": {
+  "Cafe": "Cafe",
+  "Restaurant": "Restaurant",
+  "Hotel": "Hotel",
+  "Jambo": "Jambo",
+  "Gulit": "Gulit",
+  "Government Office": "Government Office",
+  "Kera": "Kera",
+  "Other": "Other"
 },
 
+"locations": {
+  "Abima": "Abima",
+  "Menkorer": "Menkorer",
+  "Nigus Teklehaymanot": "Nigus Teklehaymanot",
+  "Tedila Gualu": "Tedila Gualu",
 
-"assignedCollections": {
-  "title": "Assigned Collections",
+  "Kebele 01": "Kebele 01",
+  "Kebele 02": "Kebele 02",
+  "Kebele 03": "Kebele 03",
+  "Kebele 04": "Kebele 04",
+  "Kebele 05": "Kebele 05",
+  "Kebele 06": "Kebele 06",
+  "Kebele 07": "Kebele 07",
+  "Kebele 08": "Kebele 08",
+  "Kebele 09": "Kebele 09",
+  "Kebele 10": "Kebele 10",
+  "Kebele 11": "Kebele 11",
+  "Kebele 12": "Kebele 12",
+  "Kebele 13": "Kebele 13",
+  "Kebele 14": "Kebele 14",
+  "Kebele 15": "Kebele 15",
+  "Kebele 16": "Kebele 16",
+  "Kebele 17": "Kebele 17",
+  "Kebele 18": "Kebele 18",
 
-  "loading": "Loading assigned collections...",
+  "Sefer 01": "Sefer 01",
+  "Sefer 02": "Sefer 02",
+  "Sefer 03": "Sefer 03",
+  "Sefer 04": "Sefer 04"
+},
 
-  "empty": {
-    "requests": "No assigned collection tasks.",
-    "schedules": "No collection schedules assigned to you."
+"buttons": {
+  "register": "Register",
+  "registering": "Registering...",
+  "registerBusiness": "Register Business"
+},
+
+"alreadyAccount": "Already have an account?",
+"login": "Login",
+
+"success": "Registration successful!",
+"failed": "Registration failed.",
+"unable": "Unable to register. Please try again.",
+
+"businessSuccess": "Business registration successful!",
+"businessFailed": "Business registration failed.",
+"businessUnable": "Unable to complete business registration. Please try again.",
+
+"validation": {
+  "businessNameRequired": "Business name is required.",
+  "businessNameMin": "Business name must be at least 3 characters.",
+  "businessNameMax": "Business name cannot exceed 100 characters.",
+
+  "ownerNameRequired": "Owner name is required.",
+  "ownerNameMin": "Owner name must be at least 3 characters.",
+  "ownerNameMax": "Owner name cannot exceed 100 characters.",
+  "ownerNameLetters": "Owner name can contain letters and spaces only.",
+
+  "phoneRequired": "Phone number is required.",
+  "phoneInvalid": "Phone number must be exactly 10 digits and start with 09.",
+
+  "emailRequired": "Email is required.",
+  "emailInvalid": "Please enter a valid Gmail address.",
+
+  "passwordRequired": "Password is required.",
+  "passwordMin": "Password must be at least 6 characters.",
+  "passwordMax": "Password cannot exceed 50 characters.",
+
+  "confirmPasswordRequired": "Confirm password is required.",
+  "passwordMismatch": "Passwords do not match.",
+
+  "businessTypeRequired": "Business type is required.",
+  "invalidBusinessType": "Please select a valid business type.",
+
+  "businessDescriptionRequired": "Please describe your business.",
+  "businessDescriptionMin": "Business description must be at least 3 characters.",
+  "businessDescriptionMax": "Business description cannot exceed 100 characters.",
+
+  "kifleKetemaRequired": "Kifle Ketema is required.",
+  "invalidKifleKetema": "Please select a valid Kifle Ketema.",
+
+  "kebeleRequired": "Kebele is required.",
+  "invalidKebele": "Please select a valid Kebele.",
+
+  "seferRequired": "Sefer is required.",
+  "invalidSefer": "Please select a valid Sefer.",
+
+  "houseNumberRequired": "House number is required.",
+ "houseNumberInvalid": "House number must contain numbers only.",
+  "houseNumberMax": "House number must not exceed 20 characters.",
+
+  "correctFields": "Please correct the highlighted fields."
+}
+
+
+},
+
+"businessDashboard": {
+"welcome": "Welcome",
+"businessOwner": "Business Owner",
+"business": "Business",
+"portalOverview": "Portal Overview",
+
+
+"logout": "Logout",
+
+"loading": "Loading dashboard...",
+"loadingDescription": "Your business information is being loaded.",
+
+"unableToLoad": "Unable to Load Business Information",
+"profileNotFound": "Business information not found.",
+"profileLoadFailed": "Failed to load business information.",
+"tryAgain": "Try Again",
+"notSet": "Not Set",
+
+"quickActions": "Quick Actions",
+
+"quickActionsDescription": "Quickly access the business services you need.",
+
+"actions": {
+  "schedule": {
+    "title": "Collection Schedule",
+    "description": "View your upcoming waste collection schedule."
   },
 
   "request": {
-    "owner": "Owner",
-    "phone": "Phone",
-    "kifleKetema": "Kifle Ketema",
-    "kebele": "Kebele",
-    "sefer": "Sefer",
-    "description": "Description",
-    "date": "Date",
-    "status": "Status"
+    "title": "Make a Request",
+    "description": "Submit a waste collection request whenever you need it."
   },
 
-  "actions": {
-    "startCollection": "Start Collection",
-    "completeCollection": "Complete Collection",
-    "updating": "Updating..."
+  "feedback": {
+    "title": "Give Feedback",
+    "description": "Share your experience with the waste collection service."
   },
 
-  "messages": {
-    "collectionStarted": "Collection started successfully.",
-    "collectionCompleted": "Collection completed successfully.",
-    "waitingBusinessConfirmation": "Waiting for Business Confirmation",
-    "collectionCompletedStatus": "Collection Completed"
-  },
-
-  "schedule": {
-    "title": "My Collection Schedule",
-    "day": "Day",
-    "kifleKetema": "Kifle Ketema",
-    "kebele": "Kebele",
-    "sefer": "Sefer",
-    "time": "Time",
-    "frequency": "Frequency"
-  },
-
-  "errors": {
-    "startCollectionFailed": "Failed to start collection.",
-    "completeCollectionFailed": "Failed to complete collection."
-  }
-},
-
-"collectorDashboard": {
-  "welcomeBack": "Welcome back, {{name}} 👋",
-  "portalOverview": "Collector Portal Overview",
-
-  "logout": "Logout",
-
-  "loading": "Loading collector dashboard...",
-
-  "collectorInformation": "Collector Information",
-
-  "role": "Role",
-  "collector": "Collector",
-
-  "assignedKifleKetema": "Assigned Kifle Ketema",
-  "notAssigned": "Not assigned",
-
-  "quickActions": "Quick Actions",
-
-  "assignedTasks": {
-    "title": "Assigned Tasks",
-    "description": "View and manage your assigned waste collection tasks."
+  "myRequests": {
+    "title": "My Requests",
+    "description": "View all the waste collection requests you have submitted."
   },
 
   "profile": {
     "title": "My Profile",
-    "description": "View and update your collector account information."
-  },
-
-  "errors": {
-    "loadFailed": "Failed to load collector dashboard.",
-    "tryAgain": "Please try again."
-  },
-
-  "stats": {
-    "todayTasks": "Today's Tasks",
-    "completedToday": "Completed Today",
-    "pendingTasks": "Pending Tasks"
+    "description": "View and update your business information."
   }
+},
+
+"businessInformation": "Business Information",
+
+"businessInformationDescription": "Your registered business information",
+
+"fields": {
+  "businessName": "Business Name",
+  "ownerName": "Owner Name",
+  "businessType": "Business Type",
+  "phone": "Phone Number",
+  "email": "Email Address",
+  "kifleKetema": "Sub-City",
+  "kebele": "Kebele",
+  "sefer": "Sefer",
+  "houseNumber": "House Number"
 }
 
+
+},
+
+"feedback": {
+"title": "Feedback & Complaints",
+"description": "Share your experience or report a problem with the waste collection service.",
+
+
+"form": {
+  "title": "Submit Your Feedback",
+  "description": "Please provide accurate information about your location and feedback."
+},
+
+"fields": {
+  "category": "Feedback Category",
+  "kifleKetema": "Kifle Ketema",
+  "kebele": "Kebele",
+  "sefer": "Sefer",
+  "rating": "Rating",
+  "description": "Description"
+},
+
+"placeholders": {
+  "description": "Describe your feedback, complaint, or experience..."
+},
+
+"categories": {
+  "serviceQuality": "Service Quality",
+  "delay": "Collection Delay",
+  "collector": "Collector Service",
+  "schedule": "Collection Schedule",
+  "other": "Other"
+},
+
+"ratings": {
+  "excellent": "★★★★★  Excellent",
+  "veryGood": "★★★★☆  Very Good",
+  "good": "★★★☆☆  Good",
+  "fair": "★★☆☆☆  Fair",
+  "poor": "★☆☆☆☆  Poor"
+},
+
+"notAssigned": "Not assigned",
+
+"info": {
+  "title": "Before submitting",
+  "description": "The Kifle Ketema, Kebele, and Sefer information you provide will be included with your feedback."
+},
+
+"buttons": {
+  "submit": "Submit Feedback",
+  "submitting": "Submitting..."
+},
+
+"validation": {
+  "kifleKetemaMissing": "Kifle Ketema information is missing. Please provide your location.",
+  "kebeleMissing": "Kebele information is missing. Please provide your location.",
+  "seferMissing": "Sefer information is missing. Please provide your location.",
+  "descriptionRequired": "Please enter your description.",
+  "otherDescriptionRequired": "Please provide a description for the Other category.",
+  "ratingRequired": "Please select a rating."
+},
+
+"success": "Your feedback has been submitted successfully.",
+
+"errors": {
+  "unableToSubmit": "Unable to submit your feedback. Please try again."
+}
+
+
+},
+
+"myRequests": {
+"title": "My Collection Requests",
+"subtitle": "View your waste collection requests and their status.",
+
+
+"fields": {
+    
+    "kifleKetema": "Kifle Ketema",
+    "kebele": "Kebele",
+    "sefer": "Sefer",
+    "houseNumber": "House Number",
+    "collectionDate": "Collection Date",
+    "requestDate": "Request Date",
+    "rejectionReason": "Rejection Reason",
+    "collectorName": "Collector Name",
+    "collectorPhone": "Collector Phone"
+},
+
+"collector": {
+  "title": "Assigned Collector"
+},
+
+"status": {
+  "pending": "Pending",
+  "approved": "Approved",
+  "assigned": "Assigned",
+  "inProgress": "In Progress",
+  "collected": "Collected",
+  "completed": "Completed",
+  "rejected": "Rejected",
+  "cancelled": "Cancelled"
+},
+
+"actions": {
+  "collectionFinished": "Collection Finished",
+  "confirmCollection": "Confirm Collection",
+  "confirming": "Confirming...",
+  "collectionCompleted": "Collection Completed",
+  "collectorAssigned": "Collector Assigned",
+  "collectionInProgress": "Collection In Progress",
+  "waitingApproval": "Waiting for Approval",
+  "requestApproved": "Request Approved",
+  "requestRejected": "Request Rejected",
+  "requestCancelled": "Request Cancelled"
+},
+
+"messages": {
+  "collectionConfirmed": "Collection confirmed successfully.",
+  "confirmFailed": "Failed to confirm collection."
+},
+
+"empty": {
+  "title": "No Collection Requests",
+  "description": "You have not submitted any waste collection requests yet."
+},
+
+"common": {
+  "loading": "Loading requests...",
+  "notAvailable": "-"
+}
+
+
+},
+
+"common": {
+"notSet": "Not Set",
+"kifleKetema": "Kifle Ketema",
+"kebele": "Kebele",
+"sefer": "Sefer",
+"houseNumber": "House Number",
+"description": "Description",
+"latitude": "Latitude",
+"longitude": "Longitude",
+"location": "Location",
+"meters": "Meters",
+"submitting": "Submitting..."
+},
+
+"onDemand": {
+"title": "On-Demand Collection Request",
+"subtitle": "Submit your waste collection service request.",
+
+
+"businessProfileCouldNotLoad": "Business profile could not be loaded.",
+"failedToLoadBusiness": "Failed to load business information.",
+
+"geolocationNotSupported": "Geolocation is not supported by this device.",
+"unableToRetrieveLocation": "Unable to retrieve your current location.",
+
+"businessInformationNotLoaded": "Business information was not loaded.",
+
+"kifleKetemaNotRegistered": "Kifle Ketema information is not registered.",
+"kebeleNotRegistered": "Kebele information is not registered.",
+"seferNotRegistered": "Sefer information is not registered.",
+
+"selectPreferredDate": "Please select your preferred collection date.",
+
+"requestSubmitted": "Your collection request has been submitted successfully.",
+"unableToSubmit": "Unable to submit the collection request.",
+
+"loadingBusinessInformation": "Loading business information...",
+
+"businessLocation": "Business Location",
+"registeredBusinessLocation": "Registered Business Location",
+"houseNumber": "House Number",
+
+"preferredCollectionDate": "Preferred Collection Date",
+
+"descriptionPlaceholder": "Enter any additional information here...",
+
+"submitRequest": "Submit Request",
+
+"mapInstruction": "Select the collection location on the map or move the marker.",
+
+"detectingLocation": "Detecting your location...",
+
+"selectedDetails": "Selected Details",
+"notSelectedYet": "Not selected yet.",
+
+"gpsAccuracy": "GPS Accuracy"
+
+
+},
+
+"profile": {
+"title": "Business Profile",
+
+
+"subtitle": "View and update your business information, address, and password.",
+
+"businessInformation": {
+  "title": "Business Information",
+  "description": "Update your registered business details."
+},
+
+"fields": {
+  "businessName": "Business Name",
+  "ownerName": "Owner's Name",
+  "businessType": "Business Type",
+  "phoneNumber": "Phone Number",
+  "email": "Email Address",
+  "kifleKetema": "Sub-City",
+  "kebele": "Kebele",
+  "sefer": "Sefer",
+  "houseNumber": "House Number"
+},
+
+"placeholders": {
+  "businessName": "Enter business name",
+  "ownerName": "Enter owner's full name",
+  "businessType": "Select Business Type",
+  "phoneNumber": "09XXXXXXXX",
+  "email": "example@gmail.com",
+  "selectKifleKetema": "Select Sub-City",
+  "selectKebele": "Select Kebele",
+  "selectSefer": "Select Sefer",
+  "houseNumber": "Enter house number"
+},
+
+"location": {
+  "title": "Business Location"
+},
+
+"buttons": {
+  "saving": "Saving Changes...",
+  "updateProfile": "Update Profile"
+},
+
+"password": {
+  "title": "Change Password",
+  "description": "Update your account password securely.",
+  "currentPassword": "Current Password",
+  "newPassword": "New Password",
+  "confirmPassword": "Confirm New Password",
+  "currentPlaceholder": "Enter current password",
+  "newPlaceholder": "Enter new password",
+  "confirmPlaceholder": "Confirm new password",
+  "changing": "Changing Password...",
+  "change": "Change Password"
+},
+
+"validation": {
+  "businessNameRequired": "Business name is required.",
+  "ownerNameRequired": "Owner name is required.",
+  "phoneInvalid": "Phone number must be exactly 10 digits and start with 09.",
+  "emailInvalid": "Please enter a valid Gmail address.",
+  "kifleKetemaRequired": "Sub-City is required.",
+  "kebeleRequired": "Kebele is required.",
+  "seferRequired": "Sefer is required.",
+  "houseNumberRequired": "House number is required.",
+  "houseNumberInvalid": "House number must contain numbers only.",
+  "houseNumberMax": "House number must not exceed 20 characters.",
+  "currentPasswordRequired": "Current password is required.",
+  "newPasswordLength": "New password must be at least 6 characters.",
+  "passwordMismatch": "New password and confirmation password do not match."
+},
+
+"messages": {
+  "profileNotLoaded": "Business profile could not be loaded.",
+  "loadFailed": "Failed to load business profile.",
+  "updateFailed": "Failed to update profile.",
+  "profileUpdated": "Business profile updated successfully!",
+  "passwordChanged": "Password changed successfully!",
+  "passwordChangeFailed": "Failed to change password."
+}
+
+
+},
+
+"schedule": {
+"title": "Waste Collection Schedule",
+"subtitle": "Your assigned waste collection schedule.",
+
+"empty": "No collection schedule available.",
+
+"fields": {
+  "kifleKetema": "Kifle Ketema",
+  "kebele": "Kebele",
+  "sefer": "Sefer",
+  "frequency": "Frequency",
+  "collectionTime": "Collection Time",
+  "collector": "Collector",
+  "phone": "Phone"
+},
+
+"status": {
+  "active": "Active",
+  "inactive": "Inactive"
+},
+
+"common": {
+  "notAvailable": "N/A",
+  "notAssigned": "Not Assigned"
+}
+
+
+},
+
+"assignedCollections": {
+"title": "Assigned Collections",
+
+
+"loading": "Loading assigned collections...",
+
+"empty": {
+  "requests": "No assigned collection tasks.",
+  "schedules": "No collection schedules assigned to you."
+},
+
+"request": {
+  "owner": "Owner",
+  "phone": "Phone",
+  "kifleKetema": "Kifle Ketema",
+  "kebele": "Kebele",
+  "sefer": "Sefer",
+  "houseNumber": "House Number",
+  "description": "Description",
+  "date": "Date",
+  "status": "Status"
+},
+
+"actions": {
+  "startCollection": "Start Collection",
+  "completeCollection": "Complete Collection",
+  "updating": "Updating..."
+},
+
+"messages": {
+  "collectionStarted": "Collection started successfully.",
+  "collectionCompleted": "Collection completed successfully.",
+  "waitingBusinessConfirmation": "Waiting for Business Confirmation",
+  "collectionCompletedStatus": "Collection Completed"
+},
+
+"schedule": {
+  "title": "My Collection Schedule",
+  "day": "Day",
+  "kifleKetema": "Kifle Ketema",
+  "kebele": "Kebele",
+  "sefer": "Sefer",
+  "time": "Time",
+  "frequency": "Frequency"
+},
+
+"errors": {
+  "startCollectionFailed": "Failed to start collection.",
+  "completeCollectionFailed": "Failed to complete collection."
+}
+
+
+},
+
+"collectorDashboard": {
+"welcomeBack": "Welcome back, {{name}} 👋",
+"portalOverview": "Collector Portal Overview",
+
+
+"logout": "Logout",
+
+"loading": "Loading collector dashboard...",
+
+"collectorInformation": "Collector Information",
+
+"role": "Role",
+"collector": "Collector",
+
+"assignedKifleKetema": "Assigned Kifle Ketema",
+"notAssigned": "Not assigned",
+
+"quickActions": "Quick Actions",
+
+"assignedTasks": {
+  "title": "Assigned Tasks",
+  "description": "View and manage your assigned waste collection tasks."
+},
+
+"profile": {
+  "title": "My Profile",
+  "description": "View and update your collector account information."
+},
+
+"errors": {
+  "loadFailed": "Failed to load collector dashboard.",
+  "tryAgain": "Please try again."
+},
+
+"stats": {
+  "todayTasks": "Today's Tasks",
+  "completedToday": "Completed Today",
+  "pendingTasks": "Pending Tasks"
+}
+
+
+}
 }

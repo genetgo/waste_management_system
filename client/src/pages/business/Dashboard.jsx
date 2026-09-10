@@ -669,7 +669,14 @@ export default function Dashboard() {
   label={t("businessDashboard.fields.sefer")}
   value={translateLocation(business?.sefer)}
 />
-
+{/* HOUSE NUMBER */}
+<InfoItem
+  label={t("businessDashboard.fields.houseNumber")}
+  value={
+    business?.house_number ||
+    t("businessDashboard.notSet")
+  }
+/>
           </div>
         </section>
       </div>

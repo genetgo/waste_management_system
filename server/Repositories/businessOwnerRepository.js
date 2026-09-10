@@ -7,64 +7,50 @@ class BusinessOwnerRepository {
     // Register Business Owner
     // =============================
     async createBusinessOwner(data) {
+    const query = `
+        INSERT INTO business_owners (
+            business_name,
+            owner_name,
+            phone_number,
+            email,
+            password_hash,
+            business_type,
+            business_description,
+            kebele,
+            kifle_ketema,
+            sefer,
+            house_number,
+            profile_image
+        )
 
-        const query = `
-            INSERT INTO business_owners (
-                business_name,
-                owner_name,
-                phone_number,
-                email,
-                password_hash,
-                business_type,
-                business_description,
-                kebele,
-                kifle_ketema,
-                sefer,
-                profile_image
-            )
+        VALUES (
+            $1,$2,$3,LOWER($4),$5,$6,$7,$8,$9,$10,$11,$12
+        )
 
-            VALUES ($1,$2,$3,LOWER($4),$5,$6,$7,$8,$9,$10,$11)
+        RETURNING *;
+    `;
 
-            RETURNING *;
-        `;
+    const values = [
+        data.business_name,
+        data.owner_name,
+        data.phone_number,
+        data.email ? data.email.trim() : null,
+        data.password_hash,
+        data.business_type,
+        data.business_description || null,
+        data.kebele,
+        data.kifle_ketema,
+        data.sefer,
+        data.house_number,
+        data.profile_image || null
+    ];
 
+    const { rows } = await pool.query(query, values);
 
-        const values = [
+    console.log("BUSINESS INSERT RESULT:", rows[0]);
 
-            data.business_name,
-
-            data.owner_name,
-
-            data.phone_number,
-
-            data.email ? data.email.trim() : null,
-
-            data.password_hash,
-
-            data.business_type,
-
-            data.business_description || null,
-
-            data.kebele,
-
-            data.kifle_ketema,
-
-            data.sefer,
-
-            data.profile_image || null
-
-        ];
-
-
-        const { rows } = await pool.query(query, values);
-
-
-        console.log("BUSINESS INSERT RESULT:", rows[0]);
-
-
-        return rows[0];
-
-    }
+    return rows[0];
+}
 
 
 
@@ -162,11 +148,12 @@ class BusinessOwnerRepository {
         kebele=$7,
         kifle_ketema=$8,
         sefer=$9,
-        profile_image=$10,
-        password_hash=COALESCE($11,password_hash)
+        house_number=$10,
+        profile_image=$11,
+        password_hash=COALESCE($12,password_hash)
 
 
-        WHERE business_id=$12
+        WHERE business_id=$13
 
         RETURNING *;
 
@@ -192,6 +179,7 @@ class BusinessOwnerRepository {
             data.kifle_ketema,
 
             data.sefer,
+            data.house_number,
 
             data.profile_image || null,
 

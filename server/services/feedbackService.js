@@ -1,24 +1,21 @@
-
 // server/services/feedbackService.js
 
 const feedbackRepository = require("../repositories/feedbackRepository");
 
 // ===========================================
 // Get All Feedback
-// Municipal Admin / System Admin
+// Municipal Admin
 // ===========================================
 
-const getAllFeedback = async (kifle_ketema) => {
-try{
-    const feedbacks =
-        await feedbackRepository.getAllFeedback(
-            kifle_ketema
-        );
+const getAllFeedback = async (kifle_ketema = null) => {
+    try {
+        const feedbacks =
+            await feedbackRepository.getAllFeedback(
+                kifle_ketema
+            );
 
-    return feedbacks;
-
+        return feedbacks;
     } catch (error) {
-
         console.error(
             "Get All Feedback Service Error:",
             error
@@ -35,42 +32,19 @@ try{
 
 const getFeedbackById = async (id) => {
     try {
+        if (!id) {
+            throw new Error(
+                "Feedback ID is required."
+            );
+        }
 
         const feedback =
             await feedbackRepository.getFeedbackById(id);
 
         return feedback;
-
     } catch (error) {
-
         console.error(
             "Get Feedback By ID Service Error:",
-            error
-        );
-
-        throw error;
-    }
-};
-
-
-// ===========================================
-// Get Resident Feedback
-// ===========================================
-
-const getResidentFeedback = async (residentId) => {
-    try {
-
-        const feedbacks =
-            await feedbackRepository.getResidentFeedback(
-                residentId
-            );
-
-        return feedbacks;
-
-    } catch (error) {
-
-        console.error(
-            "Get Resident Feedback Service Error:",
             error
         );
 
@@ -85,6 +59,11 @@ const getResidentFeedback = async (residentId) => {
 
 const getBusinessFeedback = async (businessId) => {
     try {
+        if (!businessId) {
+            throw new Error(
+                "Business ID is required."
+            );
+        }
 
         const feedbacks =
             await feedbackRepository.getBusinessFeedback(
@@ -92,9 +71,7 @@ const getBusinessFeedback = async (businessId) => {
             );
 
         return feedbacks;
-
     } catch (error) {
-
         console.error(
             "Get Business Feedback Service Error:",
             error
@@ -107,12 +84,13 @@ const getBusinessFeedback = async (businessId) => {
 
 // ===========================================
 // Create Feedback
+//
+// business_id != null => Business Feedback
+// business_id == null => Public Feedback
 // ===========================================
 
 const createFeedback = async (feedback) => {
-
     try {
-
         if (!feedback) {
             throw new Error(
                 "Feedback data is required."
@@ -120,23 +98,67 @@ const createFeedback = async (feedback) => {
         }
 
 
-        if (!feedback.comment?.trim()) {
+        // ---------------------------------------
+        // Category
+        // ---------------------------------------
+
+        if (!feedback.category?.trim()) {
             throw new Error(
-                "Feedback comment is required."
+                "Feedback category is required."
             );
         }
 
 
-        if (!feedback.rating) {
+        // ---------------------------------------
+        // Kifle Ketema
+        // ---------------------------------------
+
+        if (!feedback.kifle_ketema?.trim()) {
             throw new Error(
-                "Feedback rating is required."
+                "Kifle Ketema is required."
             );
         }
 
 
-        const rating = Number(
-            feedback.rating
-        );
+        // ---------------------------------------
+        // Kebele
+        // ---------------------------------------
+
+        if (!feedback.kebele?.trim()) {
+            throw new Error(
+                "Kebele is required."
+            );
+        }
+
+
+        // ---------------------------------------
+        // Sefer
+        // ---------------------------------------
+
+        if (!feedback.sefer?.trim()) {
+            throw new Error(
+                "Sefer is required."
+            );
+        }
+
+
+        // ---------------------------------------
+        // Rating
+        // ---------------------------------------
+
+        if (
+            feedback.rating === undefined ||
+            feedback.rating === null ||
+            feedback.rating === ""
+        ) {
+            throw new Error(
+                "Rating is required."
+            );
+        }
+
+
+        const rating =
+            Number(feedback.rating);
 
 
         if (
@@ -150,41 +172,67 @@ const createFeedback = async (feedback) => {
         }
 
 
-        if (!feedback.sefer?.trim()) {
+        // ---------------------------------------
+        // Description
+        //
+        // Required only when category = Other
+        // ---------------------------------------
+
+        if (
+            feedback.category.trim() === "Other" &&
+            !feedback.description?.trim()
+        ) {
             throw new Error(
-                "Sefer is required."
+                "Other description is required."
             );
         }
 
 
-        if (!feedback.kebele?.trim()) {
-            throw new Error(
-                "Kebele is required."
-            );
-        }
+        // ---------------------------------------
+        // Prepare Data
+        // ---------------------------------------
 
+        const feedbackData = {
+            business_id:
+                feedback.business_id || null,
 
-        return await feedbackRepository.createFeedback({
+            category:
+                feedback.category.trim(),
 
-            ...feedback,
-
-            rating,
-
-            sefer:
-                feedback.sefer.trim(),
+            kifle_ketema:
+                feedback.kifle_ketema.trim(),
 
             kebele:
                 feedback.kebele.trim(),
 
-            comment:
-                feedback.comment.trim()
+            sefer:
+                feedback.sefer.trim(),
 
-        });
+            rating,
 
-    }
+            description:
+                feedback.description?.trim() || null
+        };
 
-    catch (error) {
 
+        console.log(
+            "FINAL FEEDBACK SERVICE DATA:",
+            feedbackData
+        );
+
+
+        // ---------------------------------------
+        // Save
+        // ---------------------------------------
+
+        const createdFeedback =
+            await feedbackRepository.createFeedback(
+                feedbackData
+            );
+
+        return createdFeedback;
+
+    } catch (error) {
         console.error(
             "Create Feedback Service Error:",
             error
@@ -203,14 +251,13 @@ const updateFeedback = async (
     id,
     feedback
 ) => {
-
     try {
-
         if (!id) {
             throw new Error(
                 "Feedback ID is required."
             );
         }
+
 
         if (!feedback) {
             throw new Error(
@@ -218,8 +265,69 @@ const updateFeedback = async (
             );
         }
 
+
+        // ---------------------------------------
+        // Category
+        // ---------------------------------------
+
+        if (!feedback.category?.trim()) {
+            throw new Error(
+                "Feedback category is required."
+            );
+        }
+
+
+        // ---------------------------------------
+        // Kifle Ketema
+        // ---------------------------------------
+
+        if (!feedback.kifle_ketema?.trim()) {
+            throw new Error(
+                "Kifle Ketema is required."
+            );
+        }
+
+
+        // ---------------------------------------
+        // Kebele
+        // ---------------------------------------
+
+        if (!feedback.kebele?.trim()) {
+            throw new Error(
+                "Kebele is required."
+            );
+        }
+
+
+        // ---------------------------------------
+        // Sefer
+        // ---------------------------------------
+
+        if (!feedback.sefer?.trim()) {
+            throw new Error(
+                "Sefer is required."
+            );
+        }
+
+
+        // ---------------------------------------
+        // Rating
+        // ---------------------------------------
+
+        if (
+            feedback.rating === undefined ||
+            feedback.rating === null ||
+            feedback.rating === ""
+        ) {
+            throw new Error(
+                "Rating is required."
+            );
+        }
+
+
         const rating =
             Number(feedback.rating);
+
 
         if (
             Number.isNaN(rating) ||
@@ -231,19 +339,52 @@ const updateFeedback = async (
             );
         }
 
+
+        // ---------------------------------------
+        // Other Category Description
+        // ---------------------------------------
+
+        if (
+            feedback.category.trim() === "Other" &&
+            !feedback.description?.trim()
+        ) {
+            throw new Error(
+                "Other description is required."
+            );
+        }
+
+
+        // ---------------------------------------
+        // Update Data
+        // ---------------------------------------
+
         const updatedFeedback =
             await feedbackRepository.updateFeedback(
                 id,
                 {
-                    comment: feedback.comment,
-                    rating
+                    category:
+                        feedback.category.trim(),
+
+                    kifle_ketema:
+                        feedback.kifle_ketema.trim(),
+
+                    kebele:
+                        feedback.kebele.trim(),
+
+                    sefer:
+                        feedback.sefer.trim(),
+
+                    rating,
+
+                    description:
+                        feedback.description?.trim() ||
+                        null
                 }
             );
 
         return updatedFeedback;
 
     } catch (error) {
-
         console.error(
             "Update Feedback Service Error:",
             error
@@ -259,14 +400,13 @@ const updateFeedback = async (
 // ===========================================
 
 const deleteFeedback = async (id) => {
-
     try {
-
         if (!id) {
             throw new Error(
                 "Feedback ID is required."
             );
         }
+
 
         const deletedFeedback =
             await feedbackRepository.deleteFeedback(
@@ -276,7 +416,6 @@ const deleteFeedback = async (id) => {
         return deletedFeedback;
 
     } catch (error) {
-
         console.error(
             "Delete Feedback Service Error:",
             error
@@ -292,16 +431,13 @@ const deleteFeedback = async (id) => {
 // ===========================================
 
 const averageRating = async () => {
-
     try {
-
         const result =
             await feedbackRepository.averageRating();
 
         return result;
 
     } catch (error) {
-
         console.error(
             "Average Rating Service Error:",
             error
@@ -317,21 +453,11 @@ const averageRating = async () => {
 // ===========================================
 
 module.exports = {
-
     getAllFeedback,
-
     getFeedbackById,
-
-    getResidentFeedback,
-
     getBusinessFeedback,
-
     createFeedback,
-
     updateFeedback,
-
     deleteFeedback,
-
     averageRating
-
 };

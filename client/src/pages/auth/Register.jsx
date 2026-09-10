@@ -1,7 +1,6 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { FaUser, FaBuilding } from "react-icons/fa";
+import { FaBuilding } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 
 import ROUTES from "../../constants/routes";
@@ -31,7 +30,7 @@ export default function Register() {
         className="
           bg-white
           w-full
-          max-w-3xl
+          max-w-2xl
           rounded-2xl
           sm:rounded-3xl
           shadow-2xl
@@ -40,11 +39,12 @@ export default function Register() {
           md:p-10
         "
       >
+
         {/* ==========================================
             HEADER
         ========================================== */}
-
         <div className="text-center mb-7 sm:mb-10">
+
           <h1
             className="
               text-2xl
@@ -68,239 +68,132 @@ export default function Register() {
           >
             {t("register.subtitle")}
           </p>
+
         </div>
 
         {/* ==========================================
-            ACCOUNT TYPE CARDS
+            BUSINESS OWNER
         ========================================== */}
-
         <div
+          onClick={() => navigate(ROUTES.BUSINESS_REGISTER)}
           className="
-            grid
-            grid-cols-1
-            md:grid-cols-2
-            gap-5
-            sm:gap-6
+            cursor-pointer
+            border-2
+            border-blue-100
+            rounded-2xl
+            p-6
+            sm:p-8
+            md:p-10
+            hover:border-blue-600
+            hover:shadow-xl
+            transition
+            duration-300
+            flex
+            flex-col
+            items-center
           "
         >
-          {/* ========================================
-              RESIDENT
-          ======================================== */}
 
-          <div
-            onClick={() =>
-              navigate(ROUTES.RESIDENT_REGISTER)
-            }
-            className="
-              cursor-pointer
-              border-2
-              border-green-100
-              rounded-2xl
-              p-5
-              sm:p-7
-              md:p-8
-              hover:border-green-600
-              hover:shadow-xl
-              transition
-              duration-300
-              flex
-              flex-col
-              items-center
-            "
-          >
-            {/* ICON */}
+          {/* ICON */}
+          <div className="flex justify-center">
 
-            <div className="flex justify-center">
-              <div
+            <div
+              className="
+                bg-blue-100
+                p-5
+                sm:p-6
+                rounded-full
+              "
+            >
+              <FaBuilding
                 className="
-                  bg-green-100
-                  p-4
-                  sm:p-5
-                  rounded-full
+                  text-5xl
+                  sm:text-6xl
+                  text-blue-600
                 "
-              >
-                <FaUser
-                  className="
-                    text-4xl
-                    sm:text-5xl
-                    text-green-600
-                  "
-                />
-              </div>
+              />
             </div>
 
-            {/* TITLE */}
-
-            <h2
-              className="
-                text-xl
-                sm:text-2xl
-                font-bold
-                text-center
-                mt-4
-                sm:mt-5
-              "
-            >
-              {t("register.resident.title")}
-            </h2>
-
-            {/* DESCRIPTION */}
-
-            <p
-              className="
-                text-center
-                text-sm
-                sm:text-base
-                text-gray-500
-                mt-2
-                sm:mt-3
-                leading-6
-              "
-            >
-              {t("register.resident.description")}
-            </p>
-
-            {/* BUTTON */}
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(ROUTES.RESIDENT_REGISTER);
-              }}
-              className="
-                mt-6
-                sm:mt-8
-                w-fit
-                mx-auto
-                bg-green-600
-                hover:bg-green-700
-                text-white
-                px-5
-                sm:px-6
-                py-3
-                rounded-xl
-                font-semibold
-                text-sm
-                sm:text-base
-                transition
-                duration-200
-                text-center
-              "
-            >
-              {t("register.resident.button")}
-            </button>
           </div>
 
-          {/* ========================================
-              BUSINESS OWNER
-          ======================================== */}
-
-          <div
-            onClick={() =>
-              navigate(ROUTES.BUSINESS_REGISTER)
-            }
+          {/* TITLE */}
+          <h2
             className="
-              cursor-pointer
-              border-2
-              border-blue-100
-              rounded-2xl
-              p-5
-              sm:p-7
-              md:p-8
-              hover:border-blue-600
-              hover:shadow-xl
-              transition
-              duration-300
-              flex
-              flex-col
-              items-center
+              text-xl
+              sm:text-2xl
+              font-bold
+              text-center
+              mt-5
             "
           >
-            {/* ICON */}
+            {t("register.business.title")}
+          </h2>
 
-            <div className="flex justify-center">
-              <div
-                className="
-                  bg-blue-100
-                  p-4
-                  sm:p-5
-                  rounded-full
-                "
-              >
-                <FaBuilding
-                  className="
-                    text-4xl
-                    sm:text-5xl
-                    text-blue-600
-                  "
-                />
-              </div>
-            </div>
+          {/* DESCRIPTION */}
+          <p
+            className="
+              text-center
+              text-sm
+              sm:text-base
+              text-gray-500
+              mt-3
+              leading-6
+              max-w-md
+            "
+          >
+            {t("register.business.description")}
+          </p>
 
-            {/* TITLE */}
+          {/* BUTTON */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              navigate(ROUTES.BUSINESS_REGISTER);
+            }}
+            className="
+              mt-6
+              sm:mt-8
+              bg-blue-600
+              hover:bg-blue-700
+              text-white
+              px-6
+              sm:px-8
+              py-3
+              rounded-xl
+              font-semibold
+              text-sm
+              sm:text-base
+              transition
+              duration-200
+            "
+          >
+            {t("register.business.button")}
+          </button>
 
-            <h2
-              className="
-                text-xl
-                sm:text-2xl
-                font-bold
-                text-center
-                mt-4
-                sm:mt-5
-              "
-            >
-              {t("register.business.title")}
-            </h2>
-
-            {/* DESCRIPTION */}
-
-            <p
-              className="
-                text-center
-                text-sm
-                sm:text-base
-                text-gray-500
-                mt-2
-                sm:mt-3
-                leading-6
-              "
-            >
-              {t("register.business.description")}
-            </p>
-
-            {/* BUTTON */}
-
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(ROUTES.BUSINESS_REGISTER);
-              }}
-              className="
-                mt-6
-                sm:mt-8
-                w-fit
-                mx-auto
-                bg-blue-600
-                hover:bg-blue-700
-                text-white
-                px-5
-                sm:px-6
-                py-3
-                rounded-xl
-                font-semibold
-                text-sm
-                sm:text-base
-                transition
-                duration-200
-                text-center
-              "
-            >
-              {t("register.business.button")}
-            </button>
-          </div>
         </div>
+
+        {/* ==========================================
+            BACK TO HOME
+        ========================================== */}
+        <div className="text-center mt-6">
+
+          <button
+            type="button"
+            onClick={() => navigate("/")}
+            className="
+              text-sm
+              text-gray-500
+              hover:text-green-600
+              font-medium
+              transition
+            "
+          >
+            ← Back to Home
+          </button>
+
+        </div>
+
       </div>
     </div>
   );

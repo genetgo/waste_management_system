@@ -85,6 +85,13 @@ completeCollection:(requestId, collectorId)=>{
     );
 
 },
+async getAssignedRequestDetails(requestId) {
+    const response = await API.get(
+        `/collectors/assigned-requests/${requestId}`
+    );
+
+    return response.data;
+},
 
     // =========================
     // Update Collection Request Status

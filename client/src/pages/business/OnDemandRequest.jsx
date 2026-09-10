@@ -1,3 +1,4 @@
+
 // src/pages/business/OnDemandRequest.jsx
 
 import React, { useState, useEffect } from "react";
@@ -120,15 +121,10 @@ const LocationMarker = ({
 // ======================================================
 
 const OnDemandRequest = () => {
-
-  // ====================================================
-  // TRANSLATION
-  // ====================================================
-
   const { t } = useTranslation();
 
   // ====================================================
-  // State
+  // STATE
   // ====================================================
 
   const [loading, setLoading] = useState(false);
@@ -140,7 +136,7 @@ const OnDemandRequest = () => {
     useState(false);
 
   // ====================================================
-  // TOAST STATE
+  // TOAST
   // ====================================================
 
   const [toast, setToast] = useState({
@@ -149,8 +145,16 @@ const OnDemandRequest = () => {
     message: "",
   });
 
+  // ====================================================
+  // BUSINESS PROFILE
+  // ====================================================
+
   const [business, setBusiness] =
     useState(null);
+
+  // ====================================================
+  // MAP
+  // ====================================================
 
   const [position, setPosition] =
     useState(DEFAULT_CENTER);
@@ -158,6 +162,14 @@ const OnDemandRequest = () => {
   const [accuracy, setAccuracy] =
     useState(null);
 
+  // ====================================================
+  // FORM STATE
+  // ====================================================
+
+  // NOTE:
+  // Kifle Ketema, Kebele, Sefer and House Number
+  // are NOT user inputs.
+  // They come from Business Profile.
   const [formData, setFormData] = useState({
     collectionAddress: "",
     preferredCollectionDate: "",
@@ -169,11 +181,8 @@ const OnDemandRequest = () => {
   // ====================================================
 
   useEffect(() => {
-
     const loadBusinessProfile = async () => {
-
       try {
-
         setProfileLoading(true);
 
         const response =
@@ -191,23 +200,23 @@ const OnDemandRequest = () => {
           response?.data
         ) {
           profileData = response.data;
-        }
-
-        else if (
+        } else if (
           response?.data?.data
         ) {
           profileData =
             response.data.data;
-        }
-
-        else if (response?.data) {
+        } else if (
+          response?.data
+        ) {
           profileData =
             response.data;
         }
 
         if (!profileData) {
           throw new Error(
-            t("onDemand.businessProfileCouldNotLoad")
+            t(
+              "onDemand.businessProfileCouldNotLoad"
+            )
           );
         }
 
@@ -217,9 +226,7 @@ const OnDemandRequest = () => {
         );
 
         setBusiness(profileData);
-
       } catch (error) {
-
         console.error(
           "Load business profile error:",
           error.response?.data || error
@@ -231,35 +238,30 @@ const OnDemandRequest = () => {
           message:
             error.response?.data?.message ||
             error.message ||
-            t("onDemand.failedToLoadBusiness"),
+            t(
+              "onDemand.failedToLoadBusiness"
+            ),
         });
-
       } finally {
-
         setProfileLoading(false);
-
       }
-
     };
 
     loadBusinessProfile();
-
   }, [t]);
 
   // ====================================================
-  // Reverse Geocoding
+  // REVERSE GEOCODING
   // ====================================================
 
   const fetchAddressFromCoords = async (
     lat,
     lng
   ) => {
-
     console.log("LAT:", lat);
     console.log("LNG:", lng);
 
     try {
-
       setGeoLoading(true);
 
       const response = await fetch(
@@ -289,9 +291,7 @@ const OnDemandRequest = () => {
         collectionAddress:
           locationName,
       }));
-
     } catch (error) {
-
       console.warn(
         "Geocoding failed:",
         error
@@ -304,20 +304,16 @@ const OnDemandRequest = () => {
             4
           )}, ${lng.toFixed(4)})`,
       }));
-
     } finally {
-
       setGeoLoading(false);
-
     }
   };
 
   // ====================================================
-  // Automatically Detect Current Location
+  // AUTOMATICALLY DETECT CURRENT LOCATION
   // ====================================================
 
   useEffect(() => {
-
     if (!navigator.geolocation) {
       return;
     }
@@ -325,9 +321,7 @@ const OnDemandRequest = () => {
     setGeoLoading(true);
 
     navigator.geolocation.getCurrentPosition(
-
       (pos) => {
-
         const lat =
           pos.coords.latitude;
 
@@ -347,13 +341,10 @@ const OnDemandRequest = () => {
           lat,
           lng
         );
-
       },
 
       () => {
-
         setGeoLoading(false);
-
       },
 
       {
@@ -361,26 +352,24 @@ const OnDemandRequest = () => {
         timeout: 10000,
         maximumAge: 0,
       }
-
     );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ====================================================
-  // Current Location Button
+  // CURRENT LOCATION BUTTON
   // ====================================================
 
   const handleCurrentLocation =
     () => {
-
       if (!navigator.geolocation) {
-
         setToast({
           show: true,
           type: "error",
-          message:
-            t("onDemand.geolocationNotSupported"),
+          message: t(
+            "onDemand.geolocationNotSupported"
+          ),
         });
 
         return;
@@ -389,9 +378,7 @@ const OnDemandRequest = () => {
       setGeoLoading(true);
 
       navigator.geolocation.getCurrentPosition(
-
         (pos) => {
-
           const lat =
             pos.coords.latitude;
 
@@ -411,20 +398,18 @@ const OnDemandRequest = () => {
             lat,
             lng
           );
-
         },
 
         () => {
-
           setToast({
             show: true,
             type: "error",
-            message:
-              t("onDemand.unableToRetrieveLocation"),
+            message: t(
+              "onDemand.unableToRetrieveLocation"
+            ),
           });
 
           setGeoLoading(false);
-
         },
 
         {
@@ -432,16 +417,14 @@ const OnDemandRequest = () => {
           timeout: 10000,
           maximumAge: 0,
         }
-
       );
     };
 
   // ====================================================
-  // Handle Input
+  // HANDLE INPUT
   // ====================================================
 
   const handleChange = (e) => {
-
     const {
       name,
       value,
@@ -451,15 +434,13 @@ const OnDemandRequest = () => {
       ...prev,
       [name]: value,
     }));
-
   };
 
   // ====================================================
-  // Submit Request
+  // SUBMIT REQUEST
   // ====================================================
 
   const handleSubmit = async (e) => {
-
     e.preventDefault();
 
     // -----------------------------------------------
@@ -467,16 +448,20 @@ const OnDemandRequest = () => {
     // -----------------------------------------------
 
     if (!business) {
-
       setToast({
         show: true,
         type: "error",
-        message:
-          t("onDemand.businessInformationNotLoaded"),
+        message: t(
+          "onDemand.businessInformationNotLoaded"
+        ),
       });
 
       return;
     }
+
+    // -----------------------------------------------
+    // Registered Business Location
+    // -----------------------------------------------
 
     const kifleKetema =
       business.kifle_ketema ||
@@ -489,41 +474,70 @@ const OnDemandRequest = () => {
     const sefer =
       business.sefer || "";
 
+    const houseNumber =
+      business.house_number || "";
+
     // -----------------------------------------------
-    // Validate Registered Location
+    // Validate Kifle Ketema
     // -----------------------------------------------
 
     if (!kifleKetema) {
-
       setToast({
         show: true,
         type: "error",
-        message:
-          t("onDemand.kifleKetemaNotRegistered"),
+        message: t(
+          "onDemand.kifleKetemaNotRegistered"
+        ),
       });
 
       return;
     }
+
+    // -----------------------------------------------
+    // Validate Kebele
+    // -----------------------------------------------
 
     if (!kebele) {
-
       setToast({
         show: true,
         type: "error",
-        message:
-          t("onDemand.kebeleNotRegistered"),
+        message: t(
+          "onDemand.kebeleNotRegistered"
+        ),
       });
 
       return;
     }
 
-    if (!sefer) {
+    // -----------------------------------------------
+    // Validate Sefer
+    // -----------------------------------------------
 
+    if (!sefer) {
+      setToast({
+        show: true,
+        type: "error",
+        message: t(
+          "onDemand.seferNotRegistered"
+        ),
+      });
+
+      return;
+    }
+
+    // -----------------------------------------------
+    // Validate House Number
+    // -----------------------------------------------
+    // House Number is READ-ONLY and comes
+    // directly from Business Profile.
+
+    if (!houseNumber) {
       setToast({
         show: true,
         type: "error",
         message:
-          t("onDemand.seferNotRegistered"),
+          t("onDemand.houseNumberNotRegistered") ||
+          "House number is not registered in your business profile.",
       });
 
       return;
@@ -536,30 +550,50 @@ const OnDemandRequest = () => {
     if (
       !formData.preferredCollectionDate
     ) {
+      setToast({
+        show: true,
+        type: "error",
+        message: t(
+          "onDemand.selectPreferredDate"
+        ),
+      });
 
+      return;
+    }
+
+    // -----------------------------------------------
+    // Validate Coordinates
+    // -----------------------------------------------
+
+    if (
+      !Array.isArray(position) ||
+      position.length < 2 ||
+      !Number.isFinite(position[0]) ||
+      !Number.isFinite(position[1])
+    ) {
       setToast({
         show: true,
         type: "error",
         message:
-          t("onDemand.selectPreferredDate"),
+          t("onDemand.locationRequired") ||
+          "Please select a valid location.",
       });
 
       return;
     }
 
     try {
-
       setLoading(true);
 
-      // ---------------------------------------------
-      // Request Payload
-      // ---------------------------------------------
+      // =============================================
+      // REQUEST PAYLOAD
+      // =============================================
 
       const payload = {
-
         collection_address:
-          formData.collectionAddress,
+          formData.collectionAddress.trim(),
 
+        // From Business Profile
         kifle_ketema:
           kifleKetema,
 
@@ -568,6 +602,11 @@ const OnDemandRequest = () => {
 
         sefer:
           sefer,
+
+        // From Business Profile
+        // NOT user input
+        house_number:
+          houseNumber,
 
         preferred_collection_date:
           formData.preferredCollectionDate,
@@ -580,7 +619,6 @@ const OnDemandRequest = () => {
 
         description:
           formData.description.trim(),
-
       };
 
       console.log(
@@ -588,9 +626,9 @@ const OnDemandRequest = () => {
         payload
       );
 
-      // ---------------------------------------------
-      // Send Request
-      // ---------------------------------------------
+      // =============================================
+      // SEND REQUEST TO SERVER
+      // =============================================
 
       const response =
         await requestService.createOnDemandRequest(
@@ -602,9 +640,9 @@ const OnDemandRequest = () => {
         response
       );
 
-      // ---------------------------------------------
+      // =============================================
       // SUCCESS TOAST
-      // ---------------------------------------------
+      // =============================================
 
       setToast({
         show: true,
@@ -612,29 +650,25 @@ const OnDemandRequest = () => {
         message:
           response?.message ||
           response?.data?.message ||
-          t("onDemand.requestSubmitted"),
+          t(
+            "onDemand.requestSubmitted"
+          ),
       });
 
-      // ---------------------------------------------
-      // Reset Form
-      // ---------------------------------------------
+      // =============================================
+      // RESET ONLY USER-ENTERED FIELDS
+      // =============================================
 
       setFormData({
         collectionAddress: "",
         preferredCollectionDate: "",
         description: "",
       });
-
     } catch (error) {
-
       console.error(
         "Submit On-Demand Request Error:",
         error.response?.data || error
       );
-
-      // =============================================
-      // GET BACKEND ERROR MESSAGE
-      // =============================================
 
       const errorMessage =
         error.response?.data?.message ||
@@ -647,53 +681,41 @@ const OnDemandRequest = () => {
         errorMessage
       );
 
-      // =============================================
-      // ERROR TOAST
-      // =============================================
-
       setToast({
         show: true,
         type: "error",
         message: errorMessage,
       });
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
   // ====================================================
-  // Loading Business Profile
+  // LOADING BUSINESS PROFILE
   // ====================================================
 
   if (profileLoading) {
-
     return (
-
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
-
         <div className="bg-white rounded-xl shadow p-8 text-center">
 
           <div className="animate-spin w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full mx-auto mb-4">
           </div>
 
           <p className="text-gray-600 font-semibold">
-            {t("onDemand.loadingBusinessInformation")}
+            {t(
+              "onDemand.loadingBusinessInformation"
+            )}
           </p>
 
         </div>
-
       </div>
-
     );
-
   }
 
   // ====================================================
-  // Registered Business Location
+  // REGISTERED BUSINESS LOCATION
   // ====================================================
 
   const registeredKifleKetema =
@@ -709,12 +731,15 @@ const OnDemandRequest = () => {
     business?.sefer ||
     t("common.notSet");
 
+  const registeredHouseNumber =
+    business?.house_number ||
+    t("common.notSet");
+
   // ====================================================
   // JSX
   // ====================================================
 
   return (
-
     <>
       {/* =================================================
           TOAST
@@ -737,10 +762,9 @@ const OnDemandRequest = () => {
 
         {/* =============================================
             HEADER
-        ============================================== */}
+        ============================================= */}
 
         <div>
-
           <h1 className="text-3xl font-bold text-gray-800">
             {t("onDemand.title")}
           </h1>
@@ -748,12 +772,11 @@ const OnDemandRequest = () => {
           <p className="text-gray-500 mt-1">
             {t("onDemand.subtitle")}
           </p>
-
         </div>
 
         {/* =============================================
             FORM + MAP
-        ============================================== */}
+        ============================================= */}
 
         <div className="grid lg:grid-cols-12 gap-6">
 
@@ -775,15 +798,17 @@ const OnDemandRequest = () => {
               <div className="flex items-center justify-between mb-4">
 
                 <div>
-
                   <h2 className="font-bold text-gray-800">
-                    {t("onDemand.businessLocation")}
+                    {t(
+                      "onDemand.businessLocation"
+                    )}
                   </h2>
 
                   <p className="text-xs text-gray-500 mt-1">
-                    {t("onDemand.registeredBusinessLocation")}
+                    {t(
+                      "onDemand.registeredBusinessLocation"
+                    )}
                   </p>
-
                 </div>
 
                 <span className="text-xl">
@@ -795,21 +820,20 @@ const OnDemandRequest = () => {
               {/* Kifle Ketema */}
 
               <div className="mb-3">
-
                 <label className="block text-xs font-semibold text-gray-500 mb-1">
-                  {t("common.kifleKetema")}
+                  {t(
+                    "common.kifleKetema"
+                  )}
                 </label>
 
                 <div className="w-full border rounded-lg p-3 bg-white text-gray-700 font-semibold">
                   {registeredKifleKetema}
                 </div>
-
               </div>
 
               {/* Kebele */}
 
               <div className="mb-3">
-
                 <label className="block text-xs font-semibold text-gray-500 mb-1">
                   {t("common.kebele")}
                 </label>
@@ -817,13 +841,11 @@ const OnDemandRequest = () => {
                 <div className="w-full border rounded-lg p-3 bg-white text-gray-700 font-semibold">
                   {registeredKebele}
                 </div>
-
               </div>
 
               {/* Sefer */}
 
-              <div>
-
+              <div className="mb-3">
                 <label className="block text-xs font-semibold text-gray-500 mb-1">
                   {t("common.sefer")}
                 </label>
@@ -831,7 +853,21 @@ const OnDemandRequest = () => {
                 <div className="w-full border rounded-lg p-3 bg-white text-gray-700 font-semibold">
                   {registeredSefer}
                 </div>
+              </div>
 
+              {/* House Number */}
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">
+                  {t("onDemand.houseNumber") ||
+                    "House Number"}
+                </label>
+
+                <div className="w-full border rounded-lg p-3 bg-white text-gray-700 font-semibold">
+                  {registeredHouseNumber}
+                </div>
+
+                
               </div>
 
             </div>
@@ -841,9 +877,10 @@ const OnDemandRequest = () => {
             ========================================= */}
 
             <div>
-
               <label className="block text-sm font-medium mb-1">
-                {t("onDemand.preferredCollectionDate")}
+                {t(
+                  "onDemand.preferredCollectionDate"
+                )}
               </label>
 
               <input
@@ -869,7 +906,6 @@ const OnDemandRequest = () => {
                   outline-none
                 "
               />
-
             </div>
 
             {/* ========================================
@@ -877,9 +913,10 @@ const OnDemandRequest = () => {
             ========================================= */}
 
             <div>
-
               <label className="block text-sm font-medium mb-1">
-                {t("common.description")}
+                {t(
+                  "common.description"
+                )}
               </label>
 
               <textarea
@@ -903,7 +940,6 @@ const OnDemandRequest = () => {
                   outline-none
                 "
               />
-
             </div>
 
             {/* ========================================
@@ -913,23 +949,19 @@ const OnDemandRequest = () => {
             <div className="rounded-lg bg-gray-50 border p-4 space-y-2 text-sm">
 
               <div>
-
                 <strong>
                   {t("common.latitude")}:
                 </strong>{" "}
 
                 {position[0].toFixed(6)}
-
               </div>
 
               <div>
-
                 <strong>
                   {t("common.longitude")}:
                 </strong>{" "}
 
                 {position[1].toFixed(6)}
-
               </div>
 
             </div>
@@ -953,11 +985,11 @@ const OnDemandRequest = () => {
                 transition
               "
             >
-
               {loading
                 ? t("common.submitting")
-                : t("onDemand.submitRequest")}
-
+                : t(
+                    "onDemand.submitRequest"
+                  )}
             </button>
 
           </form>
@@ -971,15 +1003,17 @@ const OnDemandRequest = () => {
             <div className="flex justify-between items-center mb-3">
 
               <span className="text-sm text-gray-600">
-                {t("onDemand.mapInstruction")}
+                {t(
+                  "onDemand.mapInstruction"
+                )}
               </span>
 
               {geoLoading && (
-
                 <span className="text-emerald-600 text-sm animate-pulse">
-                  {t("onDemand.detectingLocation")}
+                  {t(
+                    "onDemand.detectingLocation"
+                  )}
                 </span>
-
               )}
 
             </div>
@@ -987,14 +1021,12 @@ const OnDemandRequest = () => {
             {/* Current Location */}
 
             <div className="mb-3">
-
               <CurrentLocationButton
                 onClick={
                   handleCurrentLocation
                 }
                 loading={geoLoading}
               />
-
             </div>
 
             {/* Map */}
@@ -1032,7 +1064,6 @@ const OnDemandRequest = () => {
                 />
 
                 {accuracy && (
-
                   <Circle
                     center={position}
                     radius={accuracy}
@@ -1042,7 +1073,6 @@ const OnDemandRequest = () => {
                       fillOpacity: 0.15,
                     }}
                   />
-
                 )}
 
               </MapContainer>
@@ -1054,44 +1084,37 @@ const OnDemandRequest = () => {
             <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm">
 
               <p className="font-semibold text-blue-700">
-                📍 {t("onDemand.selectedDetails")}
+                📍{" "}
+                {t(
+                  "onDemand.selectedDetails"
+                )}
               </p>
 
               <p className="mt-1">
-
                 {t("common.location")}:
 
                 <strong className="ml-1 text-gray-700">
-
                   {formData.collectionAddress ||
-                    t("onDemand.notSelectedYet")}
-
+                    t(
+                      "onDemand.notSelectedYet"
+                    )}
                 </strong>
-
               </p>
 
               {accuracy && (
-
                 <p className="mt-1">
-
-                  {t("onDemand.gpsAccuracy")}:
+                  {t(
+                    "onDemand.gpsAccuracy"
+                  )}:
 
                   <strong>
-
                     {" "}
-
                     {Math.round(
                       accuracy
-                    )}
-
-                    {" "}
-
+                    )}{" "}
                     {t("common.meters")}
-
                   </strong>
-
                 </p>
-
               )}
 
             </div>
@@ -1101,11 +1124,8 @@ const OnDemandRequest = () => {
         </div>
 
       </div>
-
     </>
-
   );
-
 };
 
 export default OnDemandRequest;

@@ -17,15 +17,18 @@ router.post(
     protect,
     feedbackController.createFeedback
 );
-
+router.post(
+    "/public",
+    feedbackController.createPublicFeedback
+);
 // ==========================================
 // Get All Feedback
-// Municipal Admin / System Admin
+// PUBLIC
+// Home Page → Feedback
 // ==========================================
+
 router.get(
     "/",
-    protect,
-    roleMiddleware("MUNICIPAL_ADMIN", "SYSTEM_ADMIN"),
     feedbackController.getFeedbacks
 );
 

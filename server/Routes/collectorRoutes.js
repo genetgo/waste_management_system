@@ -110,7 +110,12 @@ router.get(
     roleMiddleware("MUNICIPAL_ADMIN", "SYSTEM_ADMIN"),
     collectorController.getActiveCollectorsForSchedule
 );
-
+router.get(
+    "/assigned-requests/:id",
+    protect,
+    roleMiddleware("COLLECTOR"),
+    collectorController.getAssignedRequestDetails
+);
 // ==========================================
 // Update Request Status
 // ==========================================

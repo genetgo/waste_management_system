@@ -1315,9 +1315,6 @@ const getAvailablePermissions = async () => {
 // =============================================
 // CREATE ROLE
 // =============================================
-// =============================================
-// CREATE ROLE
-// =============================================
 const createRole = async (data) => {
   const {
     role_name,
@@ -1332,16 +1329,33 @@ const createRole = async (data) => {
   console.log("permissions:", permissions);
   console.log("====================================");
 
-  if (!role_name || !role_name.trim()) {
+  // =============================================
+  // VALIDATE ROLE NAME
+  // =============================================
+  if (!role_name || typeof role_name !== "string") {
     throw new Error("Role name is required.");
   }
 
+  const cleanRoleName = role_name.trim();
+
+  if (!cleanRoleName) {
+    throw new Error("Role name is required.");
+  }
+
+  // =============================================
+  // CONNECT DATABASE
+  // =============================================
   const client = await pool.connect();
 
   try {
+    // =============================================
+    // START TRANSACTION
+    // =============================================
     await client.query("BEGIN");
 
-    // Check duplicate
+    // =============================================
+    // CHECK DUPLICATE ROLE
+    // =============================================
     const existing = await client.query(
       `
       SELECT role_id
@@ -1349,24 +1363,21 @@ const createRole = async (data) => {
       WHERE LOWER(role_name) = LOWER($1)
       LIMIT 1
       `,
-      [role_name.trim()]
+      [cleanRoleName]
     );
 
     if (existing.rows.length > 0) {
-      const error = new Error(
-        "Role already exists."
-      );
-
+      const error = new Error("Role already exists.");
       error.code = "23505";
-
       throw error;
     }
 
-    // Create role
+    // =============================================
+    // CREATE ROLE
+    // =============================================
     const roleResult = await client.query(
       `
-      INSERT INTO roles
-      (
+      INSERT INTO roles (
         role_name,
         description
       )
@@ -1377,62 +1388,155 @@ const createRole = async (data) => {
         description;
       `,
       [
-        role_name.trim(),
-        description || null,
+        cleanRoleName,
+        description && String(description).trim()
+          ? String(description).trim()
+          : null,
       ]
     );
 
     const role = roleResult.rows[0];
 
-    // Assign permissions
+    // =============================================
+    // ASSIGN PERMISSIONS
+    // =============================================
     if (Array.isArray(permissions)) {
-      for (const permission of permissions) {
+      // Remove duplicate permissions
+      const uniquePermissions = [
+        ...new Set(
+          permissions
+            .filter(
+              (permission) =>
+                permission !== null &&
+                permission !== undefined &&
+                String(permission).trim() !== ""
+            )
+            .map((permission) =>
+              String(permission).trim()
+            )
+        ),
+      ];
 
+      console.log(
+        "UNIQUE PERMISSIONS:",
+        uniquePermissions
+      );
+
+      // =============================================
+      // PROCESS EACH PERMISSION
+      // =============================================
+      for (const permission of uniquePermissions) {
         let permissionId;
 
-        // Numeric ID
-        if (
-          typeof permission === "number" ||
-          (
-            typeof permission === "string" &&
-            permission.trim() !== "" &&
-            !isNaN(Number(permission))
-          )
-        ) {
+        // =============================================
+        // CASE 1: NUMERIC PERMISSION ID
+        // =============================================
+        if (/^\d+$/.test(permission)) {
           permissionId = Number(permission);
+
+          const permissionExists = await client.query(
+            `
+            SELECT permission_id
+            FROM permissions
+            WHERE permission_id = $1
+            LIMIT 1
+            `,
+            [permissionId]
+          );
+
+          if (permissionExists.rows.length === 0) {
+            throw new Error(
+              `Permission not found: ${permission}`
+            );
+          }
+
+          console.log(
+            `Permission ID ${permissionId} found.`
+          );
         }
 
-        // Permission name
+        // =============================================
+        // CASE 2: PERMISSION NAME
+        // =============================================
         else {
-          const permissionResult =
-            await client.query(
-              `
-              SELECT permission_id
-              FROM permissions
-              WHERE UPPER(permission_name) =
-                    UPPER($1)
-              LIMIT 1
-              `,
-              [String(permission).trim()]
+          const permissionName =
+            permission.toUpperCase().trim();
+
+          console.log(
+            "PROCESSING PERMISSION:",
+            permissionName
+          );
+
+          let permissionResult = await client.query(
+            `
+            SELECT permission_id
+            FROM permissions
+            WHERE UPPER(permission_name) = UPPER($1)
+            LIMIT 1
+            `,
+            [permissionName]
+          );
+
+          // =============================================
+          // AUTO-CREATE OTHER
+          // =============================================
+          if (
+            permissionResult.rows.length === 0 &&
+            permissionName === "OTHER"
+          ) {
+            console.log(
+              "OTHER permission does not exist."
             );
 
-          if (
-            permissionResult.rows.length === 0
-          ) {
+            console.log(
+              "Creating OTHER permission automatically..."
+            );
+
+            permissionResult = await client.query(
+              `
+              INSERT INTO permissions (
+                permission_name,
+                description
+              )
+              VALUES ($1, $2)
+              ON CONFLICT (permission_name)
+              DO UPDATE SET
+                description = EXCLUDED.description
+              RETURNING permission_id;
+              `,
+              [
+                "OTHER",
+                "Other custom permission",
+              ]
+            );
+
+            console.log(
+              "OTHER permission created/found:",
+              permissionResult.rows[0]
+            );
+          }
+
+          // =============================================
+          // UNKNOWN PERMISSION
+          // =============================================
+          if (permissionResult.rows.length === 0) {
             throw new Error(
               `Permission not found: ${permission}`
             );
           }
 
           permissionId =
-            permissionResult.rows[0]
-              .permission_id;
+            Number(
+              permissionResult.rows[0].permission_id
+            );
         }
 
+        // =============================================
+        // ASSIGN PERMISSION TO ROLE
+        // =============================================
         await client.query(
           `
-          INSERT INTO role_permissions
-          (
+          INSERT INTO role_permissions (
             role_name,
             permission_id
           )
@@ -1444,24 +1548,223 @@ const createRole = async (data) => {
             permissionId,
           ]
         );
+
+        console.log(
+          `Permission assigned: ${permission}`
+        );
       }
     }
 
+    // =============================================
+    // COMMIT TRANSACTION
+    // =============================================
     await client.query("COMMIT");
+
+    console.log("====================================");
+    console.log("ROLE CREATED SUCCESSFULLY");
+    console.log("Role:", role);
+    console.log("====================================");
 
     return role;
 
   } catch (error) {
+    // =============================================
+    // ROLLBACK IF ANY ERROR
+    // =============================================
     await client.query("ROLLBACK");
+
+    console.error(
+      "CREATE ROLE ERROR:",
+      error
+    );
+
     throw error;
 
   } finally {
+    // =============================================
+    // RELEASE DATABASE CONNECTION
+    // =============================================
     client.release();
   }
 };
 
 
+// =============================================
+// CREATE CUSTOM PERMISSION
+// =============================================
+const createPermission = async (data) => {
+    const {
+        permission_name,
+        description,
+    } = data || {};
 
+    if (
+        !permission_name ||
+        typeof permission_name !== "string" ||
+        !permission_name.trim()
+    ) {
+        throw new Error(
+            "Permission name is required."
+        );
+    }
+
+    const cleanPermissionName =
+        permission_name.trim().toUpperCase();
+
+    const cleanDescription =
+        description &&
+        String(description).trim()
+            ? String(description).trim()
+            : "Custom permission";
+
+    const existing = await pool.query(
+        `
+        SELECT
+            permission_id,
+            permission_name,
+            description
+        FROM permissions
+        WHERE UPPER(permission_name) =
+              UPPER($1)
+        LIMIT 1;
+        `,
+        [cleanPermissionName]
+    );
+
+    if (existing.rows.length > 0) {
+        const error = new Error(
+            "Permission already exists."
+        );
+
+        error.code = "23505";
+
+        throw error;
+    }
+
+    const result = await pool.query(
+        `
+        INSERT INTO permissions (
+            permission_name,
+            description
+        )
+        VALUES ($1, $2)
+        RETURNING
+            permission_id,
+            permission_name,
+            description;
+        `,
+        [
+            cleanPermissionName,
+            cleanDescription,
+        ]
+    );
+
+    return result.rows[0];
+};
+
+
+// =============================================
+// DELETE CUSTOM PERMISSION
+// =============================================
+const deletePermission = async (id) => {
+
+    const client = await pool.connect();
+
+    try {
+
+        await client.query("BEGIN");
+
+        // Get permission first
+        const permissionResult = await client.query(
+            `
+            SELECT
+                permission_id,
+                permission_name,
+                description
+            FROM permissions
+            WHERE permission_id = $1
+            FOR UPDATE;
+            `,
+            [id]
+        );
+
+        if (permissionResult.rows.length === 0) {
+            await client.query("ROLLBACK");
+            return null;
+        }
+
+        const permission = permissionResult.rows[0];
+
+        // -----------------------------------------
+        // Do not delete built-in permissions
+        // -----------------------------------------
+        const protectedPermissions = [
+            "VIEW",
+            "CREATE",
+            "UPDATE",
+            "DELETE"
+        ];
+
+        if (
+            protectedPermissions.includes(
+                permission.permission_name.toUpperCase()
+            )
+        ) {
+            const error = new Error(
+                "Built-in permissions cannot be deleted."
+            );
+
+            error.code = "PROTECTED_PERMISSION";
+
+            throw error;
+        }
+
+        // -----------------------------------------
+        // Delete role-permission assignments first
+        // -----------------------------------------
+        await client.query(
+            `
+            DELETE FROM role_permissions
+            WHERE permission_id = $1;
+            `,
+            [id]
+        );
+
+        // -----------------------------------------
+        // Delete permission
+        // -----------------------------------------
+        const result = await client.query(
+            `
+            DELETE FROM permissions
+            WHERE permission_id = $1
+            RETURNING
+                permission_id,
+                permission_name,
+                description;
+            `,
+            [id]
+        );
+
+        await client.query("COMMIT");
+
+        return result.rows[0] || null;
+
+    } catch (error) {
+
+        await client.query("ROLLBACK");
+
+        console.error(
+            "DELETE PERMISSION ERROR:",
+            error
+        );
+
+        throw error;
+
+    } finally {
+
+        client.release();
+    }
+};
 
 // =============================================
 // UPDATE ROLE
@@ -1473,13 +1776,36 @@ const updateRole = async (id, data) => {
         permissionIds = [],
     } = data || {};
 
-    if (!name || typeof name !== "string" || !name.trim()) {
+    console.log("====================================");
+    console.log("REPOSITORY UPDATE ROLE");
+    console.log("Role ID:", id);
+    console.log("Role Name:", name);
+    console.log("Description:", description);
+    console.log("Permissions:", permissionIds);
+    console.log("====================================");
+
+    // =============================================
+    // VALIDATE ROLE NAME
+    // =============================================
+    if (
+        !name ||
+        typeof name !== "string" ||
+        !name.trim()
+    ) {
         throw new Error("Role name is required.");
     }
 
+    const newRoleName = name.trim();
+
+    // =============================================
+    // CONNECT DATABASE
+    // =============================================
     const client = await pool.connect();
 
     try {
+        // =============================================
+        // START TRANSACTION
+        // =============================================
         await client.query("BEGIN");
 
         // =============================================
@@ -1492,7 +1818,7 @@ const updateRole = async (id, data) => {
                 role_name
             FROM roles
             WHERE role_id = $1
-            FOR UPDATE
+            FOR UPDATE;
             `,
             [id]
         );
@@ -1505,8 +1831,6 @@ const updateRole = async (id, data) => {
         const oldRoleName =
             existingRoleResult.rows[0].role_name;
 
-        const newRoleName = name.trim();
-
         // =============================================
         // CHECK DUPLICATE ROLE NAME
         // =============================================
@@ -1516,15 +1840,14 @@ const updateRole = async (id, data) => {
             FROM roles
             WHERE LOWER(role_name) = LOWER($1)
               AND role_id <> $2
-            LIMIT 1
+            LIMIT 1;
             `,
             [newRoleName, id]
         );
 
         if (duplicate.rows.length > 0) {
-            const error = new Error(
-                "Role already exists."
-            );
+            const error =
+                new Error("Role already exists.");
 
             error.code = "23505";
 
@@ -1533,12 +1856,6 @@ const updateRole = async (id, data) => {
 
         // =============================================
         // NORMALIZE PERMISSIONS
-        //
-        // Supports:
-        // [1, 2, 3]
-        //
-        // OR:
-        // ["VIEW", "CREATE", "UPDATE"]
         // =============================================
         const permissionsArray =
             Array.isArray(permissionIds)
@@ -1560,17 +1877,24 @@ const updateRole = async (id, data) => {
             ),
         ];
 
+        console.log(
+            "UNIQUE PERMISSIONS:",
+            uniquePermissions
+        );
+
         // =============================================
-        // CONVERT PERMISSION NAMES TO IDs
+        // CONVERT PERMISSIONS TO IDS
         // =============================================
         const finalPermissionIds = [];
 
-        for (const permission of uniquePermissions) {
-
-            // Numeric ID
-            if (
-                /^\d+$/.test(permission)
-            ) {
+        for (
+            const permission
+            of uniquePermissions
+        ) {
+            // =========================================
+            // NUMERIC PERMISSION ID
+            // =========================================
+            if (/^\d+$/.test(permission)) {
                 const permissionId =
                     Number(permission);
 
@@ -1580,7 +1904,7 @@ const updateRole = async (id, data) => {
                         SELECT permission_id
                         FROM permissions
                         WHERE permission_id = $1
-                        LIMIT 1
+                        LIMIT 1;
                         `,
                         [permissionId]
                     );
@@ -1600,42 +1924,117 @@ const updateRole = async (id, data) => {
                 continue;
             }
 
-            // Permission name
-            const permissionResult =
+            // =========================================
+            // PERMISSION NAME
+            // =========================================
+            const permissionName =
+                permission.toUpperCase().trim();
+
+            console.log(
+                "PROCESSING PERMISSION:",
+                permissionName
+            );
+
+            // =========================================
+            // FIND EXISTING PERMISSION
+            // =========================================
+            let permissionResult =
                 await client.query(
                     `
-                    SELECT permission_id
+                    SELECT
+                        permission_id
                     FROM permissions
                     WHERE UPPER(permission_name) =
                           UPPER($1)
-                    LIMIT 1
+                    LIMIT 1;
                     `,
-                    [permission]
+                    [permissionName]
                 );
 
+            // =========================================
+            // ONLY OTHER CAN BE AUTO-CREATED
+            // =========================================
+            if (
+                permissionResult.rows.length === 0 &&
+                permissionName === "OTHER"
+            ) {
+                console.log(
+                    "OTHER permission not found."
+                );
+
+                console.log(
+                    "Creating OTHER automatically..."
+                );
+
+                permissionResult =
+                    await client.query(
+                        `
+                        INSERT INTO permissions (
+                            permission_name,
+                            description
+                        )
+                        VALUES ($1, $2)
+                        ON CONFLICT (permission_name)
+                        DO UPDATE SET
+                            description =
+                                EXCLUDED.description
+                        RETURNING
+                            permission_id;
+                        `,
+                        [
+                            "OTHER",
+                            "Other permission",
+                        ]
+                    );
+            }
+
+            // =========================================
+            // UNKNOWN PERMISSION
+            //
+            // IMPORTANT:
+            // Do NOT automatically create unknown
+            // permissions here.
+            //
+            // Custom permissions must be created
+            // through the "New Permission" flow.
+            // =========================================
             if (
                 permissionResult.rows.length === 0
             ) {
                 throw new Error(
-                    `Permission not found: ${permission}`
+                    `Permission not found: ${permissionName}`
                 );
             }
 
-            finalPermissionIds.push(
+            const permissionId =
                 Number(
                     permissionResult.rows[0]
                         .permission_id
-                )
+                );
+
+            finalPermissionIds.push(
+                permissionId
             );
         }
 
-        // Remove duplicate IDs again
+        // =============================================
+        // REMOVE DUPLICATE PERMISSION IDS
+        // =============================================
         const uniquePermissionIds = [
             ...new Set(finalPermissionIds),
         ];
 
+        console.log(
+            "FINAL PERMISSION IDS:",
+            uniquePermissionIds
+        );
+
         // =============================================
         // UPDATE ROLE
+        //
+        // NOTE:
+        // updated_at removed because your actual
+        // roles table does not contain that column.
         // =============================================
         const roleResult = await client.query(
             `
@@ -1651,23 +2050,29 @@ const updateRole = async (id, data) => {
             `,
             [
                 newRoleName,
-                description || null,
+                description &&
+                String(description).trim()
+                    ? String(description).trim()
+                    : null,
                 id,
             ]
         );
+
+        if (roleResult.rows.length === 0) {
+            throw new Error(
+                "Failed to update role."
+            );
+        }
 
         const role = roleResult.rows[0];
 
         // =============================================
         // REMOVE OLD PERMISSIONS
-        //
-        // IMPORTANT:
-        // Remove by OLD role name.
         // =============================================
         await client.query(
             `
             DELETE FROM role_permissions
-            WHERE role_name = $1
+            WHERE role_name = $1;
             `,
             [oldRoleName]
         );
@@ -1675,12 +2080,13 @@ const updateRole = async (id, data) => {
         // =============================================
         // INSERT NEW PERMISSIONS
         // =============================================
-        for (const permissionId of uniquePermissionIds) {
-
+        for (
+            const permissionId
+            of uniquePermissionIds
+        ) {
             await client.query(
                 `
-                INSERT INTO role_permissions
-                (
+                INSERT INTO role_permissions (
                     role_name,
                     permission_id
                 )
@@ -1699,34 +2105,81 @@ const updateRole = async (id, data) => {
         // =============================================
         await client.query("COMMIT");
 
+        console.log("====================================");
+        console.log("ROLE UPDATED SUCCESSFULLY");
+        console.log("Role:", role);
+        console.log(
+            "Permissions:",
+            uniquePermissionIds
+        );
+        console.log("====================================");
+
         return role;
 
     } catch (error) {
-
+        // =============================================
+        // ROLLBACK
+        // =============================================
         await client.query("ROLLBACK");
+
+        console.error(
+            "===================================="
+        );
+        console.error(
+            "UPDATE ROLE ERROR:",
+            error.message
+        );
+        console.error(
+            "===================================="
+        );
 
         throw error;
 
     } finally {
+        // =============================================
+        // RELEASE CONNECTION
+        // =============================================
         client.release();
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // =============================================
 // DELETE ROLE
 // =============================================
 const deleteRole = async (id) => {
 
+    console.log("====================================");
+    console.log("DELETE ROLE");
+    console.log("Role ID:", id);
+    console.log("====================================");
+
     const client = await pool.connect();
 
     try {
 
+        // =============================================
+        // START TRANSACTION
+        // =============================================
         await client.query("BEGIN");
 
-
-        // -----------------------------------------
+        // =============================================
         // GET ROLE
-        // -----------------------------------------
+        // =============================================
         const existing = await client.query(
             `
             SELECT
@@ -1734,11 +2187,14 @@ const deleteRole = async (id) => {
                 role_name
             FROM roles
             WHERE role_id = $1
+            FOR UPDATE
             `,
             [id]
         );
 
-
+        // =============================================
+        // ROLE NOT FOUND
+        // =============================================
         if (existing.rows.length === 0) {
 
             await client.query("ROLLBACK");
@@ -1746,39 +2202,17 @@ const deleteRole = async (id) => {
             return null;
         }
 
-
         const roleName =
             existing.rows[0].role_name;
 
+        console.log(
+            "Deleting role:",
+            roleName
+        );
 
-        // -----------------------------------------
-        // PROTECT DEFAULT ROLES
-        // -----------------------------------------
-        const protectedRoles = [
-            "System Admin",
-            "Municipal Admin",
-            "Collector",
-            "Business Owner",
-            "Resident",
-        ];
-
-
-        if (protectedRoles.includes(roleName)) {
-
-            const error =
-                new Error(
-                    "Default system roles cannot be deleted."
-                );
-
-            error.code = "PROTECTED_ROLE";
-
-            throw error;
-        }
-
-
-        // -----------------------------------------
-        // DELETE PERMISSIONS FIRST
-        // -----------------------------------------
+        // =============================================
+        // DELETE ROLE PERMISSIONS FIRST
+        // =============================================
         await client.query(
             `
             DELETE FROM role_permissions
@@ -1787,15 +2221,24 @@ const deleteRole = async (id) => {
             [roleName]
         );
 
-
-        // -----------------------------------------
+        // =============================================
         // DELETE ROLE
-        // -----------------------------------------
+        //
+        // IMPORTANT:
+        // NO PROTECTED ROLE CHECK
+        //
+        // Therefore ALL roles can be deleted:
+        // - System Admin
+        // - Municipal Admin
+        // - Collector
+        // - Business Owner
+        // - Resident
+        // - Custom Roles
+        // =============================================
         const result = await client.query(
             `
             DELETE FROM roles
             WHERE role_id = $1
-
             RETURNING
                 role_id,
                 role_name,
@@ -1804,23 +2247,46 @@ const deleteRole = async (id) => {
             [id]
         );
 
-
+        // =============================================
+        // COMMIT
+        // =============================================
         await client.query("COMMIT");
+
+        console.log("====================================");
+        console.log("ROLE DELETED SUCCESSFULLY");
+        console.log("Deleted Role:", result.rows[0]);
+        console.log("====================================");
 
         return result.rows[0] || null;
 
     } catch (error) {
 
+        // =============================================
+        // ROLLBACK
+        // =============================================
         await client.query("ROLLBACK");
+
+        console.error(
+            "===================================="
+        );
+        console.error(
+            "DELETE ROLE ERROR:",
+            error
+        );
+        console.error(
+            "===================================="
+        );
 
         throw error;
 
     } finally {
 
+        // =============================================
+        // RELEASE CONNECTION
+        // =============================================
         client.release();
     }
 };
-
 module.exports = {
     // System Admin CRUD
     getAllSystemAdmins,
@@ -1866,5 +2332,7 @@ getInactiveAccountContact,
      createRole,
       updateRole,
     deleteRole,
+    createPermission,
+    deletePermission,
     getAvailablePermissions
 };

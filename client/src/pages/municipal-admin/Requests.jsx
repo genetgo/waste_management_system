@@ -1,21 +1,19 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
 import socket from "../../services/socket";
+
 const Requests = () => {
   const navigate = useNavigate();
 
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [rejectingId, setRejectingId] = useState(null);
+  const [rejectDescription, setRejectDescription] = useState("");
 
   // ==========================================
   // Load Requests
   // ==========================================
-  useEffect(() => {
-    loadRequests();
-  }, []);
-
   const loadRequests = async () => {
     try {
       setLoading(true);
@@ -40,22 +38,198 @@ const Requests = () => {
   };
 
   // ==========================================
+  // Initial Load
+  // ==========================================
+  useEffect(() => {
+    loadRequests();
+  }, []);
+
+  // ==========================================
+  // SOCKET
+  // Real-time request updates
+  // ==========================================
+  useEffect(() => {
+    if (!socket) {
+      console.warn("Socket is not available");
+      return;
+    }
+
+    console.log("Municipal Admin Requests socket connected");
+
+    // ------------------------------------------
+    // New Request
+    // ------------------------------------------
+    const handleNewRequest = (data) => {
+      console.log("NEW REQUEST SOCKET EVENT:", data);
+
+      loadRequests();
+    };
+
+    // ------------------------------------------
+    // Request Updated
+    // ------------------------------------------
+    const handleRequestUpdated = (data) => {
+      console.log("REQUEST UPDATED SOCKET EVENT:", data);
+
+      loadRequests();
+    };
+
+    // ------------------------------------------
+    // Request Status Changed
+    // ------------------------------------------
+    const handleRequestStatusChanged = (data) => {
+      console.log(
+        "REQUEST STATUS CHANGED SOCKET EVENT:",
+        data
+      );
+
+      loadRequests();
+    };
+
+    // ------------------------------------------
+    // Request Approved
+    // ------------------------------------------
+    const handleRequestApproved = (data) => {
+      console.log(
+        "REQUEST APPROVED SOCKET EVENT:",
+        data
+      );
+
+      loadRequests();
+    };
+
+    // ------------------------------------------
+    // Request Rejected
+    // ------------------------------------------
+    const handleRequestRejected = (data) => {
+      console.log(
+        "REQUEST REJECTED SOCKET EVENT:",
+        data
+      );
+
+      loadRequests();
+    };
+
+    // ------------------------------------------
+    // Request Assigned
+    // ------------------------------------------
+    const handleRequestAssigned = (data) => {
+      console.log(
+        "REQUEST ASSIGNED SOCKET EVENT:",
+        data
+      );
+
+      loadRequests();
+    };
+
+    // ------------------------------------------
+    // Register socket listeners
+    // ------------------------------------------
+    socket.on(
+      "new_request",
+      handleNewRequest
+    );
+
+    socket.on(
+      "request_created",
+      handleNewRequest
+    );
+
+    socket.on(
+      "request_updated",
+      handleRequestUpdated
+    );
+
+    socket.on(
+      "request_status_changed",
+      handleRequestStatusChanged
+    );
+
+    socket.on(
+      "request_approved",
+      handleRequestApproved
+    );
+
+    socket.on(
+      "request_rejected",
+      handleRequestRejected
+    );
+
+    socket.on(
+      "request_assigned",
+      handleRequestAssigned
+    );
+
+    // ------------------------------------------
+    // Cleanup
+    // ------------------------------------------
+    return () => {
+      socket.off(
+        "new_request",
+        handleNewRequest
+      );
+
+      socket.off(
+        "request_created",
+        handleNewRequest
+      );
+
+      socket.off(
+        "request_updated",
+        handleRequestUpdated
+      );
+
+      socket.off(
+        "request_status_changed",
+        handleRequestStatusChanged
+      );
+
+      socket.off(
+        "request_approved",
+        handleRequestApproved
+      );
+
+      socket.off(
+        "request_rejected",
+        handleRequestRejected
+      );
+
+      socket.off(
+        "request_assigned",
+        handleRequestAssigned
+      );
+
+      console.log(
+        "Municipal Admin Requests socket listeners removed"
+      );
+    };
+  }, []);
+
+  // ==========================================
   // Approve Request
   // Pending → Approved
   // ==========================================
   const approveRequest = async (id) => {
     try {
-      const res = await API.patch(`/requests/${id}/approve`);
+      const res = await API.patch(
+        `/requests/${id}/approve`
+      );
 
-      console.log("Approve response:", res.data);
+      console.log(
+        "Approve response:",
+        res.data
+      );
 
-      alert("Request Approved Successfully");
+      alert(
+        "Request Approved Successfully"
+      );
 
       await loadRequests();
     } catch (error) {
       console.error(
         "Approve error:",
-        error.response?.data || error.message
+        error.response?.data ||
+          error.message
       );
 
       alert(
@@ -66,29 +240,87 @@ const Requests = () => {
   };
 
   // ==========================================
+  // Open Reject Form
+  // ==========================================
+  const openRejectForm = (id) => {
+    setRejectingId(id);
+    setRejectDescription("");
+  };
+
+  // ==========================================
+  // Cancel Reject
+  // ==========================================
+  const cancelReject = () => {
+    setRejectingId(null);
+    setRejectDescription("");
+  };
+
+  // ==========================================
   // Reject Request
   // Pending → Rejected
+  // Admin MUST provide description
   // ==========================================
-  const rejectRequest = async (id) => {
+  const rejectRequest = async () => {
+    if (!rejectingId) {
+      return;
+    }
+
+    const description =
+      rejectDescription.trim();
+
+    if (!description) {
+      alert(
+        "Reject description is required."
+      );
+      return;
+    }
+
     try {
-      const res = await API.patch(`/requests/${id}/reject`);
+      const res = await API.patch(
+        `/requests/${rejectingId}/reject`,
+        {
+          description: description,
+        }
+      );
 
-      console.log("Reject response:", res.data);
-
-      alert("Request Rejected Successfully");
-
-      await loadRequests();
-    } catch (error) {
-      console.error(
-        "Reject error:",
-        error.response?.data || error.message
+      console.log(
+        "Reject response:",
+        res.data
       );
 
       alert(
-        error.response?.data?.message ||
-          "Reject Failed"
+        "Request Rejected Successfully"
       );
-    }
+
+      setRejectingId(null);
+      setRejectDescription("");
+
+      await loadRequests();
+    }catch (error) {
+    console.error("Reject error:", error);
+
+    console.error(
+        "Reject response:",
+        error?.response?.data
+    );
+
+    console.error(
+        "Reject status:",
+        error?.response?.status
+    );
+
+    console.error(
+        "Reject message:",
+        error?.response?.data?.message ||
+        error?.message
+    );
+
+    alert(
+        error?.response?.data?.message ||
+        "Failed to reject request."
+    );
+}
+    
   };
 
   // ==========================================
@@ -185,10 +417,138 @@ const Requests = () => {
       </div>
 
       {/* ======================================
+          Reject Description Modal
+      ======================================= */}
+      {rejectingId && (
+        <div className="
+          fixed
+          inset-0
+          z-[100]
+          bg-black
+          bg-opacity-50
+          flex
+          items-center
+          justify-center
+          p-4
+        ">
+          <div className="
+            bg-white
+            rounded-xl
+            shadow-2xl
+            w-full
+            max-w-lg
+            p-6
+          ">
+
+            <h2 className="
+              text-xl
+              font-bold
+              text-gray-800
+              mb-2
+            ">
+              Reject Collection Request
+            </h2>
+
+            <p className="
+              text-sm
+              text-gray-500
+              mb-4
+            ">
+              Please provide a reason for rejecting
+              this request.
+            </p>
+
+            <label className="
+              block
+              text-sm
+              font-semibold
+              text-gray-700
+              mb-2
+            ">
+              Reject Description
+            </label>
+
+            <textarea
+              value={rejectDescription}
+              onChange={(e) =>
+                setRejectDescription(
+                  e.target.value
+                )
+              }
+              placeholder="Enter the reason for rejection..."
+              rows={5}
+              className="
+                w-full
+                border
+                border-gray-300
+                rounded-lg
+                px-4
+                py-3
+                outline-none
+                focus:ring-2
+                focus:ring-red-500
+                focus:border-red-500
+                resize-none
+              "
+            />
+
+            <div className="
+              flex
+              justify-end
+              gap-3
+              mt-5
+            ">
+
+              <button
+                type="button"
+                onClick={cancelReject}
+                className="
+                  px-5
+                  py-2
+                  rounded-lg
+                  border
+                  border-gray-300
+                  text-gray-700
+                  hover:bg-gray-100
+                  transition
+                "
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={rejectRequest}
+                className="
+                  px-5
+                  py-2
+                  rounded-lg
+                  bg-red-600
+                  hover:bg-red-700
+                  text-white
+                  font-semibold
+                  transition
+                "
+              >
+                Confirm Reject
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================
           Empty State
       ======================================= */}
       {requests.length === 0 ? (
-        <div className="bg-white rounded-xl shadow p-8 text-center">
+        <div className="
+          bg-white
+          rounded-xl
+          shadow
+          p-8
+          text-center
+        ">
           <p className="text-gray-500">
             No collection requests found.
           </p>
@@ -198,14 +558,22 @@ const Requests = () => {
         /* ====================================
            Table
         ===================================== */
-        <div className="overflow-x-auto bg-white rounded-xl shadow">
+        <div className="
+          overflow-x-auto
+          bg-white
+          rounded-xl
+          shadow
+        ">
 
           <table className="w-full">
 
             {/* ==================================
                 Table Header
             =================================== */}
-            <thead className="bg-blue-700 text-white">
+            <thead className="
+              bg-blue-700
+              text-white
+            ">
 
               <tr>
 
@@ -238,11 +606,19 @@ const Requests = () => {
                 </th>
 
                 <th className="p-3 text-left">
+                  House Number
+                </th>
+
+                <th className="p-3 text-left">
                   Request Date
                 </th>
 
                 <th className="p-3 text-left">
                   Status
+                </th>
+
+                <th className="p-3 text-left">
+                  Rejection Reason
                 </th>
 
                 <th className="p-3 text-left">
@@ -262,14 +638,19 @@ const Requests = () => {
 
                 // Normalize status
                 const status =
-                  String(request.status || "")
+                  String(
+                    request.status || ""
+                  )
                     .trim()
                     .toLowerCase();
 
                 return (
                   <tr
                     key={request.request_id}
-                    className="border-b hover:bg-gray-50"
+                    className="
+                      border-b
+                      hover:bg-gray-50
+                    "
                   >
 
                     {/* =========================
@@ -324,10 +705,18 @@ const Requests = () => {
                     </td>
 
                     {/* =========================
+                        House Number
+                    ========================== */}
+                    <td className="p-3">
+                      {request.house_number || "-"}
+                    </td>
+
+                    {/* =========================
                         Request Date
                     ========================== */}
                     <td className="p-3">
                       {formatDate(
+                        request.preferred_collection_date ||
                         request.request_date ||
                         request.created_at
                       )}
@@ -355,11 +744,40 @@ const Requests = () => {
                     </td>
 
                     {/* =========================
+                        Rejection Reason
+                    ========================== */}
+                    <td className="p-3">
+
+                      {status === "rejected" ? (
+                        <div className="
+                          max-w-xs
+                          text-sm
+                          text-red-600
+                          break-words
+                        ">
+                          {request.rejection_reason ||
+                            request.reject_description ||
+                            request.description ||
+                            "-"}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">
+                          -
+                        </span>
+                      )}
+
+                    </td>
+
+                    {/* =========================
                         Actions
                     ========================== */}
                     <td className="p-3">
 
-                      <div className="flex flex-wrap gap-2">
+                      <div className="
+                        flex
+                        flex-wrap
+                        gap-2
+                      ">
 
                         {/* =====================
                             Pending
@@ -367,6 +785,7 @@ const Requests = () => {
                         {status === "pending" && (
                           <>
                             <button
+                              type="button"
                               onClick={() =>
                                 approveRequest(
                                   request.request_id
@@ -386,8 +805,9 @@ const Requests = () => {
                             </button>
 
                             <button
+                              type="button"
                               onClick={() =>
-                                rejectRequest(
+                                openRejectForm(
                                   request.request_id
                                 )
                               }
@@ -411,6 +831,7 @@ const Requests = () => {
                         ====================== */}
                         {status === "approved" && (
                           <button
+                            type="button"
                             onClick={() =>
                               assignCollector(
                                 request.request_id

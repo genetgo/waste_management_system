@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import API from "../../services/api";
 
 import {
@@ -8,12 +8,40 @@ import {
   FaTrash,
   FaKey,
   FaUsers,
-  FaCheckCircle,
-  FaTimesCircle,
   FaPlus,
   FaTimes,
   FaSave,
 } from "react-icons/fa";
+
+// =====================================================
+// DEFAULT BUILT-IN PERMISSIONS
+// =====================================================
+// IMPORTANT:
+// OTHER is NOT a real permission.
+// It is only a UI trigger for creating a custom permission.
+//
+// Therefore OTHER must NOT be included here.
+// It must NOT appear in the Permission Matrix.
+// =====================================================
+
+const DEFAULT_PERMISSIONS = [
+  {
+    permission_name: "VIEW",
+    description: "View system information",
+  },
+  {
+    permission_name: "CREATE",
+    description: "Create new records",
+  },
+  {
+    permission_name: "UPDATE",
+    description: "Update existing records",
+  },
+  {
+    permission_name: "DELETE",
+    description: "Delete records",
+  },
+];
 
 const Roles = () => {
   // =====================================================
@@ -21,28 +49,21 @@ const Roles = () => {
   // =====================================================
 
   const [search, setSearch] = useState("");
-
   const [rolesList, setRolesList] = useState([]);
   const [permissionsMatrix, setPermissionsMatrix] = useState([]);
   const [availablePermissions, setAvailablePermissions] =
-    useState([]);
+    useState(DEFAULT_PERMISSIONS);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // =====================================================
-  // MODAL STATE
+  // CREATE / EDIT ROLE
   // =====================================================
 
   const [showRoleModal, setShowRoleModal] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
-
   const [savingRole, setSavingRole] = useState(false);
-  const [deletingRoleId, setDeletingRoleId] = useState(null);
-
-  // =====================================================
-  // ROLE FORM
-  // =====================================================
 
   const [roleForm, setRoleForm] = useState({
     name: "",
@@ -51,31 +72,212 @@ const Roles = () => {
   });
 
   // =====================================================
-  // DEFAULT PERMISSIONS
+  // OTHER / CUSTOM PERMISSION
   // =====================================================
 
-  const defaultPermissions = [
-    {
-      permission_name: "VIEW",
-      description: "View system information",
-    },
-    {
-      permission_name: "CREATE",
-      description: "Create new records",
-    },
-    {
-      permission_name: "UPDATE",
-      description: "Update existing records",
-    },
-    {
-      permission_name: "DELETE",
-      description: "Delete records",
-    },
-    {
-      permission_name: "REPORTS",
-      description: "Access system reports",
-    },
-  ];
+  // OTHER is NOT a permission.
+  // It only opens the custom permission form.
+  const [otherSelected, setOtherSelected] = useState(false);
+
+  const [customPermission, setCustomPermission] = useState({
+    name: "",
+    description: "",
+  });
+
+  // =====================================================
+  // DELETE
+  // =====================================================
+
+  const [deletingRoleId, setDeletingRoleId] = useState(null);
+
+  // =====================================================
+  // HELPERS
+  // =====================================================
+
+  const normalize = (value) =>
+    String(value || "")
+      .trim()
+      .toUpperCase()
+      .replace(/[_-]+/g, "_")
+      .replace(/\s+/g, "_");
+
+  const normalizeRoleName = (value) =>
+    String(value || "")
+      .toLowerCase()
+      .trim()
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ");
+
+  const getRoleName = (role) =>
+    role?.name ||
+    role?.role_name ||
+    role?.role ||
+    "Unnamed Role";
+
+  const getRoleId = (role) =>
+    role?.role_id ??
+    role?.id ??
+    role?._id ??
+    null;
+
+  const getPermissionName = (permission) => {
+    if (typeof permission === "string") {
+      return permission.trim();
+    }
+
+    return (
+      permission?.permission_name ||
+      permission?.permissionName ||
+      permission?.name ||
+      ""
+    );
+  };
+
+  const getPermissionDescription = (permission) => {
+    if (typeof permission === "string") {
+      return "";
+    }
+
+    return (
+      permission?.description ||
+      permission?.permission_description ||
+      ""
+    );
+  };
+
+  const isResidentRole = (role) =>
+    normalizeRoleName(getRoleName(role)) === "resident";
+
+  const getUserCount = (role) => {
+    const value =
+      role?.users ??
+      role?.user_count ??
+      role?.users_count ??
+      role?.assigned_users ??
+      0;
+
+    if (Array.isArray(value)) {
+      return value.length;
+    }
+
+    const number = Number(value);
+
+    return Number.isFinite(number) ? number : 0;
+  };
+
+  // =====================================================
+  // PERMISSION VISIBILITY
+  // =====================================================
+
+  // Workflow/status values are never treated as permissions.
+  const NON_PERMISSION_VALUES = new Set([
+    "PENDING",
+    "APPROVED",
+    "REJECTED",
+    "ASSIGNED",
+    "IN_PROGRESS",
+    "COLLECTED",
+    "COMPLETED",
+    "CANCELLED",
+  ]);
+
+  const isVisiblePermissionName = (permissionName) => {
+    const key = normalize(permissionName);
+
+    if (!key) {
+      return false;
+    }
+
+    // OTHER is a UI trigger, NOT a real permission.
+    if (key === "OTHER") {
+      return false;
+    }
+
+    return !NON_PERMISSION_VALUES.has(key);
+  };
+
+  // =====================================================
+  // MERGE PERMISSIONS
+  // =====================================================
+
+  const mergePermissions = (...permissionLists) => {
+  const map = new Map();
+
+  permissionLists.flat().forEach((permission) => {
+    const name = getPermissionName(permission);
+
+    if (!name) {
+      return;
+    }
+
+    const key = normalize(name);
+
+    if (!isVisiblePermissionName(key)) {
+      return;
+    }
+
+    const description =
+      getPermissionDescription(permission);
+
+    const permissionId =
+      permission?.permission_id ??
+      permission?.id ??
+      null;
+
+    const isCustom =
+      permission?.is_custom === true;
+
+    if (!map.has(key)) {
+      map.set(key, {
+        permission_id: permissionId,
+        permission_name: key,
+        description,
+        is_custom: isCustom,
+      });
+    } else {
+      const existing = map.get(key);
+
+      if (!existing.description && description) {
+        existing.description = description;
+      }
+
+      if (
+        existing.permission_id == null &&
+        permissionId != null
+      ) {
+        existing.permission_id = permissionId;
+      }
+
+      if (isCustom) {
+        existing.is_custom = true;
+      }
+    }
+  });
+
+  return Array.from(map.values());
+};
+
+  // =====================================================
+  // PERMISSIONS TO SHOW
+  // =====================================================
+
+  const permissionsToShow = useMemo(() => {
+    const rolePermissions = [];
+
+    rolesList.forEach((role) => {
+      if (Array.isArray(role?.permissions)) {
+        role.permissions.forEach((permission) => {
+          rolePermissions.push(permission);
+        });
+      }
+    });
+
+    return mergePermissions(
+      DEFAULT_PERMISSIONS,
+      availablePermissions,
+      rolePermissions
+    );
+  }, [availablePermissions, rolesList]);
 
   // =====================================================
   // LOAD ROLES
@@ -86,137 +288,270 @@ const Roles = () => {
       setLoading(true);
       setError("");
 
-      console.log("====================================");
-      console.log("LOADING ROLES");
-      console.log("====================================");
+      const response = await API.get(
+        "/system-admin/roles"
+      );
 
-      const response = await API.get("/system-admin/roles");
+      console.log(
+        "ROLES API RESPONSE:",
+        response.data
+      );
 
-      console.log("ROLES API RESPONSE:", response.data);
+      const responseData = response?.data || {};
 
-  
+      const data =
+        responseData?.data &&
+        typeof responseData.data === "object"
+          ? responseData.data
+          : responseData;
 
-      const responseData = response.data || {};
+      // =================================================
+      // ROLES
+      // =================================================
 
-      const data = responseData.data || responseData;
+      let allRoles = [];
 
-      const roles = Array.isArray(data.roles)
-        ? data.roles
-        : [];
+      if (Array.isArray(data?.roles)) {
+        allRoles = data.roles;
+      } else if (Array.isArray(data?.data?.roles)) {
+        allRoles = data.data.roles;
+      } else if (Array.isArray(responseData?.roles)) {
+        allRoles = responseData.roles;
+      }
 
-      const permissions = Array.isArray(data.permissions)
-        ? data.permissions
-        : [];
+      // Resident is not managed from this page.
+      const roles = allRoles.filter(
+        (role) => !isResidentRole(role)
+      );
 
-      const allPermissions = Array.isArray(
-        data.availablePermissions
-      )
-        ? data.availablePermissions
-        : [];
+      // =================================================
+      // BACKEND PERMISSIONS
+      // =================================================
+
+      let backendPermissions = [];
+
+      if (Array.isArray(data?.availablePermissions)) {
+        backendPermissions =
+          data.availablePermissions;
+      } else if (Array.isArray(data?.available_permissions)) {
+        backendPermissions =
+          data.available_permissions;
+      } else if (Array.isArray(data?.permissionsList)) {
+        backendPermissions =
+          data.permissionsList;
+      }
+
+      const filteredBackendPermissions =
+        backendPermissions.filter((permission) =>
+          isVisiblePermissionName(
+            getPermissionName(permission)
+          )
+        );
+
+      const mergedPermissions = mergePermissions(
+        DEFAULT_PERMISSIONS,
+        filteredBackendPermissions
+      );
+
+      // =================================================
+      // PERMISSION MATRIX
+      // =================================================
+
+      let matrix = [];
+
+      if (Array.isArray(data?.permissions)) {
+        matrix = data.permissions;
+      } else if (Array.isArray(data?.permissionMatrix)) {
+        matrix = data.permissionMatrix;
+      } else if (Array.isArray(data?.permission_matrix)) {
+        matrix = data.permission_matrix;
+      }
+
+      const filteredMatrix = matrix.filter(
+        (item) => !isResidentRole(item)
+      );
 
       setRolesList(roles);
-      setPermissionsMatrix(permissions);
-      setAvailablePermissions(allPermissions);
+      setPermissionsMatrix(filteredMatrix);
 
-      console.log("ROLES:", roles);
-      console.log("PERMISSIONS MATRIX:", permissions);
-      console.log(
-        "AVAILABLE PERMISSIONS:",
-        allPermissions
+      setAvailablePermissions(
+        mergedPermissions.length
+          ? mergedPermissions
+          : DEFAULT_PERMISSIONS
       );
-    } catch (error) {
-      console.error("LOAD ROLES ERROR:", error);
+    } catch (err) {
+      console.error(
+        "LOAD ROLES ERROR:",
+        err
+      );
 
       const message =
-        error.response?.data?.message ||
-        error.message ||
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
         "Failed to load roles.";
 
       setError(message);
-
       setRolesList([]);
       setPermissionsMatrix([]);
-      setAvailablePermissions([]);
+      setAvailablePermissions(
+        DEFAULT_PERMISSIONS
+      );
     } finally {
       setLoading(false);
     }
   };
-
-  // =====================================================
-  // INITIAL LOAD
-  // =====================================================
 
   useEffect(() => {
     loadRoles();
   }, []);
 
   // =====================================================
-  // GET ROLE ID
-  // =====================================================
-
-  const getRoleId = (role) => {
-    return role?.role_id ?? role?.id ?? null;
-  };
-
-  // =====================================================
   // GET ROLE PERMISSIONS
   // =====================================================
 
-  const getRolePermissions = (role) => {
-    const roleName = String(role?.name || "")
-      .toLowerCase()
-      .trim();
+  const getRolePermissionNames = (role) => {
+    const result = [];
 
-    const found = permissionsMatrix.find((item) => {
-      const itemName = String(
-        item?.name ||
-          item?.role_name ||
-          item?.role ||
-          ""
-      )
-        .toLowerCase()
-        .trim();
+    // =================================================
+    // role.permissions
+    // =================================================
 
-      return itemName === roleName;
-    });
+    if (Array.isArray(role?.permissions)) {
+      role.permissions.forEach((permission) => {
+        const name =
+          getPermissionName(permission);
 
-    if (!found) {
-      return {
-        view: false,
-        create: false,
-        update: false,
-        delete: false,
-        reports: false,
-      };
+        if (!name) {
+          return;
+        }
+
+        const normalizedName =
+          normalize(name);
+
+        if (
+          isVisiblePermissionName(
+            normalizedName
+          )
+        ) {
+          result.push(normalizedName);
+        }
+      });
     }
 
-    return {
-      view:
-        found.view === true ||
-        found.VIEW === true ||
-        found.view_permission === true,
+    // =================================================
+    // Permission Matrix
+    // =================================================
 
-      create:
-        found.create === true ||
-        found.CREATE === true ||
-        found.create_permission === true,
+    const roleName = normalizeRoleName(
+      getRoleName(role)
+    );
 
-      update:
-        found.update === true ||
-        found.UPDATE === true ||
-        found.update_permission === true,
+    const matrixRow =
+      permissionsMatrix.find(
+        (item) =>
+          normalizeRoleName(
+            getRoleName(item)
+          ) === roleName
+      );
 
-      delete:
-        found.delete === true ||
-        found.DELETE === true ||
-        found.delete_permission === true,
+    if (matrixRow) {
+      // =================================================
+      // permissions array
+      // =================================================
 
-      reports:
-        found.reports === true ||
-        found.REPORTS === true ||
-        found.report === true ||
-        found.reports_permission === true,
-    };
+      if (
+        Array.isArray(
+          matrixRow.permissions
+        )
+      ) {
+        matrixRow.permissions.forEach(
+          (permission) => {
+            const name =
+              getPermissionName(
+                permission
+              );
+
+            if (!name) {
+              return;
+            }
+
+            const key = normalize(name);
+
+            if (
+              isVisiblePermissionName(
+                key
+              )
+            ) {
+              result.push(key);
+            }
+          }
+        );
+      }
+
+      // =================================================
+      // dynamic permission keys
+      // =================================================
+
+      permissionsToShow.forEach(
+        (permission) => {
+          const permissionName =
+            getPermissionName(
+              permission
+            );
+
+          const key =
+            normalize(permissionName);
+
+          const possibleKeys = [
+            permissionName,
+            key,
+            key.toLowerCase(),
+            `can_${key.toLowerCase()}`,
+            `has_${key.toLowerCase()}`,
+            `${key.toLowerCase()}_permission`,
+          ];
+
+          const found =
+            possibleKeys.some(
+              (possibleKey) =>
+                matrixRow?.[
+                  possibleKey
+                ] === true ||
+                matrixRow?.[
+                  possibleKey
+                ] === 1 ||
+                matrixRow?.[
+                  possibleKey
+                ] === "true" ||
+                matrixRow?.[
+                  possibleKey
+                ] === "1"
+            );
+
+          if (found) {
+            result.push(key);
+          }
+        }
+      );
+    }
+
+    return [...new Set(result)];
+  };
+
+  // =====================================================
+  // HAS ROLE PERMISSION
+  // =====================================================
+
+  const hasRolePermission = (
+    role,
+    permissionName
+  ) => {
+    return getRolePermissionNames(
+      role
+    ).includes(
+      normalize(permissionName)
+    );
   };
 
   // =====================================================
@@ -232,6 +567,13 @@ const Roles = () => {
       permissions: [],
     });
 
+    setOtherSelected(false);
+
+    setCustomPermission({
+      name: "",
+      description: "",
+    });
+
     setShowRoleModal(true);
   };
 
@@ -240,47 +582,41 @@ const Roles = () => {
   // =====================================================
 
   const openEditModal = (role) => {
-    const permissions = getRolePermissions(role);
+    const allSelectedPermissions =
+      getRolePermissionNames(role);
 
-    const selectedPermissions = [];
-
-    if (permissions.view) {
-      selectedPermissions.push("VIEW");
-    }
-
-    if (permissions.create) {
-      selectedPermissions.push("CREATE");
-    }
-
-    if (permissions.update) {
-      selectedPermissions.push("UPDATE");
-    }
-
-    if (permissions.delete) {
-      selectedPermissions.push("DELETE");
-    }
-
-    if (permissions.reports) {
-      selectedPermissions.push("REPORTS");
-    }
+    // OTHER is never included because it is not
+    // a real permission.
+    const selectedPermissions =
+      allSelectedPermissions.filter(
+        (permission) =>
+          normalize(permission) !== "OTHER"
+      );
 
     setEditingRole(role);
 
     setRoleForm({
-      name: role?.name || "",
-      description: role?.description || "",
-      permissions: selectedPermissions,
+      name: getRoleName(role),
+      description:
+        role?.description || "",
+      permissions:
+        selectedPermissions,
+    });
+
+    // OTHER is only used to open the custom
+    // permission UI.
+    setOtherSelected(false);
+
+    setCustomPermission({
+      name: "",
+      description: "",
     });
 
     setShowRoleModal(true);
   };
 
-
-
-
-  
   // =====================================================
-  // CLOSE MODAL
+  // CLOSE ROLE MODAL
   // =====================================================
 
   const closeRoleModal = () => {
@@ -296,14 +632,24 @@ const Roles = () => {
       description: "",
       permissions: [],
     });
+
+    setOtherSelected(false);
+
+    setCustomPermission({
+      name: "",
+      description: "",
+    });
   };
 
   // =====================================================
-  // INPUT CHANGE
+  // ROLE INPUT
   // =====================================================
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const {
+      name,
+      value,
+    } = e.target;
 
     setRoleForm((prev) => ({
       ...prev,
@@ -312,21 +658,51 @@ const Roles = () => {
   };
 
   // =====================================================
-  // TOGGLE PERMISSION
+  // TOGGLE ROLE PERMISSION
   // =====================================================
 
   const togglePermission = (permissionName) => {
+    if (savingRole) {
+      return;
+    }
+
+    const normalized =
+      normalize(permissionName);
+
+    // =================================================
+    // OTHER IS ONLY A UI TRIGGER
+    // =================================================
+
+    if (normalized === "OTHER") {
+      setOtherSelected((prev) => !prev);
+
+      setCustomPermission({
+        name: "",
+        description: "",
+      });
+
+      return;
+    }
+
+    // =================================================
+    // NORMAL PERMISSION
+    // =================================================
+
     setRoleForm((prev) => {
       const exists =
-        prev.permissions.includes(permissionName);
+        prev.permissions.some(
+          (permission) =>
+            normalize(permission) === normalized
+        );
 
       if (exists) {
         return {
           ...prev,
-          permissions: prev.permissions.filter(
-            (permission) =>
-              permission !== permissionName
-          ),
+          permissions:
+            prev.permissions.filter(
+              (permission) =>
+                normalize(permission) !== normalized
+            ),
         };
       }
 
@@ -334,210 +710,497 @@ const Roles = () => {
         ...prev,
         permissions: [
           ...prev.permissions,
-          permissionName,
+          normalized,
         ],
       };
     });
   };
 
   // =====================================================
+  // CUSTOM PERMISSION INPUT
+  // =====================================================
+
+  const handleCustomPermissionChange = (
+    e
+  ) => {
+    const {
+      name,
+      value,
+    } = e.target;
+
+    setCustomPermission(
+      (prev) => ({
+        ...prev,
+        [name]: value,
+      })
+    );
+  };
+
+  // =====================================================
+  // ADD CUSTOM PERMISSION
+  // =====================================================
+
+  const handleAddCustomPermission = async () => {
+    if (savingRole) {
+      return;
+    }
+
+    const name =
+      customPermission.name.trim();
+
+    const description =
+      customPermission.description.trim();
+
+    // =================================================
+    // VALIDATION
+    // =================================================
+
+    if (!name) {
+      alert(
+        "Custom permission name is required."
+      );
+      return;
+    }
+
+    if (name.length < 2) {
+      alert(
+        "Permission name must contain at least 2 characters."
+      );
+      return;
+    }
+
+    if (!description) {
+      alert(
+        "Custom permission description is required."
+      );
+      return;
+    }
+
+    const normalized =
+      normalize(name);
+
+    if (!normalized) {
+      alert(
+        "Invalid custom permission name."
+      );
+      return;
+    }
+
+    // OTHER can never be created as a
+    // custom permission.
+    if (normalized === "OTHER") {
+      alert(
+        "OTHER is reserved for the custom permission option."
+      );
+      return;
+    }
+
+    // =================================================
+    // DUPLICATE CHECK
+    // =================================================
+
+    const exists =
+      permissionsToShow.some(
+        (permission) =>
+          normalize(
+            getPermissionName(permission)
+          ) === normalized
+      );
+
+    if (exists) {
+      alert(
+        "This permission already exists."
+      );
+      return;
+    }
+
+    try {
+      // =================================================
+      // SAVE CUSTOM PERMISSION TO DATABASE
+      // =================================================
+
+      const response =
+        await API.post(
+          "/system-admin/permissions",
+          {
+            permission_name: normalized,
+            description,
+          }
+        );
+
+      const responseData =
+        response?.data || {};
+
+      const createdPermission =
+        responseData?.data ||
+        responseData?.permission ||
+        responseData;
+
+      const permissionId =
+        createdPermission?.permission_id ??
+        createdPermission?.id ??
+        null;
+
+      const createdName =
+        normalize(
+          createdPermission?.permission_name ||
+          createdPermission?.permissionName ||
+          normalized
+        );
+
+      const createdDescription =
+        createdPermission?.description ||
+        description;
+
+      const newPermission = {
+        permission_id:
+          permissionId,
+        permission_name:
+          createdName,
+        description:
+          createdDescription,
+        is_custom: true,
+      };
+
+      // =================================================
+      // ADD TO AVAILABLE PERMISSIONS
+      // =================================================
+
+      setAvailablePermissions((prev) =>
+        mergePermissions(
+          prev,
+          [newPermission]
+        )
+      );
+
+      // =================================================
+      // SELECT NEW PERMISSION FOR CURRENT ROLE
+      // =================================================
+
+      setRoleForm((prev) => ({
+        ...prev,
+        permissions: [
+          ...new Set([
+            ...prev.permissions,
+            createdName,
+          ]),
+        ],
+      }));
+
+      // =================================================
+      // CLOSE OTHER UI
+      // =================================================
+
+      setOtherSelected(false);
+
+      setCustomPermission({
+        name: "",
+        description: "",
+      });
+
+      alert(
+        "Custom permission added successfully."
+      );
+    } catch (err) {
+      console.error(
+        "ADD CUSTOM PERMISSION ERROR:",
+        err
+      );
+
+      alert(
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Failed to add custom permission."
+      );
+    }
+  };
+  // =====================================================
+  // DELETE CUSTOM PERMISSION
+  // =====================================================
+
+  const handleDeleteCustomPermission = async (permission) => {
+    try {
+      const permissionId =
+        permission?.permission_id ??
+        permission?.id ??
+        null;
+
+      const permissionName =
+        getPermissionName(permission);
+
+      if (!permissionId) {
+        alert("Permission ID not found.");
+        return;
+      }
+
+      if (!permissionName) {
+        alert("Permission name not found.");
+        return;
+      }
+
+      // Built-in permissions cannot be deleted
+      const normalizedName =
+        normalize(permissionName);
+
+      const builtInPermissions = [
+        "VIEW",
+        "CREATE",
+        "UPDATE",
+        "DELETE",
+      ];
+
+      if (
+        builtInPermissions.includes(
+          normalizedName
+        )
+      ) {
+        alert(
+          "Built-in permissions cannot be deleted."
+        );
+        return;
+      }
+
+      const confirmed = window.confirm(
+        `Are you sure you want to delete "${permissionName}"?`
+      );
+
+      if (!confirmed) {
+        return;
+      }
+
+      // Delete from database
+      await API.delete(
+        `/system-admin/permissions/${permissionId}`
+      );
+
+      // Remove from available permissions
+      setAvailablePermissions((prev) =>
+        prev.filter(
+          (p) =>
+            Number(
+              p?.permission_id ?? p?.id
+            ) !== Number(permissionId)
+        )
+      );
+
+      // Remove from currently selected role
+      setRoleForm((prev) => ({
+        ...prev,
+        permissions: prev.permissions.filter(
+          (p) =>
+            normalize(p) !==
+            normalizedName
+        ),
+      }));
+
+      // Close OTHER custom form if needed
+      setOtherSelected(false);
+
+      setCustomPermission({
+        name: "",
+        description: "",
+      });
+
+      alert(
+        "Custom permission deleted successfully."
+      );
+
+    } catch (err) {
+      console.error(
+        "DELETE CUSTOM PERMISSION ERROR:",
+        err
+      );
+
+      alert(
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        err?.message ||
+        "Failed to delete custom permission."
+      );
+    }
+  };
+  // =====================================================
   // SAVE ROLE
   // =====================================================
 
-  
+  const handleSaveRole = async (e) => {
+    e.preventDefault();
 
-// =====================================================
-// SAVE ROLE
-// =====================================================
-const handleSaveRole = async (e) => {
-  e.preventDefault();
+    if (savingRole) {
+      return;
+    }
 
-  const roleName = roleForm.name?.trim() || "";
-  const description = roleForm.description?.trim() || "";
+    const roleName =
+      roleForm.name.trim();
 
-  if (!roleName) {
-    alert("Role name is required.");
-    return;
-  }
-
-  if (roleName.length < 2) {
-    alert("Role name must contain at least 2 characters.");
-    return;
-  }
-
-  try {
-    setSavingRole(true);
+    const description =
+      roleForm.description.trim();
 
     // =================================================
-    // EXACT SELECTED PERMISSIONS
-    // Example: ["VIEW", "CREATE", "UPDATE"]
+    // ONLY REAL PERMISSIONS ARE SUBMITTED
+    // OTHER IS NEVER SUBMITTED
     // =================================================
-    const selectedPermissions = Array.isArray(
-      roleForm.permissions
-    )
-      ? roleForm.permissions
-      : [];
 
-    const payload = {
-      role_name: roleName,
-      description,
+    const selectedPermissions =
+      roleForm.permissions.filter(
+        (permission) => {
+          const normalized =
+            normalize(permission);
 
-      // CREATE uses this
-      permissions: selectedPermissions,
-
-      // UPDATE uses this
-      permissionIds: selectedPermissions,
-    };
-
-    console.log("====================================");
-    console.log(
-      editingRole ? "UPDATING ROLE" : "CREATING ROLE"
-    );
-    console.log("====================================");
-
-    console.log("SELECTED PERMISSIONS:", selectedPermissions);
-    console.log("PERMISSION COUNT:", selectedPermissions.length);
-    console.log("ROLE PAYLOAD:", payload);
+          return isVisiblePermissionName(
+            normalized
+          );
+        }
+      );
 
     // =================================================
-    // CREATE
+    // VALIDATION
     // =================================================
-    if (!editingRole) {
-      const response = await API.post(
-        "/system-admin/roles",
+
+    if (!roleName) {
+      alert(
+        "Role name is required."
+      );
+      return;
+    }
+
+    if (roleName.length < 2) {
+      alert(
+        "Role name must contain at least 2 characters."
+      );
+      return;
+    }
+
+    if (
+      normalizeRoleName(roleName) ===
+      "resident"
+    ) {
+      alert(
+        "Resident cannot be managed from this page."
+      );
+      return;
+    }
+
+    if (
+      selectedPermissions.length ===
+      0
+    ) {
+      alert(
+        "Please select at least one permission."
+      );
+      return;
+    }
+
+    try {
+      setSavingRole(true);
+
+      const payload = {
+        role_name: roleName,
+        name: roleName,
+        description,
+
+        // Only real permissions.
+        // OTHER is NOT included.
+        permissions:
+          selectedPermissions,
+
+        permissionIds:
+          selectedPermissions,
+      };
+
+      console.log(
+        "ROLE PAYLOAD:",
         payload
       );
 
-      console.log(
-        "CREATE ROLE RESPONSE:",
-        response.data
-      );
+      // =================================================
+      // UPDATE
+      // =================================================
 
-      alert("Role created successfully.");
-    }
+      if (editingRole) {
+        const roleId =
+          getRoleId(editingRole);
 
-    // =================================================
-    // UPDATE
-    // =================================================
-    else {
-      const roleId = getRoleId(editingRole);
+        if (!roleId) {
+          throw new Error(
+            "Role ID is missing."
+          );
+        }
 
-      if (!roleId) {
-        throw new Error("Role ID is missing.");
+        const response =
+          await API.put(
+            `/system-admin/roles/${roleId}`,
+            payload
+          );
+
+        alert(
+          response?.data?.message ||
+            "Role updated successfully."
+        );
       }
 
-      const response = await API.put(
-        `/system-admin/roles/${roleId}`,
-        payload
+      // =================================================
+      // CREATE
+      // =================================================
+
+      else {
+        const response =
+          await API.post(
+            "/system-admin/roles",
+            payload
+          );
+
+        alert(
+          response?.data?.message ||
+            "Role created successfully."
+        );
+      }
+
+      closeRoleModal();
+
+      await loadRoles();
+    } catch (err) {
+      console.error(
+        "SAVE ROLE ERROR:",
+        err
       );
 
-      console.log(
-        "UPDATE ROLE RESPONSE:",
-        response.data
+      alert(
+        err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
+          "Failed to save role."
       );
-
-      alert("Role updated successfully.");
+    } finally {
+      setSavingRole(false);
     }
+  };
 
-    // =================================================
-    // CLOSE MODAL
-    // =================================================
-    setShowRoleModal(false);
-    setEditingRole(null);
-
-    setRoleForm({
-      name: "",
-      description: "",
-      permissions: [],
-    });
-
-    // =================================================
-    // IMPORTANT:
-    // use loadRoles(), NOT fetchRoles()
-    // =================================================
-    await loadRoles();
-
-  } catch (error) {
-    console.error(
-      "SAVE ROLE ERROR:",
-      error
-    );
-
-    console.error(
-      "SERVER RESPONSE:",
-      error.response?.data
-    );
-
-    alert(
-      error.response?.data?.message ||
-      error.message ||
-      "Failed to save role."
-    );
-
-  } finally {
-    setSavingRole(false);
-  }
-};
   // =====================================================
   // DELETE ROLE
   // =====================================================
 
-  const handleDeleteRole = async (role) => {
-    const roleId = getRoleId(role);
+  const handleDeleteRole = async (
+    role
+  ) => {
+    const roleId =
+      getRoleId(role);
 
-    const roleName = role?.name || "";
+    const roleName =
+      getRoleName(role);
 
     if (!roleId) {
-      alert("Role ID is missing.");
-      return;
-    }
-
-    // =================================================
-    // PROTECTED SYSTEM ROLES
-    // =================================================
-
-    const protectedRoles = [
-      "System Admin",
-      "Municipal Admin",
-      "Collector",
-      "Business Owner",
-      "Resident",
-    ];
-
-    const isProtectedRole =
-      protectedRoles.some(
-        (item) =>
-          item.toLowerCase() ===
-          roleName.toLowerCase()
-      );
-
-    if (isProtectedRole) {
       alert(
-        `${roleName} is a default system role and cannot be deleted.`
+        "Role ID is missing."
       );
-
       return;
     }
 
-    // =================================================
-    // USERS CHECK
-    // =================================================
-
-    if (Number(role?.users || 0) > 0) {
-      alert(
-        `Cannot delete ${roleName}. This role is assigned to ${role.users} user(s).`
+    const confirmed =
+      window.confirm(
+        `Are you sure you want to delete "${roleName}"?`
       );
-
-      return;
-    }
-
-    // =================================================
-    // CONFIRM
-    // =================================================
-
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${roleName}"?`
-    );
 
     if (!confirmed) {
       return;
@@ -546,29 +1209,27 @@ const handleSaveRole = async (e) => {
     try {
       setDeletingRoleId(roleId);
 
-      const response = await API.delete(
-        `/system-admin/roles/${roleId}`
-      );
-
-      console.log(
-        "DELETE ROLE RESPONSE:",
-        response.data
-      );
+      const response =
+        await API.delete(
+          `/system-admin/roles/${roleId}`
+        );
 
       alert(
-        "Role deleted successfully."
+        response?.data?.message ||
+          "Role deleted successfully."
       );
 
       await loadRoles();
-    } catch (error) {
+    } catch (err) {
       console.error(
         "DELETE ROLE ERROR:",
-        error
+        err
       );
 
       alert(
-        error.response?.data?.message ||
-          error.message ||
+        err?.response?.data?.message ||
+          err?.response?.data?.error ||
+          err?.message ||
           "Failed to delete role."
       );
     } finally {
@@ -577,24 +1238,114 @@ const handleSaveRole = async (e) => {
   };
 
   // =====================================================
+  // FILTER ROLES
+  // =====================================================
+
+  const filteredRoles = useMemo(() => {
+    const keyword =
+      search.toLowerCase().trim();
+
+    if (!keyword) {
+      return rolesList;
+    }
+
+    return rolesList.filter(
+      (role) => {
+        const name =
+          getRoleName(
+            role
+          ).toLowerCase();
+
+        const description =
+          String(
+            role?.description || ""
+          ).toLowerCase();
+
+        return (
+          name.includes(keyword) ||
+          description.includes(
+            keyword
+          )
+        );
+      }
+    );
+  }, [rolesList, search]);
+
+  // =====================================================
+  // STATISTICS
+  // =====================================================
+
+  const totalRoles =
+    rolesList.length;
+
+  const totalAssignedUsers =
+    rolesList.reduce(
+      (sum, role) =>
+        sum + getUserCount(role),
+      0
+    );
+
+  const totalPermissionsCount =
+    permissionsToShow.length;
+
+  const adminRolesCount =
+    rolesList.filter(
+      (role) => {
+        const name =
+          normalizeRoleName(
+            getRoleName(role)
+          );
+
+        return (
+          name === "system admin" ||
+          name === "municipal admin"
+        );
+      }
+    ).length;
+
+  const operationalRolesCount =
+    rolesList.filter(
+      (role) => {
+        const name =
+          normalizeRoleName(
+            getRoleName(role)
+          );
+
+        return (
+          name === "collector" ||
+          name === "business owner"
+        );
+      }
+    ).length;
+
+  // =====================================================
+  // PERMISSION COUNT
+  // =====================================================
+
+  const getPermissionCount = (
+    role
+  ) => {
+    return getRolePermissionNames(
+      role
+    ).length;
+  };
+
+  // =====================================================
   // RENDER PERMISSION
   // =====================================================
 
-  const renderPermission = (value) => {
-    if (value === true) {
-      return (
-        <span className="text-green-600 text-xl font-bold">
-          ✓
-        </span>
-      );
-    }
-
-    return (
+  const renderPermission = (
+    value
+  ) =>
+    value ? (
+      <span className="text-green-600 text-xl font-bold">
+        ✓
+      </span>
+    ) : (
       <span className="text-red-500 text-xl font-bold">
         ✕
       </span>
     );
-  };
 
   // =====================================================
   // LOADING
@@ -604,6 +1355,7 @@ const handleSaveRole = async (e) => {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="text-center">
+
           <div className="inline-block w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
 
           <h2 className="text-xl font-bold text-gray-700 mt-4">
@@ -613,6 +1365,7 @@ const handleSaveRole = async (e) => {
           <p className="text-sm text-gray-500 mt-2">
             Loading data from database
           </p>
+
         </div>
       </div>
     );
@@ -624,128 +1377,34 @@ const handleSaveRole = async (e) => {
 
   if (error) {
     return (
-      <div className="min-h-[400px] flex items-center justify-center">
-        <div className="bg-white rounded-2xl shadow border p-8 text-center">
+      <div className="min-h-[400px] flex items-center justify-center p-6">
+
+        <div className="bg-white rounded-2xl shadow border p-8 text-center max-w-lg w-full">
+
           <h2 className="text-2xl font-bold text-gray-800">
             Failed to Load Roles
           </h2>
 
-          <p className="text-red-600 mt-2">
+          <p className="text-red-600 mt-3 break-words">
             {error}
           </p>
 
           <button
             type="button"
             onClick={loadRoles}
-            className="
-              mt-4
-              px-4
-              py-2
-              bg-red-600
-              hover:bg-red-700
-              text-white
-              rounded-lg
-            "
+            className="mt-5 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold"
           >
             Retry
           </button>
+
         </div>
+
       </div>
     );
   }
 
   // =====================================================
-  // STATISTICS
-  // =====================================================
-
-  const totalRoles = rolesList.length;
-
-  const totalAssignedUsers =
-    rolesList.reduce(
-      (sum, role) =>
-        sum + Number(role?.users || 0),
-      0
-    );
-
-  const totalPermissionsCount =
-    rolesList.reduce(
-      (sum, role) =>
-        sum + Number(role?.permissions || 0),
-      0
-    );
-
-  const activeRolesCount =
-    rolesList.filter(
-      (role) =>
-        String(role?.status || "")
-          .toLowerCase() === "active" ||
-        role?.is_active === true
-    ).length;
-
-  // =====================================================
-  // ROLE CATEGORY COUNTS
-  // =====================================================
-
-  const adminRolesCount =
-    rolesList.filter((role) => {
-      const name = String(
-        role?.name || ""
-      )
-        .toLowerCase()
-        .trim();
-
-      return (
-        name === "system admin" ||
-        name === "municipal admin"
-      );
-    }).length;
-
-  const operationalRolesCount =
-    rolesList.filter((role) => {
-      const name = String(
-        role?.name || ""
-      )
-        .toLowerCase()
-        .trim();
-
-      return (
-        name === "collector" ||
-        name === "business owner"
-      );
-    }).length;
-
-  const citizenRolesCount =
-    rolesList.filter(
-      (role) =>
-        String(role?.name || "")
-          .toLowerCase()
-          .trim() === "resident"
-    ).length;
-
-  // =====================================================
-  // SEARCH
-  // =====================================================
-
-  const filteredRoles =
-    rolesList.filter((role) =>
-      String(role?.name || "")
-        .toLowerCase()
-        .includes(
-          search.toLowerCase().trim()
-        )
-    );
-
-  // =====================================================
-  // AVAILABLE PERMISSIONS
-  // =====================================================
-
-  const permissionsToShow =
-    availablePermissions.length > 0
-      ? availablePermissions
-      : defaultPermissions;
-
-  // =====================================================
-  // RENDER
+  // MAIN UI
   // =====================================================
 
   return (
@@ -758,35 +1417,23 @@ const handleSaveRole = async (e) => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
         <div>
+
           <h1 className="text-3xl font-bold text-gray-800">
             Roles & Permissions
           </h1>
 
           <p className="mt-2 text-gray-500">
-            Manage system roles and permissions
-            for all users.
+            Manage system roles and permissions for
+            administrators, collectors, business owners,
+            and custom roles.
           </p>
+
         </div>
 
         <button
           type="button"
           onClick={openCreateModal}
-          className="
-            flex
-            w-fit
-            self-start
-            items-center
-            justify-center
-            gap-2
-            bg-green-600
-            hover:bg-blue-700
-            text-white
-            px-5
-            py-3
-            rounded-xl
-            font-semibold
-            transition
-          "
+          className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl font-semibold transition"
         >
           <FaPlus />
           New Role
@@ -798,9 +1445,10 @@ const handleSaveRole = async (e) => {
           STATISTICS
       ================================================= */}
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div className="bg-white rounded-2xl shadow border p-6">
+
           <p className="text-gray-500 text-sm">
             Total Roles
           </p>
@@ -808,9 +1456,11 @@ const handleSaveRole = async (e) => {
           <h2 className="text-4xl font-bold text-indigo-700 mt-2">
             {totalRoles}
           </h2>
+
         </div>
 
         <div className="bg-white rounded-2xl shadow border p-6">
+
           <p className="text-gray-500 text-sm">
             Total Permissions
           </p>
@@ -818,9 +1468,11 @@ const handleSaveRole = async (e) => {
           <h2 className="text-4xl font-bold text-green-600 mt-2">
             {totalPermissionsCount}
           </h2>
+
         </div>
 
         <div className="bg-white rounded-2xl shadow border p-6">
+
           <p className="text-gray-500 text-sm">
             Assigned Users
           </p>
@@ -828,16 +1480,7 @@ const handleSaveRole = async (e) => {
           <h2 className="text-4xl font-bold text-blue-600 mt-2">
             {totalAssignedUsers}
           </h2>
-        </div>
 
-        <div className="bg-white rounded-2xl shadow border p-6">
-          <p className="text-gray-500 text-sm">
-            Active Roles
-          </p>
-
-          <h2 className="text-4xl font-bold text-purple-600 mt-2">
-            {activeRolesCount}
-          </h2>
         </div>
 
       </div>
@@ -850,14 +1493,7 @@ const handleSaveRole = async (e) => {
 
         <div className="relative">
 
-          <FaSearch
-            className="
-              absolute
-              left-4
-              top-4
-              text-gray-400
-            "
-          />
+          <FaSearch className="absolute left-4 top-4 text-gray-400" />
 
           <input
             type="text"
@@ -866,17 +1502,7 @@ const handleSaveRole = async (e) => {
             onChange={(e) =>
               setSearch(e.target.value)
             }
-            className="
-              w-full
-              pl-12
-              pr-4
-              py-3
-              border
-              rounded-xl
-              outline-none
-              focus:ring-2
-              focus:ring-indigo-500
-            "
+            className="w-full pl-12 pr-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500"
           />
 
         </div>
@@ -909,10 +1535,6 @@ const handleSaveRole = async (e) => {
                   Users
                 </th>
 
-                <th className="p-4 text-left">
-                  Status
-                </th>
-
                 <th className="p-4 text-center">
                   Actions
                 </th>
@@ -923,233 +1545,131 @@ const handleSaveRole = async (e) => {
 
             <tbody>
 
-              {filteredRoles.map((role) => {
+              {filteredRoles.map(
+                (role) => {
 
-                const roleId =
-                  getRoleId(role);
+                  const roleId =
+                    getRoleId(role);
 
-                return (
-                  <tr
-                    key={
-                      roleId ||
-                      role.name
-                    }
-                    className="
-                      border-t
-                      hover:bg-gray-50
-                      transition
-                    "
-                  >
+                  const roleName =
+                    getRoleName(role);
 
-                    <td className="p-4">
+                  const userCount =
+                    getUserCount(role);
 
-                      <h3 className="font-bold text-gray-800">
-                        {role.name || "Unnamed Role"}
-                      </h3>
+                  const permissionCount =
+                    getPermissionCount(
+                      role
+                    );
 
-                      <p className="text-sm text-gray-500 mt-1">
-                        {role.description ||
-                          "No description"}
-                      </p>
+                  return (
+                    <tr
+                      key={
+                        roleId ||
+                        roleName
+                      }
+                      className="border-t hover:bg-gray-50 transition"
+                    >
 
-                    </td>
+                      {/* ROLE */}
 
-                    <td className="p-4">
+                      <td className="p-4">
 
-                      <span
-                        className="
-                          inline-flex
-                          items-center
-                          gap-2
-                          px-3
-                          py-1
-                          rounded-full
-                          bg-indigo-100
-                          text-indigo-700
-                          font-semibold
-                        "
-                      >
+                        <h3 className="font-bold text-gray-800">
+                          {roleName}
+                        </h3>
 
-                        <FaKey />
+                        <p className="text-sm text-gray-500 mt-1">
+                          {role?.description ||
+                            "No description"}
+                        </p>
 
-                        {Number(
-                          role.permissions || 0
-                        )}
+                      </td>
 
-                        {" "}
-                        Permissions
+                      {/* PERMISSIONS */}
 
-                      </span>
+                      <td className="p-4">
 
-                    </td>
-
-                    <td className="p-4">
-
-                      <span
-                        className="
-                          inline-flex
-                          items-center
-                          gap-2
-                          px-3
-                          py-1
-                          rounded-full
-                          bg-blue-100
-                          text-blue-700
-                          font-semibold
-                        "
-                      >
-
-                        <FaUsers />
-
-                        {Number(
-                          role.users || 0
-                        )}
-
-                        {" "}
-                        Users
-
-                      </span>
-
-                    </td>
-
-                    <td className="p-4">
-
-                      {(
-                        String(
-                          role.status || ""
-                        ).toLowerCase() ===
-                          "active" ||
-                        role.is_active === true
-                      ) ? (
-
-                        <span
-                          className="
-                            inline-flex
-                            items-center
-                            gap-2
-                            px-3
-                            py-1
-                            rounded-full
-                            bg-green-100
-                            text-green-700
-                            font-semibold
-                          "
-                        >
-
-                          <FaCheckCircle />
-
-                          Active
-
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 font-semibold">
+                          <FaKey />
+                          {permissionCount} Permissions
                         </span>
 
-                      ) : (
+                      </td>
 
-                        <span
-                          className="
-                            inline-flex
-                            items-center
-                            gap-2
-                            px-3
-                            py-1
-                            rounded-full
-                            bg-red-100
-                            text-red-700
-                            font-semibold
-                          "
-                        >
+                      {/* USERS */}
 
-                          <FaTimesCircle />
+                      <td className="p-4">
 
-                          Inactive
-
+                        <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">
+                          <FaUsers />
+                          {userCount} Users
                         </span>
 
-                      )}
+                      </td>
 
-                    </td>
+                      {/* ACTIONS */}
 
-                    <td className="p-4">
+                      <td className="p-4">
 
-                      <div className="flex justify-center gap-2">
+                        <div className="flex justify-center gap-2">
 
-                        {/* EDIT */}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openEditModal(
+                                role
+                              )
+                            }
+                            disabled={
+                              savingRole
+                            }
+                            className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-600 hover:text-white transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            title="Edit Role"
+                          >
+                            <FaEdit />
+                          </button>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openEditModal(role)
-                          }
-                          className="
-                            p-2
-                            bg-blue-100
-                            text-blue-700
-                            rounded-lg
-                            hover:bg-blue-600
-                            hover:text-white
-                            transition
-                          "
-                          title="Edit Role"
-                        >
-                          <FaEdit />
-                        </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleDeleteRole(
+                                role
+                              )
+                            }
+                            disabled={
+                              deletingRoleId ===
+                              roleId
+                            }
+                            className="p-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-600 hover:text-white transition disabled:opacity-40 disabled:cursor-not-allowed"
+                            title="Delete Role"
+                          >
+                            {deletingRoleId ===
+                            roleId ? (
+                              <span className="text-xs">
+                                ...
+                              </span>
+                            ) : (
+                              <FaTrash />
+                            )}
+                          </button>
 
-                        {/* DELETE */}
+                        </div>
 
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleDeleteRole(
-                              role
-                            )
-                          }
-                          disabled={
-                            deletingRoleId ===
-                            roleId
-                          }
-                          className="
-                            p-2
-                            bg-red-100
-                            text-red-700
-                            rounded-lg
-                            hover:bg-red-600
-                            hover:text-white
-                            transition
-                            disabled:opacity-50
-                            disabled:cursor-not-allowed
-                          "
-                          title="Delete Role"
-                        >
+                      </td>
 
-                          {deletingRoleId ===
-                          roleId ? (
-                            <span className="text-xs">
-                              ...
-                            </span>
-                          ) : (
-                            <FaTrash />
-                          )}
+                    </tr>
+                  );
+                }
+              )}
 
-                        </button>
-
-                      </div>
-
-                    </td>
-
-                  </tr>
-                );
-              })}
-
-              {filteredRoles.length === 0 && (
+              {filteredRoles.length ===
+                0 && (
                 <tr>
 
                   <td
-                    colSpan="5"
-                    className="
-                      p-8
-                      text-center
-                      text-gray-500
-                      font-medium
-                    "
+                    colSpan="4"
+                    className="p-8 text-center text-gray-500"
                   >
                     No roles found.
                   </td>
@@ -1169,19 +1689,9 @@ const handleSaveRole = async (e) => {
           ROLE SUMMARY
       ================================================= */}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-        <div
-          className="
-            bg-gradient-to-r
-            from-blue-500
-            to-indigo-600
-            text-white
-            rounded-2xl
-            p-6
-            shadow-lg
-          "
-        >
+        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-2xl p-6 shadow-lg">
 
           <h2 className="text-lg font-bold">
             Administrator Roles
@@ -1197,17 +1707,7 @@ const handleSaveRole = async (e) => {
 
         </div>
 
-        <div
-          className="
-            bg-gradient-to-r
-            from-green-500
-            to-emerald-600
-            text-white
-            rounded-2xl
-            p-6
-            shadow-lg
-          "
-        >
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl p-6 shadow-lg">
 
           <h2 className="text-lg font-bold">
             Operational Roles
@@ -1223,32 +1723,6 @@ const handleSaveRole = async (e) => {
 
         </div>
 
-        <div
-          className="
-            bg-gradient-to-r
-            from-purple-500
-            to-pink-600
-            text-white
-            rounded-2xl
-            p-6
-            shadow-lg
-          "
-        >
-
-          <h2 className="text-lg font-bold">
-            Citizen Roles
-          </h2>
-
-          <p className="text-4xl font-bold mt-3">
-            {citizenRolesCount}
-          </p>
-
-          <p className="text-purple-100 mt-2">
-            Resident Account
-          </p>
-
-        </div>
-
       </div>
 
       {/* =================================================
@@ -1257,41 +1731,21 @@ const handleSaveRole = async (e) => {
 
       <div className="bg-white rounded-2xl shadow border p-6">
 
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6">
 
           <h2 className="text-2xl font-bold text-gray-800">
             Permission Matrix
           </h2>
 
-          <button
-            type="button"
-            onClick={openCreateModal}
-            className="
-              flex
-              items-center
-              gap-2
-              bg-indigo-600
-              hover:bg-indigo-700
-              text-white
-              px-5
-              py-2
-              rounded-xl
-              font-semibold
-              transition
-            "
-          >
-
-            <FaKey />
-
-            Assign Permissions
-
-          </button>
+          <p className="text-sm text-gray-500 mt-1">
+            View permissions assigned to each role.
+          </p>
 
         </div>
 
         <div className="overflow-x-auto">
 
-          <table className="w-full">
+          <table className="w-full min-w-max">
 
             <thead className="bg-gray-100">
 
@@ -1301,25 +1755,24 @@ const handleSaveRole = async (e) => {
                   Role
                 </th>
 
-                <th className="p-4 text-center">
-                  View
-                </th>
+                {permissionsToShow.map(
+                  (permission) => {
 
-                <th className="p-4 text-center">
-                  Create
-                </th>
+                    const name =
+                      getPermissionName(
+                        permission
+                      );
 
-                <th className="p-4 text-center">
-                  Update
-                </th>
-
-                <th className="p-4 text-center">
-                  Delete
-                </th>
-
-                <th className="p-4 text-center">
-                  Reports
-                </th>
+                    return (
+                      <th
+                        key={name}
+                        className="p-4 text-center whitespace-nowrap"
+                      >
+                        {name}
+                      </th>
+                    );
+                  }
+                )}
 
               </tr>
 
@@ -1327,73 +1780,70 @@ const handleSaveRole = async (e) => {
 
             <tbody>
 
-              {filteredRoles.map((role) => {
+              {filteredRoles.map(
+                (role) => {
 
-                const permissions =
-                  getRolePermissions(role);
+                  const roleName =
+                    getRoleName(role);
 
-                return (
-                  <tr
-                    key={
-                      getRoleId(role) ||
-                      role.name
-                    }
-                    className="
-                      border-t
-                      hover:bg-gray-50
-                    "
-                  >
+                  return (
+                    <tr
+                      key={
+                        getRoleId(
+                          role
+                        ) ||
+                        roleName
+                      }
+                      className="border-t hover:bg-gray-50"
+                    >
 
-                    <td className="p-4 font-semibold">
-                      {role.name}
-                    </td>
+                      <td className="p-4 font-semibold whitespace-nowrap">
+                        {roleName}
+                      </td>
 
-                    <td className="p-4 text-center">
-                      {renderPermission(
-                        permissions.view
+                      {permissionsToShow.map(
+                        (permission) => {
+
+                          const permissionName =
+                            getPermissionName(
+                              permission
+                            );
+
+                          return (
+                            <td
+                              key={
+                                permissionName
+                              }
+                              className="p-4 text-center"
+                            >
+                              {renderPermission(
+                                hasRolePermission(
+                                  role,
+                                  permissionName
+                                )
+                              )}
+                            </td>
+                          );
+                        }
                       )}
-                    </td>
 
-                    <td className="p-4 text-center">
-                      {renderPermission(
-                        permissions.create
-                      )}
-                    </td>
+                    </tr>
+                  );
+                }
+              )}
 
-                    <td className="p-4 text-center">
-                      {renderPermission(
-                        permissions.update
-                      )}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      {renderPermission(
-                        permissions.delete
-                      )}
-                    </td>
-
-                    <td className="p-4 text-center">
-                      {renderPermission(
-                        permissions.reports
-                      )}
-                    </td>
-
-                  </tr>
-                );
-              })}
-
-              {filteredRoles.length === 0 && (
+              {filteredRoles.length ===
+                0 && (
                 <tr>
 
                   <td
-                    colSpan="6"
-                    className="
-                      p-8
-                      text-center
-                      text-gray-500
-                    "
+                    colSpan={
+                      permissionsToShow.length +
+                      1
+                    }
+                    className="p-8 text-center text-gray-500"
                   >
-                    No permission data found.
+                    No roles found.
                   </td>
 
                 </tr>
@@ -1411,34 +1861,24 @@ const handleSaveRole = async (e) => {
           FOOTER SUMMARY
       ================================================= */}
 
-      <div
-        className="
-          bg-gradient-to-r
-          from-indigo-700
-          to-purple-700
-          rounded-2xl
-          p-8
-          text-white
-        "
-      >
+      <div className="bg-gradient-to-r from-indigo-700 to-purple-700 rounded-2xl p-8 text-white">
 
         <h2 className="text-2xl font-bold mb-3">
           Roles Management Summary
         </h2>
 
         <p className="text-indigo-100 leading-8">
-          The System Administrator controls
-          all user roles and permissions within
-          the Waste Collection Management System.
-          This module allows administrators to
-          create new roles, assign permissions,
-          edit existing privileges, and monitor
-          user access across the platform.
+          The System Administrator controls manageable
+          user roles and permissions within the Waste
+          Collection Management System. This module
+          allows administrators to create custom roles,
+          edit role privileges, and monitor user access.
         </p>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-8">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
 
           <div>
+
             <h3 className="text-4xl font-bold">
               {totalRoles}
             </h3>
@@ -1446,9 +1886,11 @@ const handleSaveRole = async (e) => {
             <p className="text-indigo-200">
               Total Roles
             </p>
+
           </div>
 
           <div>
+
             <h3 className="text-4xl font-bold">
               {totalPermissionsCount}
             </h3>
@@ -1456,9 +1898,11 @@ const handleSaveRole = async (e) => {
             <p className="text-indigo-200">
               Permissions
             </p>
+
           </div>
 
           <div>
+
             <h3 className="text-4xl font-bold">
               {totalAssignedUsers}
             </h3>
@@ -1466,18 +1910,7 @@ const handleSaveRole = async (e) => {
             <p className="text-indigo-200">
               Assigned Users
             </p>
-          </div>
 
-          <div>
-            <h3 className="text-4xl font-bold">
-              {totalRoles > 0
-                ? "100%"
-                : "0%"}
-            </h3>
-
-            <p className="text-indigo-200">
-              System Security
-            </p>
           </div>
 
         </div>
@@ -1489,21 +1922,13 @@ const handleSaveRole = async (e) => {
       ================================================= */}
 
       {showRoleModal && (
+
         <div
-          className="
-            fixed
-            inset-0
-            z-50
-            flex
-            items-center
-            justify-center
-            bg-black/60
-            backdrop-blur-sm
-            p-4
-          "
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onMouseDown={(e) => {
             if (
-              e.target === e.currentTarget &&
+              e.target ===
+                e.currentTarget &&
               !savingRole
             ) {
               closeRoleModal();
@@ -1511,151 +1936,96 @@ const handleSaveRole = async (e) => {
           }}
         >
 
-          <div
-            className="
-              bg-white
-              rounded-2xl
-              shadow-2xl
-              w-full
-              max-w-xl
-              max-h-[90vh]
-              overflow-hidden
-            "
-          >
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden">
 
-            {/* MODAL HEADER */}
+            {/* =================================================
+                HEADER
+            ================================================= */}
 
-            <div
-              className="
-                flex
-                items-center
-                justify-between
-                p-6
-                border-b
-                bg-gray-50
-              "
-            >
+            <div className="flex items-center justify-between p-6 border-b bg-gray-50">
 
               <div>
 
                 <h2 className="text-2xl font-bold text-gray-800">
-
                   {editingRole
                     ? "Edit Role"
                     : "Create New Role"}
-
                 </h2>
 
                 <p className="text-sm text-gray-500 mt-1">
-
                   {editingRole
                     ? "Update role information and permissions."
                     : "Create a new role and assign permissions."}
-
                 </p>
 
               </div>
 
               <button
                 type="button"
-                onClick={closeRoleModal}
-                disabled={savingRole}
-                className="
-                  w-10
-                  h-10
-                  flex
-                  items-center
-                  justify-center
-                  rounded-full
-                  text-gray-500
-                  hover:bg-red-100
-                  hover:text-red-600
-                  transition
-                  disabled:opacity-50
-                "
+                onClick={
+                  closeRoleModal
+                }
+                disabled={
+                  savingRole
+                }
+                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-500 hover:bg-red-100 hover:text-red-600"
               >
-
                 <FaTimes />
-
               </button>
 
             </div>
 
-            {/* MODAL BODY */}
+            {/* =================================================
+                FORM
+            ================================================= */}
 
             <form
-              onSubmit={handleSaveRole}
-              className="
-                p-6
-                space-y-6
-                overflow-y-auto
-                max-h-[calc(90vh-100px)]
-              "
+              onSubmit={
+                handleSaveRole
+              }
+              className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-100px)]"
             >
 
-              {/* ROLE NAME */}
+              {/* =================================================
+                  ROLE NAME
+              ================================================= */}
 
               <div>
 
-                <label
-                  htmlFor="role-name"
-                  className="
-                    block
-                    text-sm
-                    font-semibold
-                    text-gray-700
-                    mb-2
-                  "
-                >
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Role Name
                 </label>
 
                 <input
-                  id="role-name"
                   type="text"
                   name="name"
-                  value={roleForm.name}
-                  onChange={handleInputChange}
+                  value={
+                    roleForm.name
+                  }
+                  onChange={
+                    handleInputChange
+                  }
                   placeholder="e.g. Supervisor"
-                  disabled={savingRole}
-                  className="
-                    w-full
-                    px-4
-                    py-3
-                    border
-                    border-gray-300
-                    rounded-xl
-                    outline-none
-                    transition
-                    focus:ring-2
-                    focus:ring-indigo-500
-                    focus:border-indigo-500
-                    disabled:bg-gray-100
-                  "
+                  disabled={
+                    savingRole
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
                   required
                 />
 
               </div>
 
-              {/* DESCRIPTION */}
+              {/* =================================================
+                  DESCRIPTION
+              ================================================= */}
 
               <div>
 
-                <label
-                  htmlFor="role-description"
-                  className="
-                    block
-                    text-sm
-                    font-semibold
-                    text-gray-700
-                    mb-2
-                  "
-                >
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Description
                 </label>
 
                 <textarea
-                  id="role-description"
                   name="description"
                   value={
                     roleForm.description
@@ -1665,52 +2035,31 @@ const handleSaveRole = async (e) => {
                   }
                   rows={4}
                   placeholder="Describe the responsibilities of this role..."
-                  disabled={savingRole}
-                  className="
-                    w-full
-                    px-4
-                    py-3
-                    border
-                    border-gray-300
-                    rounded-xl
-                    outline-none
-                    resize-none
-                    transition
-                    focus:ring-2
-                    focus:ring-indigo-500
-                    focus:border-indigo-500
-                    disabled:bg-gray-100
-                  "
+                  disabled={
+                    savingRole
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl outline-none resize-none focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-100"
                 />
 
               </div>
 
-              {/* PERMISSIONS */}
+              {/* =================================================
+                  NORMAL PERMISSIONS
+              ================================================= */}
 
               <div>
 
                 <div className="flex items-center justify-between mb-3">
 
-                  <label
-                    className="
-                      block
-                      text-sm
-                      font-semibold
-                      text-gray-700
-                    "
-                  >
+                  <label className="text-sm font-semibold text-gray-700">
                     Permissions
                   </label>
 
-                  <span
-                    className="
-                      text-xs
-                      font-medium
-                      text-indigo-600
-                    "
-                  >
+                  <span className="text-xs font-medium text-indigo-600">
                     {
-                      roleForm.permissions.length
+                      roleForm
+                        .permissions
+                        .length
                     }{" "}
                     selected
                   </span>
@@ -1719,194 +2068,324 @@ const handleSaveRole = async (e) => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                  {permissionsToShow.map(
-                    (permission) => {
+                  {permissionsToShow.map((permission) => {
+  const permissionName =
+    getPermissionName(permission);
 
-                      const permissionName =
-                        typeof permission ===
-                        "string"
-                          ? permission
-                          : permission?.permission_name ||
-                            permission?.name ||
-                            "";
+  const description =
+    getPermissionDescription(permission);
 
-                      const description =
-                        typeof permission ===
-                        "string"
-                          ? ""
-                          : permission?.description ||
-                            "";
+  const normalizedPermission =
+    normalize(permissionName);
 
-                      if (!permissionName) {
-                        return null;
+  const checked =
+    roleForm.permissions.some(
+      (item) =>
+        normalize(item) === normalizedPermission
+    );
+
+  const builtInPermissions = [
+    "VIEW",
+    "CREATE",
+    "UPDATE",
+    "DELETE",
+  ];
+
+  const isBuiltIn =
+    builtInPermissions.includes(
+      normalizedPermission
+    );
+
+  const isCustom =
+    !isBuiltIn &&
+    (
+      permission?.is_custom === true ||
+      permission?.permission_id != null ||
+      permission?.id != null
+    );
+
+  return (
+    <div
+      key={
+        permission?.permission_id ||
+        permission?.id ||
+        permissionName
+      }
+      className={`p-4 border rounded-xl transition ${
+        checked
+          ? "border-indigo-500 bg-indigo-50"
+          : "border-gray-300 hover:bg-gray-50"
+      }`}
+    >
+      <div className="flex items-start gap-3">
+
+        <label className="flex items-start gap-3 cursor-pointer flex-1">
+
+          <input
+            type="checkbox"
+            checked={checked}
+            disabled={savingRole}
+            onChange={() =>
+              togglePermission(permissionName)
+            }
+            className="mt-1 w-4 h-4"
+          />
+
+          <div className="flex-1">
+
+            <div className="font-semibold text-gray-800">
+              {permissionName}
+            </div>
+
+            {description && (
+              <p className="text-xs text-gray-500 mt-1">
+                {description}
+              </p>
+            )}
+
+          </div>
+
+        </label>
+
+        {isCustom && (
+          <button
+            type="button"
+            onClick={() =>
+              handleDeleteCustomPermission(permission)
+            }
+            disabled={savingRole}
+            className="p-2 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
+            title={`Delete ${permissionName}`}
+          >
+            <FaTrash />
+          </button>
+        )}
+
+      </div>
+    </div>
+  );
+})}
+
+
+
+                </div>
+
+              </div>
+
+
+
+
+
+
+              {/* =================================================
+                  OTHER / CUSTOM PERMISSION
+              ================================================= */}
+
+              <div>
+
+                <div
+                  className={`p-4 border rounded-xl transition ${
+                    otherSelected
+                      ? "border-orange-500 bg-orange-50"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+
+                  {/* OTHER TRIGGER */}
+
+                  <label className="flex items-start gap-3 cursor-pointer">
+
+                    <input
+                      type="checkbox"
+                      checked={
+                        otherSelected
                       }
-
-                      const checked =
-                        roleForm.permissions.includes(
-                          permissionName
+                      disabled={
+                        savingRole
+                      }
+                      onChange={() => {
+                        setOtherSelected(
+                          (prev) => !prev
                         );
 
-                      return (
-                        <label
-                          key={permissionName}
-                          className={`
-                            flex
-                            items-start
-                            gap-3
-                            p-4
-                            border
-                            rounded-xl
-                            cursor-pointer
-                            transition
-                            ${
-                              checked
-                                ? "border-indigo-500 bg-indigo-50"
-                                : "border-gray-300 hover:bg-gray-50"
-                            }
-                            ${
-                              savingRole
-                                ? "opacity-60 cursor-not-allowed"
-                                : ""
-                            }
-                          `}
-                        >
+                        setCustomPermission({
+                          name: "",
+                          description: "",
+                        });
+                      }}
+                      className="mt-1 w-4 h-4"
+                    />
 
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            disabled={
-                              savingRole
-                            }
-                            onChange={() =>
-                              togglePermission(
-                                permissionName
-                              )
-                            }
-                            className="
-                              mt-1
-                              w-4
-                              h-4
-                              text-indigo-600
-                              rounded
-                              focus:ring-indigo-500
-                            "
-                          />
+                    <div className="flex-1">
+
+                      <div className="font-semibold text-gray-800">
+                        OTHER
+                      </div>
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        Add a custom permission.
+                      </p>
+
+                    </div>
+
+                  </label>
+
+                  {/* =================================================
+                      CUSTOM PERMISSION FORM
+                  ================================================= */}
+
+                  {otherSelected && (
+
+                    <div className="mt-4 pl-7">
+
+                      <div className="p-4 bg-white border border-orange-300 rounded-xl">
+
+                        <div className="flex items-center gap-2 mb-4">
+
+                          <FaPlus className="text-orange-500" />
+
+                          <h4 className="font-bold text-gray-800">
+                            Add Custom Permission
+                          </h4>
+
+                        </div>
+
+                        <div className="space-y-4">
+
+                          {/* PERMISSION NAME */}
 
                           <div>
 
-                            <div
-                              className="
-                                font-semibold
-                                text-gray-800
-                              "
-                            >
-                              {permissionName}
-                            </div>
+                            <label className="block text-xs font-semibold text-gray-700 mb-2">
+                              Permission Name
+                            </label>
 
-                            {description && (
-                              <p
-                                className="
-                                  text-xs
-                                  text-gray-500
-                                  mt-1
-                                "
-                              >
-                                {description}
-                              </p>
-                            )}
+                            <input
+                              type="text"
+                              name="name"
+                              value={
+                                customPermission.name
+                              }
+                              onChange={
+                                handleCustomPermissionChange
+                              }
+                              placeholder="e.g. REPORTS"
+                              disabled={
+                                savingRole
+                              }
+                              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-orange-500"
+                            />
 
                           </div>
 
-                        </label>
-                      );
-                    }
+                          {/* DESCRIPTION */}
+
+                          <div>
+
+                            <label className="block text-xs font-semibold text-gray-700 mb-2">
+                              Description
+                            </label>
+
+                            <textarea
+                              name="description"
+                              value={
+                                customPermission.description
+                              }
+                              onChange={
+                                handleCustomPermissionChange
+                              }
+                              rows={3}
+                              placeholder="Describe this custom permission..."
+                              disabled={
+                                savingRole
+                              }
+                              className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm outline-none resize-none focus:ring-2 focus:ring-orange-500"
+                            />
+
+                          </div>
+
+                          {/* BUTTON */}
+
+                          <div className="flex justify-end gap-2 pt-2">
+
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setOtherSelected(
+                                  false
+                                );
+
+                                setCustomPermission({
+                                  name: "",
+                                  description: "",
+                                });
+                              }}
+                              disabled={
+                                savingRole
+                              }
+                              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-100"
+                            >
+                              Cancel
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={
+                                handleAddCustomPermission
+                              }
+                              disabled={
+                                savingRole
+                              }
+                              className="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+                            >
+                              <FaPlus />
+                              Add Permission
+                            </button>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                    </div>
+
                   )}
 
                 </div>
 
-                {roleForm.permissions.length ===
-                  0 && (
-                  <p
-                    className="
-                      text-xs
-                      text-gray-500
-                      mt-3
-                    "
-                  >
-                    Select at least one
-                    permission for this role.
-                  </p>
-                )}
-
               </div>
 
-              {/* FORM BUTTONS */}
+              {/* =================================================
+                  FOOTER
+              ================================================= */}
 
-              <div
-                className="
-                  flex
-                  justify-end
-                  gap-3
-                  pt-5
-                  border-t
-                "
-              >
+              <div className="flex justify-end gap-3 pt-5 border-t">
 
                 <button
                   type="button"
-                  onClick={closeRoleModal}
-                  disabled={savingRole}
-                  className="
-                    px-5
-                    py-3
-                    border
-                    border-gray-300
-                    rounded-xl
-                    font-semibold
-                    text-gray-700
-                    hover:bg-gray-100
-                    transition
-                    disabled:opacity-50
-                    disabled:cursor-not-allowed
-                  "
+                  onClick={
+                    closeRoleModal
+                  }
+                  disabled={
+                    savingRole
+                  }
+                  className="px-5 py-3 border border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-100"
                 >
                   Cancel
                 </button>
 
                 <button
                   type="submit"
-                  disabled={savingRole}
-                  className="
-                    flex
-                    items-center
-                    gap-2
-                    px-5
-                    py-3
-                    bg-indigo-600
-                    hover:bg-indigo-700
-                    text-white
-                    rounded-xl
-                    font-semibold
-                    transition
-                    disabled:opacity-50
-                    disabled:cursor-not-allowed
-                  "
+                  disabled={
+                    savingRole
+                  }
+                  className="flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold disabled:opacity-50"
                 >
 
                   {savingRole ? (
                     <>
-                      <span
-                        className="
-                          inline-block
-                          w-4
-                          h-4
-                          border-2
-                          border-white
-                          border-t-transparent
-                          rounded-full
-                          animate-spin
-                        "
-                      />
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
 
                       Saving...
                     </>
@@ -1929,6 +2408,7 @@ const handleSaveRole = async (e) => {
           </div>
 
         </div>
+
       )}
 
     </div>

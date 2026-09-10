@@ -1,21 +1,19 @@
+
 import React from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 import {
     FaHome,
-    FaUsers,
     FaBuilding,
     FaTruck,
+    FaUsers,
     FaClipboardList,
     FaCalendarAlt,
-    FaUserPlus,
     FaChartBar,
     FaBell,
     FaUser,
     FaCommentDots,
-    FaSignOutAlt,
-    FaBars,
-    FaTimes
+    FaSignOutAlt
 } from "react-icons/fa";
 
 import useSocketNotification
@@ -26,16 +24,6 @@ const MunicipalAdminLayout = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-
-
-    // ==========================================
-    // SIDEBAR STATE
-    // false = closed
-    // true  = open
-    // ==========================================
-
-    const [sidebarOpen, setSidebarOpen] =
-        React.useState(false);
 
 
     // ==========================================
@@ -75,6 +63,8 @@ const MunicipalAdminLayout = () => {
 
     // ==========================================
     // MENU ITEMS
+    // Residents REMOVED
+    // Collection Teams ADDED
     // ==========================================
 
     const menuItems = [
@@ -92,12 +82,6 @@ const MunicipalAdminLayout = () => {
         },
 
         {
-            label: "Residents",
-            path: "/municipal-admin/residents",
-            icon: <FaUsers />
-        },
-
-        {
             label: "Business Owners",
             path: "/municipal-admin/business-owners",
             icon: <FaBuilding />
@@ -107,6 +91,12 @@ const MunicipalAdminLayout = () => {
             label: "Collectors",
             path: "/municipal-admin/collectors",
             icon: <FaTruck />
+        },
+
+        {
+            label: "Collection Teams",
+            path: "/municipal-admin/collection-teams",
+            icon: <FaUsers />
         },
 
         {
@@ -121,8 +111,6 @@ const MunicipalAdminLayout = () => {
             icon: <FaCalendarAlt />
         },
 
-        
-
         {
             label: "Reports",
             path: "/municipal-admin/reports",
@@ -134,11 +122,12 @@ const MunicipalAdminLayout = () => {
             path: "/municipal-admin/notifications",
             icon: <FaBell />
         },
+
         {
-    label: "Feedback",
-    path: "/municipal-admin/feedback",
-    icon: <FaCommentDots />
-},
+            label: "Feedback",
+            path: "/municipal-admin/feedback",
+            icon: <FaCommentDots />
+        },
 
         {
             label: "Profile",
@@ -157,9 +146,6 @@ const MunicipalAdminLayout = () => {
 
         navigate(path);
 
-        // Close sidebar after navigation
-        setSidebarOpen(false);
-
     };
 
 
@@ -176,61 +162,17 @@ const MunicipalAdminLayout = () => {
     };
 
 
-    // ==========================================
-    // TOGGLE SIDEBAR
-    // ==========================================
-
-    const toggleSidebar = () => {
-
-        setSidebarOpen(
-            previous => !previous
-        );
-
-    };
-
-
-    // ==========================================
-    // CLOSE SIDEBAR
-    // ==========================================
-
-    const closeSidebar = () => {
-
-        setSidebarOpen(false);
-
-    };
-
-
     return (
 
         <div className="min-h-screen bg-gray-100">
 
 
             {/* ==================================================
-                OVERLAY
-                Appears whenever sidebar is open
-            ================================================== */}
-
-            {sidebarOpen && (
-
-                <div
-                    className="
-                        fixed
-                        inset-0
-                        bg-black/50
-                        z-40
-                    "
-                    onClick={closeSidebar}
-                />
-
-            )}
-
-
-            {/* ==================================================
-                SIDEBAR
+                STATIC SIDEBAR
             ================================================== */}
 
             <aside
-                className={`
+                className="
                     fixed
                     top-0
                     left-0
@@ -244,17 +186,7 @@ const MunicipalAdminLayout = () => {
 
                     flex
                     flex-col
-
-                    transition-transform
-                    duration-300
-                    ease-in-out
-
-                    ${
-                        sidebarOpen
-                            ? "translate-x-0"
-                            : "-translate-x-full"
-                    }
-                `}
+                "
             >
 
 
@@ -266,7 +198,6 @@ const MunicipalAdminLayout = () => {
                     className="
                         flex
                         items-center
-                        justify-between
 
                         flex-shrink-0
 
@@ -289,35 +220,6 @@ const MunicipalAdminLayout = () => {
                         </p>
 
                     </div>
-
-
-                    {/* ==================================================
-                        CLOSE BUTTON
-                    ================================================== */}
-
-                    <button
-                        onClick={closeSidebar}
-                        className="
-                            flex
-                            items-center
-                            justify-center
-
-                            w-10
-                            h-10
-
-                            rounded-lg
-
-                            text-xl
-
-                            hover:bg-blue-600
-                            transition
-                        "
-                        aria-label="Close sidebar"
-                    >
-
-                        <FaTimes />
-
-                    </button>
 
                 </div>
 
@@ -392,8 +294,7 @@ const MunicipalAdminLayout = () => {
                     {menuItems.map((item) => {
 
                         const active =
-                            location.pathname ===
-                            item.path;
+                            location.pathname === item.path;
 
 
                         return (
@@ -510,12 +411,9 @@ const MunicipalAdminLayout = () => {
 
             {/* ==================================================
                 MAIN AREA
-
-                No lg:ml-72 because sidebar is hidden
-                until ☰ is clicked.
             ================================================== */}
 
-            <div className="min-h-screen">
+            <div className="min-h-screen ml-72">
 
 
                 {/* ==================================================
@@ -542,87 +440,33 @@ const MunicipalAdminLayout = () => {
                     "
                 >
 
-                    <div
-                        className="
-                            flex
-                            items-center
-                            gap-4
-                        "
-                    >
+                    {/* TITLE */}
 
+                    <div>
 
-                        {/* ==================================================
-                            MENU BUTTON
-                            Visible on BOTH desktop and mobile
-                        ================================================== */}
-
-                        <button
+                        <h1
                             className="
-                                flex
-
-                                items-center
-                                justify-center
-
-                                w-10
-                                h-10
-
-                                rounded-lg
-
-                                text-gray-700
-
-                                hover:bg-gray-100
-
-                                text-2xl
-
-                                transition
+                                font-bold
+                                text-xl
+                                text-gray-800
                             "
-                            onClick={toggleSidebar}
-                            aria-label={
-                                sidebarOpen
-                                    ? "Close sidebar"
-                                    : "Open sidebar"
-                            }
                         >
 
-                            {sidebarOpen
-                                ? <FaTimes />
-                                : <FaBars />
-                            }
+                            Debre Markos Municipality
 
-                        </button>
+                        </h1>
 
 
-                        {/* ==================================================
-                            TITLE
-                        ================================================== */}
+                        <p
+                            className="
+                                text-xs
+                                text-gray-500
+                            "
+                        >
 
-                        <div>
+                            Waste Collection Management System
 
-                            <h1
-                                className="
-                                    font-bold
-                                    text-xl
-                                    text-gray-800
-                                "
-                            >
-
-                                Debre Markos Municipality
-
-                            </h1>
-
-
-                            <p
-                                className="
-                                    text-xs
-                                    text-gray-500
-                                "
-                            >
-
-                                Waste Collection Management System
-
-                            </p>
-
-                        </div>
+                        </p>
 
                     </div>
 

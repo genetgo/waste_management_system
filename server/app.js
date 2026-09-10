@@ -97,6 +97,12 @@ app.use("/api/residents", require("./routes/residentRoutes"));
 app.use("/api/business", require("./routes/businessOwnerRoutes"));
 
 app.use("/api/collectors", require("./routes/collectorRoutes"));
+app.use(
+  "/api/collection-teams",
+  require("./routes/collectionTeamRoutes")
+);
+
+
 
 app.use("/api/municipal-admin", require("./routes/municipalAdminRoutes"));
 

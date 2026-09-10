@@ -1,51 +1,59 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import ROUTES from "../../constants/routes";
 
 const SystemAdminLayout = () => {
+
   const navigate = useNavigate();
 
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ==========================================
-  // Menu Items
+  // MENU ITEMS
   // ==========================================
+
   const menuItems = [
     {
       label: "Home",
       path: "/system-admin/home",
       icon: "🏠",
     },
+
     {
       label: "Dashboard",
       path: ROUTES.SYSTEM_DASHBOARD,
       icon: "📊",
     },
+
     {
       label: "Users",
       path: ROUTES.SYSTEM_USERS,
       icon: "👥",
     },
+
     {
       label: "Requests",
       path: ROUTES.SYSTEM_REQUESTS,
       icon: "📋",
     },
+
     {
       label: "Roles",
       path: ROUTES.SYSTEM_ROLES,
       icon: "🔐",
     },
+
     {
       label: "Staff Accounts",
       path: ROUTES.SYSTEM_STAFF,
       icon: "👤",
     },
+
     {
       label: "Backup",
       path: ROUTES.SYSTEM_BACKUP,
       icon: "💾",
     },
+
     {
       label: "Profile",
       path: ROUTES.SYSTEM_PROFILE,
@@ -53,60 +61,32 @@ const SystemAdminLayout = () => {
     },
   ];
 
-  // ==========================================
-  // Open Sidebar
-  // ==========================================
-  const openSidebar = () => {
-    setSidebarOpen(true);
-  };
 
   // ==========================================
-  // Close Sidebar
+  // LOGOUT
   // ==========================================
-  const closeSidebar = () => {
-    setSidebarOpen(false);
-  };
 
-  // ==========================================
-  // Logout
-  // ==========================================
   const handleLogout = () => {
-    setSidebarOpen(false);
+
     navigate("/logout");
+
   };
+
 
   return (
+
     <div className="min-h-screen bg-gray-100">
 
-      {/* =====================================================
-          OVERLAY
-          Desktop + Mobile
-      ====================================================== */}
-      {sidebarOpen && (
-        <div
-          onClick={closeSidebar}
-          className="
-            fixed
-            inset-0
-            bg-black/40
-            z-40
-          "
-        />
-      )}
 
       {/* =====================================================
-          SIDEBAR
-
-          IMPORTANT:
-          Sidebar is hidden by default on ALL screen sizes.
-          No lg:translate-x-0 here.
+          STATIC SIDEBAR
       ====================================================== */}
+
       <aside
-        className={`
+        className="
           fixed
           top-0
           left-0
-
           z-50
 
           w-64
@@ -121,29 +101,18 @@ const SystemAdminLayout = () => {
 
           flex
           flex-col
-
-          transform
-
-          transition-transform
-          duration-300
-          ease-in-out
-
-          ${
-            sidebarOpen
-              ? "translate-x-0"
-              : "-translate-x-full"
-          }
-        `}
+        "
       >
+
 
         {/* =================================================
             SIDEBAR HEADER
         ================================================= */}
+
         <div
           className="
             flex
             items-center
-            justify-between
 
             px-5
             py-5
@@ -156,6 +125,7 @@ const SystemAdminLayout = () => {
         >
 
           <div>
+
             <h1
               className="
                 text-lg
@@ -175,42 +145,16 @@ const SystemAdminLayout = () => {
             >
               System Administrator
             </p>
+
           </div>
-
-          {/* CLOSE BUTTON */}
-
-          <button
-            type="button"
-            onClick={closeSidebar}
-            className="
-              w-9
-              h-9
-
-              flex
-              items-center
-              justify-center
-
-              rounded-lg
-
-              text-gray-500
-
-              hover:text-gray-800
-              hover:bg-gray-100
-
-              text-xl
-            "
-            aria-label="Close sidebar"
-          >
-            ✕
-          </button>
 
         </div>
 
+
         {/* =================================================
             NAVIGATION
-
-            Only this part scrolls
         ================================================= */}
+
         <div
           className="
             flex-1
@@ -226,10 +170,10 @@ const SystemAdminLayout = () => {
           <nav className="space-y-2">
 
             {menuItems.map((item) => (
+
               <NavLink
                 key={item.path}
                 to={item.path}
-                onClick={closeSidebar}
                 className={({ isActive }) =>
                   `
                     flex
@@ -272,15 +216,18 @@ const SystemAdminLayout = () => {
                 </span>
 
               </NavLink>
+
             ))}
 
           </nav>
 
         </div>
 
+
         {/* =================================================
             LOGOUT
         ================================================= */}
+
         <div
           className="
             p-4
@@ -333,16 +280,23 @@ const SystemAdminLayout = () => {
 
       </aside>
 
+
       {/* =====================================================
           MAIN CONTENT
+      ===================================================== */}
 
-          Full width because sidebar is hidden by default
-      ====================================================== */}
-      <div className="min-h-screen w-full">
+      <div
+        className="
+          min-h-screen
+          ml-64
+        "
+      >
+
 
         {/* =================================================
             TOP HEADER
         ================================================= */}
+
         <header
           className="
             bg-white
@@ -364,69 +318,37 @@ const SystemAdminLayout = () => {
           "
         >
 
+
           {/* LEFT */}
 
-          <div className="flex items-center gap-3">
+          <div>
 
-            {/* MENU BUTTON */}
-
-            <button
-              type="button"
-              onClick={openSidebar}
+            <h2
               className="
-                w-10
-                h-10
+                text-lg
+                sm:text-xl
 
-                flex
-                items-center
-                justify-center
-
-                rounded-lg
-
-                text-gray-700
-
-                hover:bg-gray-100
-
-                text-2xl
-
-                transition
+                font-semibold
+                text-gray-800
               "
-              aria-label="Open sidebar"
             >
-              ☰
-            </button>
+              System Administrator
+            </h2>
 
-            {/* TITLE */}
+            <p
+              className="
+                hidden
+                sm:block
 
-            <div>
-
-              <h2
-                className="
-                  text-lg
-                  sm:text-xl
-
-                  font-semibold
-                  text-gray-800
-                "
-              >
-                System Administrator
-              </h2>
-
-              <p
-                className="
-                  hidden
-                  sm:block
-
-                  text-sm
-                  text-gray-500
-                "
-              >
-                Waste Management System
-              </p>
-
-            </div>
+                text-sm
+                text-gray-500
+              "
+            >
+              Waste Management System
+            </p>
 
           </div>
+
 
           {/* RIGHT */}
 
@@ -437,6 +359,7 @@ const SystemAdminLayout = () => {
               gap-3
             "
           >
+
 
             {/* ADMIN INFO */}
 
@@ -469,6 +392,7 @@ const SystemAdminLayout = () => {
 
             </div>
 
+
             {/* AVATAR */}
 
             <div
@@ -495,22 +419,29 @@ const SystemAdminLayout = () => {
 
         </header>
 
+
         {/* =================================================
             PAGE CONTENT
         ================================================= */}
+
         <main
           className="
             p-4
             sm:p-6
           "
         >
+
           <Outlet />
+
         </main>
 
       </div>
 
     </div>
+
   );
+
 };
+
 
 export default SystemAdminLayout;

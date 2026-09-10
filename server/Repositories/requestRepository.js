@@ -1,90 +1,96 @@
-
 const { pool } = require("../config/db");
 
 class RequestRepository {
-
     // ===========================================
     // Create On-Demand Request
     // Business Owner → Pending
     // ===========================================
     async createRequest(data) {
-    const query = `
-        INSERT INTO on_demand_requests
-        (
-            business_id,
-            kifle_ketema,
-            kebele,
-            sefer,
-            latitude,
-            longitude,
-            preferred_collection_date,
-            description,
-            status,
-            created_at,
-            updated_at
-        )
-        VALUES
-        (
-            $1,
-            $2,
-            $3,
-            $4,
-            $5,
-            $6,
-            $7,
-            $8,
-            'Pending',
-            CURRENT_TIMESTAMP,
-            CURRENT_TIMESTAMP
-        )
-        RETURNING *;
-    `;
+        const query = `
+            INSERT INTO on_demand_requests
+            (
+                business_id,
+                kifle_ketema,
+                kebele,
+                sefer,
+                
+                latitude,
+                longitude,
+                preferred_collection_date,
+                description,
+                status,
+                created_at,
+                updated_at
+            )
+            VALUES
+            (
+                $1,
+                $2,
+                $3,
+                $4,
+                $5,
+                $6,
+                $7,
+                $8,
+                
+                'Pending',
+                CURRENT_TIMESTAMP,
+                CURRENT_TIMESTAMP
+            )
+            RETURNING *;
+        `;
 
-    const values = [
-        data.business_id,
-        data.kifle_ketema,
-        data.kebele,
-        data.sefer,
-        data.latitude,
-        data.longitude,
-        data.preferred_collection_date,
-        data.description || null
-    ];
+        const values = [
+            data.business_id,
+            data.kifle_ketema,
+            data.kebele,
+            data.sefer,
+            
+            data.latitude,
+            data.longitude,
+            data.preferred_collection_date,
+            data.description || null,
+        ];
 
-    try {
-        const { rows } = await pool.query(query, values);
+        try {
+            const { rows } = await pool.query(query, values);
 
-        return rows[0];
+            return rows[0] || null;
+        } catch (error) {
+            // ==========================================
+            // Duplicate Business + Date
+            // ==========================================
+            if (
+                error.code === "23505" &&
+                error.constraint === "unique_business_request_per_date"
+            ) {
+                throw new Error(
+                    "You have already submitted a request for this date. You cannot submit another request on the same day."
+                );
+            }
 
-    } catch (error) {
-
-        // ==========================================
-        // Duplicate Business + Date
-        // ==========================================
-        if (
-            error.code === "23505" &&
-            error.constraint === "unique_business_request_per_date"
-        ) {
-            throw new Error(
-                "You have already submitted a request for this date. You cannot submit another request on the same day."
-            );
+            throw error;
         }
-
-        throw error;
     }
-}
-// ===========================================
+
+    // ===========================================
 // Get Requests By Business
-// Used for duplicate request checking
 // Business Owner
 // ===========================================
 async getRequestsByBusiness(businessId) {
-
     const query = `
         SELECT
             r.request_id,
             r.business_id,
 
+            -- Business information
+            b.business_name,
+            b.owner_name,
+            b.phone_number AS business_phone,
+            b.email AS business_email,
+            b.house_number,
+
+            -- Request location
             r.kifle_ketema,
             r.kebele,
             r.sefer,
@@ -92,181 +98,181 @@ async getRequestsByBusiness(businessId) {
             r.latitude,
             r.longitude,
 
+            -- Request information
             r.preferred_collection_date,
             r.description,
+            r.rejection_reason,
             r.status,
 
-            r.collector_id,
+            -- Team
+            r.team_id,
+            ct.team_name,
 
+            -- Team Leader / Driver
+            r.collector_id,
             c.full_name AS collector_name,
             c.phone_number AS collector_phone,
             c.email AS collector_email,
 
-            r.created_at,
-            r.updated_at,
+            -- Approval
+            r.approved_by,
+            a.full_name AS approved_by_name,
+
+            r.approved_at,
             r.collected_at,
-            r.completed_at
+            r.completed_at,
+
+            r.created_at,
+            r.updated_at
 
         FROM on_demand_requests r
 
+        INNER JOIN business_owners b
+            ON r.business_id = b.business_id
+
+        LEFT JOIN collection_teams ct
+            ON r.team_id = ct.team_id
+
         LEFT JOIN collectors c
             ON r.collector_id = c.collector_id
+
+        LEFT JOIN municipal_administrators a
+            ON r.approved_by = a.admin_id
 
         WHERE r.business_id = $1
 
         ORDER BY r.request_id DESC;
     `;
 
-    const { rows } = await pool.query(
-        query,
-        [businessId]
-    );
+    const { rows } = await pool.query(query, [businessId]);
 
     return rows;
 }
-
 
     // ===========================================
     // Get Requests By Collector
     // ===========================================
-   async getRequestsByCollector(collectorId) {
+    async getRequestsByCollector(collectorId) {
+        const query = `
+            SELECT
+                r.*,
 
-    const query = `
-        SELECT
-            r.*,
+                b.business_name,
+                b.owner_name,
 
-            b.business_name,
-            b.owner_name,
+                c.full_name AS collector_name,
 
-            c.full_name AS collector_name,
+                a.full_name AS approved_by_name
 
-            a.full_name AS approved_by_name
+            FROM on_demand_requests r
 
-        FROM on_demand_requests r
+            INNER JOIN business_owners b
+                ON r.business_id = b.business_id
 
-        INNER JOIN business_owners b
-            ON r.business_id = b.business_id
+            LEFT JOIN collectors c
+                ON r.collector_id = c.collector_id
 
-        LEFT JOIN collectors c
-            ON r.collector_id = c.collector_id
+            LEFT JOIN municipal_administrators a
+                ON r.approved_by = a.admin_id
 
-        LEFT JOIN municipal_administrators a
-            ON r.approved_by = a.admin_id
+            WHERE r.collector_id = $1
 
-        WHERE r.collector_id = $1
+            ORDER BY r.created_at DESC;
+        `;
 
-        ORDER BY r.created_at DESC;
-    `;
+        const { rows } = await pool.query(query, [collectorId]);
 
+        console.log("COLLECTOR ID:", collectorId);
+        console.log("ROWS LENGTH:", rows.length);
+        console.log(
+            "ROWS DATA:",
+            JSON.stringify(rows, null, 2)
+        );
 
-    const { rows } = await pool.query(
-        query,
-        [collectorId]
-    );
-
-
-   
-
-console.log("COLLECTOR ID:", collectorId);
-console.log("ROWS LENGTH:", rows.length);
-console.log("ROWS DATA:", JSON.stringify(rows, null, 2));
-    return rows;
-}
-
+        return rows;
+    }
 
     // ===========================================
     // Get Pending Requests
+    // Municipal Admin
     // ===========================================
-    // ===========================================
-// Get Pending Requests
-// ===========================================
-async getPendingRequests() {
+    async getPendingRequests() {
+        const query = `
+            SELECT
+                r.*,
 
-    const query = `
-        SELECT
-            r.*,
+                b.business_name,
+                b.owner_name,
+                b.phone_number AS phone_number,
 
-            b.business_name,
-            b.owner_name,
-            b.phone_number AS phone_number,
+                r.created_at AS request_date,
 
-            r.created_at AS request_date,
+                c.full_name AS collector_name,
 
-            c.full_name AS collector_name,
+                a.full_name AS approved_by_name
 
-            a.full_name AS approved_by_name
+            FROM on_demand_requests r
 
-        FROM on_demand_requests r
+            INNER JOIN business_owners b
+                ON r.business_id = b.business_id
 
-        INNER JOIN business_owners b
-            ON r.business_id = b.business_id
+            LEFT JOIN collectors c
+                ON r.collector_id = c.collector_id
 
-        LEFT JOIN collectors c
-            ON r.collector_id = c.collector_id
+            LEFT JOIN municipal_administrators a
+                ON r.approved_by = a.admin_id
 
-        LEFT JOIN municipal_administrators a
-            ON r.approved_by = a.admin_id
+            WHERE r.status = 'Pending'
 
-        WHERE r.status = 'Pending'
+            ORDER BY r.created_at DESC;
+        `;
 
-        ORDER BY r.created_at DESC;
-    `;
+        const { rows } = await pool.query(query);
 
-    const { rows } = await pool.query(query);
-
-    return rows;
-}
-
+        return rows;
+    }
 
     // ===========================================
     // Get All Requests
     // ===========================================
-    // ===========================================
-// Get All Requests
-// ===========================================
-async getAllRequests() {
+    async getAllRequests() {
+        const query = `
+            SELECT
+                r.*,
 
-    const query = `
-        SELECT
-            r.*,
+                b.business_name,
+                b.owner_name,
+                b.phone_number AS phone_number,
 
-            b.business_name,
-            b.owner_name,
-            b.phone_number AS phone_number,
+                r.created_at AS request_date,
 
-            r.created_at AS request_date,
+                c.full_name AS collector_name,
 
-            c.full_name AS collector_name,
+                a.full_name AS approved_by_name
 
-            a.full_name AS approved_by_name
+            FROM on_demand_requests r
 
-        FROM on_demand_requests r
+            INNER JOIN business_owners b
+                ON r.business_id = b.business_id
 
-        INNER JOIN business_owners b
-            ON r.business_id = b.business_id
+            LEFT JOIN collectors c
+                ON r.collector_id = c.collector_id
 
-        LEFT JOIN collectors c
-            ON r.collector_id = c.collector_id
+            LEFT JOIN municipal_administrators a
+                ON r.approved_by = a.admin_id
 
-        LEFT JOIN municipal_administrators a
-            ON r.approved_by = a.admin_id
+            ORDER BY r.created_at DESC;
+        `;
 
-        ORDER BY r.created_at DESC;
-    `;
+        const { rows } = await pool.query(query);
 
-    const { rows } = await pool.query(query);
+        return rows;
+    }
 
-    return rows;
-}
-
-    // ===========================================
-    // Get Request By ID
-    // ===========================================
     // ===========================================
 // Get Request By ID
 // ===========================================
 async getRequestById(requestId) {
-
     const query = `
         SELECT
             r.*,
@@ -277,8 +283,27 @@ async getRequestById(requestId) {
 
             r.created_at AS request_date,
 
+            -- =========================================
+            -- Collector / Team Leader / Driver
+            -- =========================================
             c.full_name AS collector_name,
 
+            -- =========================================
+            -- Collection Team
+            -- =========================================
+            ct.team_name,
+            ct.kifle_ketema AS team_kifle_ketema,
+            ct.kebele AS team_kebele,
+            ct.status AS team_status,
+
+            -- =========================================
+            -- Team Leader
+            -- =========================================
+            tl.full_name AS team_leader_name,
+
+            -- =========================================
+            -- Municipal Admin
+            -- =========================================
             a.full_name AS approved_by_name
 
         FROM on_demand_requests r
@@ -286,8 +311,17 @@ async getRequestById(requestId) {
         INNER JOIN business_owners b
             ON r.business_id = b.business_id
 
+        -- Assigned Team
+        LEFT JOIN collection_teams ct
+            ON r.team_id = ct.team_id
+
+        -- Existing collector_id = Team Leader / Driver
         LEFT JOIN collectors c
             ON r.collector_id = c.collector_id
+
+        -- Team Leader from collection_teams
+        LEFT JOIN collectors tl
+            ON ct.team_leader_id = tl.collector_id
 
         LEFT JOIN municipal_administrators a
             ON r.approved_by = a.admin_id
@@ -307,7 +341,6 @@ async getRequestById(requestId) {
     // Pending → Approved
     // ===========================================
     async approveRequest(requestId, adminId) {
-
         const query = `
             UPDATE on_demand_requests
 
@@ -327,25 +360,32 @@ async getRequestById(requestId) {
             query,
             [
                 requestId,
-                adminId
+                adminId,
             ]
         );
 
         return rows[0] || null;
     }
 
-
     // ===========================================
     // Reject Request
     // Pending → Rejected
+    //
+    // rejectionReason = Municipal Admin reason
+    // adminId = Municipal Admin who rejected
     // ===========================================
-    async rejectRequest(requestId) {
-
+    async rejectRequest(
+        requestId,
+        rejectionReason,
+        adminId
+    ) {
         const query = `
             UPDATE on_demand_requests
 
             SET
                 status = 'Rejected',
+                rejection_reason = $2,
+                approved_by = $3,
                 updated_at = CURRENT_TIMESTAMP
 
             WHERE request_id = $1
@@ -356,145 +396,261 @@ async getRequestById(requestId) {
 
         const { rows } = await pool.query(
             query,
-            [requestId]
+            [
+                requestId,
+                rejectionReason,
+                adminId,
+            ]
         );
 
         return rows[0] || null;
     }
-
-
-    
 // ===========================================
-// Assign Collector
-// Municipal Admin → Assign Collector
+// Assign Collection Team
+// Municipal Admin → Collection Team
+// Approved → Assigned
+//
+// Team Leader = Driver
+// Other collectors work with the Team Leader
 // ===========================================
-async assignCollector(requestId, collectorId) {
+async assignCollector(
+    requestId,
+    teamId
+) {
 
-    // Check collector
-    const collector = await pool.query(
+    // ===========================================
+    // Check Collection Team
+    // ===========================================
+    const team = await pool.query(
         `
         SELECT
-            collector_id,
-            full_name,
-            is_active
-        FROM collectors
-        WHERE collector_id = $1
+            ct.team_id,
+            ct.team_name,
+            ct.kifle_ketema,
+            ct.kebele,
+            ct.team_leader_id,
+            ct.status,
+            c.full_name AS team_leader_name,
+            c.is_active AS team_leader_active
+
+        FROM collection_teams ct
+
+        LEFT JOIN collectors c
+            ON c.collector_id = ct.team_leader_id
+
+        WHERE ct.team_id = $1
         `,
-        [collectorId]
+        [teamId]
     );
 
-    // Collector does not exist
-    if (!collector.rows.length) {
-        throw new Error("Collector not found.");
-    }
-
-    // Collector is inactive
-    if (!collector.rows[0].is_active) {
+    // Team does not exist
+    if (!team.rows.length) {
         throw new Error(
-            "Cannot assign an inactive collector."
+            "Collection team not found."
         );
     }
 
-    // Assign collector to request
+    const teamData = team.rows[0];
+
+    // ===========================================
+    // Check Team Status
+    // ===========================================
+    if (
+        teamData.status !== "ACTIVE" &&
+        teamData.status !== "active"
+    ) {
+        throw new Error(
+            "Cannot assign an inactive collection team."
+        );
+    }
+
+    // ===========================================
+    // Check Team Leader
+    // Team Leader = Driver
+    // ===========================================
+    if (!teamData.team_leader_id) {
+        throw new Error(
+            "This collection team does not have a Team Leader/Driver."
+        );
+    }
+
+    // ===========================================
+    // Check Team Leader Active
+    // ===========================================
+    const leaderActive =
+        teamData.team_leader_active === true ||
+        teamData.team_leader_active === "true" ||
+        teamData.team_leader_active === 1;
+
+    if (!leaderActive) {
+        throw new Error(
+            "The Team Leader/Driver is inactive."
+        );
+    }
+
+    // ===========================================
+    // Check Request Location
+    // Team Kifle/Kebele must match Request
+    // ===========================================
+    const request = await pool.query(
+        `
+        SELECT
+            request_id,
+            kifle_ketema,
+            kebele,
+            status
+        FROM on_demand_requests
+        WHERE request_id = $1
+        `,
+        [requestId]
+    );
+
+    if (!request.rows.length) {
+        throw new Error(
+            "Request not found."
+        );
+    }
+
+    const requestData = request.rows[0];
+
+    // ===========================================
+    // Request must be Approved
+    // ===========================================
+    if (requestData.status !== "Approved") {
+        throw new Error(
+            "Only approved requests can be assigned."
+        );
+    }
+
+    // ===========================================
+    // Check Kifle Ketema
+    // ===========================================
+    if (
+        String(teamData.kifle_ketema).trim() !==
+        String(requestData.kifle_ketema).trim()
+    ) {
+        throw new Error(
+            "This collection team does not belong to the request's Kifle Ketema."
+        );
+    }
+
+    // ===========================================
+    // Check Kebele
+    // ===========================================
+    if (
+        String(teamData.kebele).trim() !==
+        String(requestData.kebele).trim()
+    ) {
+        throw new Error(
+            "This collection team does not belong to the request's Kebele."
+        );
+    }
+
+    // ===========================================
+    // Assign Team
+    //
+    // team_id = actual collection team
+    // collector_id = Team Leader / Driver
+    // ===========================================
     const { rows } = await pool.query(
         `
         UPDATE on_demand_requests
+
         SET
-            collector_id = $1,
+            team_id = $1,
+            collector_id = $2,
             status = 'Assigned',
             updated_at = CURRENT_TIMESTAMP
-        WHERE request_id = $2
+
+        WHERE request_id = $3
+        AND status = 'Approved'
+
         RETURNING *;
         `,
         [
-            collectorId,
+            teamId,
+            teamData.team_leader_id,
             requestId
         ]
     );
 
     return rows[0] || null;
 }
-// ===========================================
-// Collector Starts Collection
-// Assigned → In Progress
-// ===========================================
-async startCollection(
-    requestId,
-    collectorId
-) {
+    // ===========================================
+    // Collector Starts Collection
+    // Assigned → In Progress
+    // ===========================================
+    async startCollection(
+        requestId,
+        collectorId
+    ) {
+        const query = `
+            UPDATE on_demand_requests
 
-    const query = `
-        UPDATE on_demand_requests
+            SET
+                status = 'In Progress',
+                updated_at = CURRENT_TIMESTAMP
 
-        SET
-            status = 'In Progress',
-            updated_at = CURRENT_TIMESTAMP
+            WHERE request_id = $1
+            AND collector_id = $2
+            AND status = 'Assigned'
 
-        WHERE request_id = $1
-        AND collector_id = $2
-        AND status = 'Assigned'
+            RETURNING *;
+        `;
 
-        RETURNING *;
-    `;
+        const { rows } = await pool.query(
+            query,
+            [
+                requestId,
+                collectorId,
+            ]
+        );
 
+        return rows[0] || null;
+    }
 
-    const { rows } = await pool.query(
-        query,
-        [
-            requestId,
-            collectorId
-        ]
-    );
+    // ===========================================
+    // Collector Completes Collection
+    // In Progress → Collected
+    // ===========================================
+    async completeCollection(
+        requestId,
+        collectorId
+    ) {
+        const query = `
+            UPDATE on_demand_requests
 
+            SET
+                status = 'Collected',
+                collected_at = CURRENT_TIMESTAMP,
+                updated_at = CURRENT_TIMESTAMP
 
-    return rows[0] || null;
-}
+            WHERE request_id = $1
+            AND collector_id = $2
+            AND status = 'In Progress'
 
+            RETURNING *;
+        `;
 
+        const { rows } = await pool.query(
+            query,
+            [
+                requestId,
+                collectorId,
+            ]
+        );
 
-// ===========================================
-// Collector Completes Collection
-// In Progress → Collected
-// ===========================================
-async completeCollection(
-    requestId,
-    collectorId
-) {
+        return rows[0] || null;
+    }
 
-    const query = `
-        UPDATE on_demand_requests
-
-        SET
-            status = 'Collected',
-            collected_at = CURRENT_TIMESTAMP,
-            updated_at = CURRENT_TIMESTAMP
-
-        WHERE request_id = $1
-        AND collector_id = $2
-        AND status = 'In Progress'
-
-        RETURNING *;
-    `;
-
-
-    const { rows } = await pool.query(
-        query,
-        [
-            requestId,
-            collectorId
-        ]
-    );
-
-
-    return rows[0] || null;
-}
-
+    // ===========================================
+    // Business Owner Confirms Completion
+    // Collected → Completed
     // ===========================================
     async confirmCompletion(
         requestId,
         businessId
     ) {
-
         const query = `
             UPDATE on_demand_requests
 
@@ -514,13 +670,12 @@ async completeCollection(
             query,
             [
                 requestId,
-                businessId
+                businessId,
             ]
         );
 
         return rows[0] || null;
     }
-
 
     // ===========================================
     // Cancel Request
@@ -530,7 +685,6 @@ async completeCollection(
         requestId,
         businessId
     ) {
-
         const query = `
             UPDATE on_demand_requests
 
@@ -549,13 +703,12 @@ async completeCollection(
             query,
             [
                 requestId,
-                businessId
+                businessId,
             ]
         );
 
         return rows[0] || null;
     }
-
 
     // ===========================================
     // Update Request Status
@@ -564,7 +717,6 @@ async completeCollection(
         requestId,
         status
     ) {
-
         const allowedStatuses = [
             "Pending",
             "Approved",
@@ -573,16 +725,14 @@ async completeCollection(
             "Collected",
             "Completed",
             "Rejected",
-            "Cancelled"
+            "Cancelled",
         ];
-
 
         if (!allowedStatuses.includes(status)) {
             throw new Error(
                 "Invalid request status."
             );
         }
-
 
         const query = `
             UPDATE on_demand_requests
@@ -600,19 +750,17 @@ async completeCollection(
             query,
             [
                 status,
-                requestId
+                requestId,
             ]
         );
 
         return rows[0] || null;
     }
 
-
     // ===========================================
     // Delete Request
     // ===========================================
     async deleteRequest(requestId) {
-
         const query = `
             DELETE FROM on_demand_requests
 
@@ -629,12 +777,10 @@ async completeCollection(
         return rows[0] || null;
     }
 
-
     // ===========================================
     // Count Requests
     // ===========================================
     async countRequests() {
-
         const query = `
             SELECT
                 COUNT(*)::INTEGER AS total_requests,
@@ -679,6 +825,5 @@ async completeCollection(
         return rows[0];
     }
 }
-
 
 module.exports = new RequestRepository();

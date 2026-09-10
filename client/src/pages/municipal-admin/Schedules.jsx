@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import API from "../../services/api";
 
@@ -63,7 +64,6 @@ const locations = {
 
     },
 
-
     Menkorer: {
 
         "Kebele 05": [
@@ -95,7 +95,6 @@ const locations = {
         ]
 
     },
-
 
     "Nigus Teklehaymanot": {
 
@@ -135,7 +134,6 @@ const locations = {
         ]
 
     },
-
 
     "Tedila Gualu": {
 
@@ -217,6 +215,8 @@ const Schedules = () => {
         day_of_week: "",
 
         frequency: "Every 2 Weeks",
+
+        initial_date: "",
 
         start_time: "",
 
@@ -335,7 +335,6 @@ const Schedules = () => {
 
             } else {
 
-                // System Admin / other authorized roles
                 setCollectors(data);
 
             }
@@ -559,92 +558,144 @@ const Schedules = () => {
     };
 
 
+    
+// ==========================================
+// Create Schedule
+// ==========================================
+
+const createSchedule = async (e) => {
+
+    e.preventDefault();
+
+
+    // ==========================================
+    // Required Validation
+    // ==========================================
+
+    if (!formData.collector_id) {
+
+        alert(
+            "Please select collector."
+        );
+
+        return;
+
+    }
+
+
+    if (!formData.kifle_ketema) {
+
+        alert(
+            "Kifle Ketema is required."
+        );
+
+        return;
+
+    }
+
+
+    if (!formData.kebele) {
+
+        alert(
+            "Please select kebele."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        !formData.sefers ||
+        formData.sefers.length === 0
+    ) {
+
+        alert(
+            "Please select at least one sefer."
+        );
+
+        return;
+
+    }
+
+
+    // ==========================================
+    // Initial Date Required
+    // ==========================================
+
+    if (!formData.initial_date) {
+
+        alert(
+            "Please select initial date."
+        );
+
+        return;
+
+    }
+
+
+    // ==========================================
+    // Day Required
+    // ==========================================
+
+    if (!formData.day_of_week) {
+
+        alert(
+            "Please select day."
+        );
+
+        return;
+
+    }
+
+
+    // ==========================================
+    // Time Validation
+    // ==========================================
+
+    if (
+        !formData.start_time ||
+        !formData.end_time
+    ) {
+
+        alert(
+            "Please select start and end time."
+        );
+
+        return;
+
+    }
+
+
+    if (
+        formData.start_time >=
+        formData.end_time
+    ) {
+
+        alert(
+            "End time must be after start time."
+        );
+
+        return;
+
+    }
+
+
     // ==========================================
     // Create Schedule
     // ==========================================
 
-    const createSchedule = async (e) => {
+    try {
 
-        e.preventDefault();
+        // ------------------------------------------
+        // Create one schedule for each selected Sefer
+        // ------------------------------------------
 
-
-        if (!formData.collector_id) {
-
-            alert(
-                "Please select collector."
-            );
-
-            return;
-
-        }
-
-
-        if (!formData.kifle_ketema) {
-
-            alert(
-                "Kifle Ketema is required."
-            );
-
-            return;
-
-        }
-
-
-        if (!formData.kebele) {
-
-            alert(
-                "Please select kebele."
-            );
-
-            return;
-
-        }
-
-
-        if (
-            formData.sefers.length === 0
+        for (
+            const sefer of formData.sefers
         ) {
 
-            alert(
-                "Please select at least one sefer."
-            );
-
-            return;
-
-        }
-
-
-        if (!formData.day_of_week) {
-
-            alert(
-                "Please select day."
-            );
-
-            return;
-
-        }
-
-
-        if (
-            !formData.start_time ||
-            !formData.end_time
-        ) {
-
-            alert(
-                "Please select start and end time."
-            );
-
-            return;
-
-        }
-
-
-        try {
-
-            for (
-                const sefer
-                of formData.sefers
-            ) {
+            try {
 
                 await API.post(
                     "/schedules",
@@ -659,13 +710,17 @@ const Schedules = () => {
                         kebele:
                             formData.kebele,
 
-                        sefer,
+                        sefer:
+                            sefer,
 
                         day_of_week:
                             formData.day_of_week,
 
                         frequency:
                             formData.frequency,
+
+                        initial_date:
+                            formData.initial_date,
 
                         start_time:
                             formData.start_time,
@@ -679,64 +734,98 @@ const Schedules = () => {
                     }
                 );
 
+            } catch (error) {
+
+                // ------------------------------------------
+                // Backend duplicate/conflict
+                // ------------------------------------------
+
+                if (
+                    error.response?.status === 409
+                ) {
+
+                    alert(
+                        error.response?.data?.message ||
+                        `Schedule conflict found for ${sefer}.`
+                    );
+
+                    return;
+
+                }
+
+                throw error;
+
             }
-
-
-            alert(
-                "Schedule created successfully."
-            );
-
-
-            // ==========================================
-            // Reset Form
-            // ==========================================
-
-            setFormData({
-
-                collector_id: "",
-
-                kifle_ketema:
-                    userRole === "MUNICIPAL_ADMIN"
-                        ? assignedKifleKetema
-                        : "",
-
-                kebele: "",
-
-                sefers: [],
-
-                day_of_week: "",
-
-                frequency: "Every 2 Weeks",
-
-                start_time: "",
-
-                end_time: "",
-
-                status: "ACTIVE"
-
-            });
-
-
-            await loadSchedules();
-
-        } catch (error) {
-
-            console.error(
-                "Create Schedule Error:",
-                error.response?.data || error
-            );
-
-
-            alert(
-                error.response?.data?.message ||
-                "Create schedule failed."
-            );
 
         }
 
-    };
+
+        // ==========================================
+        // Success
+        // ==========================================
+
+        alert(
+            "Schedule created successfully."
+        );
 
 
+        // ==========================================
+        // Reset Form
+        // ==========================================
+
+        setFormData({
+
+            collector_id: "",
+
+            kifle_ketema:
+                userRole === "MUNICIPAL_ADMIN"
+                    ? assignedKifleKetema
+                    : "",
+
+            kebele: "",
+
+            sefers: [],
+
+            day_of_week: "",
+
+            frequency: "Every 2 Weeks",
+
+            initial_date: "",
+
+            start_time: "",
+
+            end_time: "",
+
+            status: "ACTIVE"
+
+        });
+
+
+        // ==========================================
+        // Reload Schedules
+        // ==========================================
+
+        await loadSchedules();
+
+
+    } catch (error) {
+
+        console.error(
+            "Create Schedule Error:",
+            error.response?.data || error
+        );
+
+
+        alert(
+            error.response?.data?.message ||
+            "Create schedule failed."
+        );
+
+    }
+
+};
+
+            
     // ==========================================
     // Delete Schedule
     // ==========================================
@@ -762,7 +851,6 @@ const Schedules = () => {
 
 
             await loadSchedules();
-
 
         } catch (error) {
 
@@ -1136,6 +1224,49 @@ const Schedules = () => {
                 </div>
 
 
+                {/* Initial Date */}
+
+                <div>
+
+                    <label className="
+                        block
+                        font-medium
+                        mb-1
+                    ">
+                        Initial Date
+                    </label>
+
+
+                    <input
+                        type="date"
+                        name="initial_date"
+                        value={
+                            formData.initial_date
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        className="
+                            border
+                            p-3
+                            rounded
+                            w-full
+                        "
+                        required
+                    />
+
+
+                    <p className="
+                        text-xs
+                        text-gray-500
+                        mt-1
+                    ">
+                        Select the first collection date.
+                    </p>
+
+                </div>
+
+
                 {/* Day */}
 
                 <div>
@@ -1402,7 +1533,7 @@ const Schedules = () => {
                     <table className="
                         w-full
                         border
-                        min-w-[900px]
+                        min-w-[1050px]
                     ">
 
                         <thead>
@@ -1425,6 +1556,10 @@ const Schedules = () => {
 
                                 <th className="border p-2">
                                     Sefer
+                                </th>
+
+                                <th className="border p-2">
+                                    Initial Date
                                 </th>
 
                                 <th className="border p-2">
@@ -1452,12 +1587,6 @@ const Schedules = () => {
 
                             {schedules.map(
                                 schedule => {
-
-                                    // ==========================================
-                                    // IMPORTANT:
-                                    // Use collector_name from backend.
-                                    // If missing, find collector by collector_id.
-                                    // ==========================================
 
                                     const collectorName =
                                         schedule.collector_name ||
@@ -1530,6 +1659,20 @@ const Schedules = () => {
                                                 {
                                                     schedule.sefer
                                                 }
+                                            </td>
+
+
+                                            {/* Initial Date */}
+
+                                            <td className="
+                                                border
+                                                p-2
+                                            ">
+                                                <td className="border p-2">
+    {schedule.initial_date
+        ? String(schedule.initial_date).slice(0, 10)
+        : "-"}
+</td>
                                             </td>
 
 

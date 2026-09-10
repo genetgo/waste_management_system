@@ -2,12 +2,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const systemAdminRepository = require("../repositories/systemAdminRepository");
 
-// =================================
-// System Admin Login
-// =================================
-// =================================
-// System Admin Login
-// =================================
 
 // =================================
 // System Admin Login
@@ -991,6 +985,103 @@ const createRole = async (req, res, next) => {
 
 
 // =============================================
+// CREATE CUSTOM PERMISSION
+// =============================================
+const createPermission = async (req, res) => {
+    try {
+        const permission =
+            await systemAdminRepository.createPermission(
+                req.body
+            );
+
+        return res.status(201).json({
+            success: true,
+            message:
+                "Permission created successfully.",
+            data: permission,
+        });
+
+    } catch (error) {
+        console.error(
+            "CREATE PERMISSION ERROR:",
+            error
+        );
+
+        if (error.code === "23505") {
+            return res.status(409).json({
+                success: false,
+                message:
+                    "Permission already exists.",
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message:
+                error.message ||
+                "Failed to create permission.",
+        });
+    }
+};
+// =============================================
+// DELETE CUSTOM PERMISSION
+// =============================================
+const deletePermission = async (req, res) => {
+
+    try {
+
+        const { id } = req.params;
+
+        if (!id || isNaN(Number(id))) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid permission ID."
+            });
+        }
+
+        const permission =
+            await systemAdminRepository.deletePermission(
+                Number(id)
+            );
+
+        if (!permission) {
+            return res.status(404).json({
+                success: false,
+                message: "Permission not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Permission deleted successfully.",
+            data: permission
+        });
+
+    } catch (error) {
+
+        console.error(
+            "DELETE PERMISSION ERROR:",
+            error
+        );
+
+        if (error.code === "PROTECTED_PERMISSION") {
+            return res.status(403).json({
+                success: false,
+                message: error.message
+            });
+        }
+
+        return res.status(500).json({
+            success: false,
+            message:
+                error.message ||
+                "Failed to delete permission."
+        });
+    }
+};
+
+
+// =============================================
 // UPDATE ROLE
 // =============================================
 const updateRole = async (req, res, next) => {
@@ -1316,7 +1407,8 @@ exportUsersPDF,
   createRole,
   updateRole,
   deleteRole,
-
+createPermission,
+deletePermission,
   createBackup,
   getBackups,
   restoreBackup,

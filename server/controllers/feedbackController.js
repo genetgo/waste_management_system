@@ -1,87 +1,183 @@
-
 // server/controllers/feedbackController.js
 
 const feedbackService = require("../services/feedbackService");
 
+
 // ==========================================
-// Create Feedback
+// CREATE BUSINESS FEEDBACK
 // ==========================================
 
 const createFeedback = async (req, res, next) => {
-
     try {
+        console.log("=================================");
+        console.log("CREATE BUSINESS FEEDBACK");
+        console.log("USER:", req.user);
+        console.log("BODY:", req.body);
+        console.log("=================================");
 
-        const userRole = req.user?.role;
+        // ==========================================
+        // AUTHENTICATION
+        // ==========================================
+
+        const userRole = String(
+            req.user?.role || ""
+        )
+            .trim()
+            .toUpperCase();
+
         const userId = req.user?.id;
 
         if (!userId) {
-
             return res.status(401).json({
                 success: false,
-                message: "User authentication information is missing."
+                message:
+                    "User authentication information is missing."
             });
-
         }
 
-        const feedbackData = {
 
-            ...req.body,
+        // ==========================================
+        // ONLY BUSINESS OWNER
+        // ==========================================
 
-            resident_id:
-                userRole === "RESIDENT"
-                    ? userId
-                    : null,
+        if (
+            userRole !== "BUSINESS_OWNER" &&
+            userRole !== "BUSINESS OWNER"
+        ) {
+            return res.status(403).json({
+                success: false,
+                message:
+                    "Only Business Owner can submit feedback."
+            });
+        }
 
-            business_id:
-                userRole === "BUSINESS_OWNER"
-                    ? userId
-                    : null
-        };
+
+        // ==========================================
+        // GET BUSINESS KIFLE KETEMA FROM JWT
+        // ==========================================
+
+        const kifle_ketema =
+            req.user?.kifle_ketema ||
+            req.user?.assigned_kifle_ketema;
+
+        if (!kifle_ketema) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Business owner Kifle Ketema is not assigned."
+            });
+        }
+
+
+        // ==========================================
+        // GET FEEDBACK DATA
+        // ==========================================
+
+        const {
+            category,
+            kebele,
+            sefer,
+            rating,
+            description
+        } = req.body;
 
 
         // ==========================================
         // VALIDATION
         // ==========================================
 
-        if (!feedbackData.comment?.trim()) {
-
+        if (!category?.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Feedback comment is required."
+                message:
+                    "Feedback category is required."
             });
-
         }
 
 
-        if (!feedbackData.rating) {
-
+        if (!kebele?.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Feedback rating is required."
+                message:
+                    "Kebele is required."
             });
-
         }
 
 
-        if (!feedbackData.sefer?.trim()) {
-
+        if (!sefer?.trim()) {
             return res.status(400).json({
                 success: false,
-                message: "Sefer is required."
+                message:
+                    "Sefer is required."
             });
-
         }
 
 
-        if (!feedbackData.kebele?.trim()) {
-
+        if (rating === undefined || rating === null || rating === "") {
             return res.status(400).json({
                 success: false,
-                message: "Kebele is required."
+                message:
+                    "Rating is required."
             });
-
         }
 
+
+        const numericRating = Number(rating);
+
+        if (
+            Number.isNaN(numericRating) ||
+            numericRating < 1 ||
+            numericRating > 5
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Rating must be between 1 and 5."
+            });
+        }
+
+
+        // ==========================================
+        // OTHER CATEGORY
+        // ==========================================
+
+        if (
+            category.trim() === "Other" &&
+            !description?.trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Other description is required."
+            });
+        }
+
+
+        // ==========================================
+        // PREPARE BUSINESS FEEDBACK
+        // ==========================================
+
+        const feedbackData = {
+            business_id: userId,
+            category: category.trim(),
+            kifle_ketema: kifle_ketema.trim(),
+            kebele: kebele.trim(),
+            sefer: sefer.trim(),
+            rating: numericRating,
+            description:
+                description?.trim() || null
+        };
+
+
+        console.log(
+            "FINAL BUSINESS FEEDBACK DATA:",
+            feedbackData
+        );
+
+
+        // ==========================================
+        // CREATE
+        // ==========================================
 
         const feedback =
             await feedbackService.createFeedback(
@@ -90,65 +186,218 @@ const createFeedback = async (req, res, next) => {
 
 
         return res.status(201).json({
-
             success: true,
-
             message:
-                "Feedback submitted successfully.",
-
+                "Business feedback submitted successfully.",
             data: feedback
-
         });
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(
-            "Create Feedback Error:",
+            "Create Business Feedback Error:",
             error
         );
 
         next(error);
     }
 };
+
+
 // ==========================================
-// Get All Feedback
-// Municipal Admin / System Admin
+// CREATE PUBLIC FEEDBACK
 // ==========================================
 
-const getFeedbacks = async (req, res, next) => {
-
+const createPublicFeedback = async (
+    req,
+    res,
+    next
+) => {
     try {
+        console.log("=================================");
+        console.log("PUBLIC FEEDBACK REQUEST");
+        console.log("BODY:", req.body);
+        console.log("=================================");
+
+
+        // ==========================================
+        // GET DATA
+        // ==========================================
+
+        const {
+            category,
+            kifle_ketema,
+            kebele,
+            sefer,
+            rating,
+            description
+        } = req.body;
+
+
+        // ==========================================
+        // VALIDATION
+        // ==========================================
+
+        if (!kifle_ketema?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Kifle Ketema is required."
+            });
+        }
+
+
+        if (!kebele?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Kebele is required."
+            });
+        }
+
+
+        if (!sefer?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Sefer is required."
+            });
+        }
+
+
+        if (!category?.trim()) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Feedback category is required."
+            });
+        }
+
+
+        if (rating === undefined || rating === null || rating === "") {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Rating is required."
+            });
+        }
+
+
+        const numericRating = Number(rating);
+
+        if (
+            Number.isNaN(numericRating) ||
+            numericRating < 1 ||
+            numericRating > 5
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Rating must be between 1 and 5."
+            });
+        }
+
+
+        // ==========================================
+        // OTHER CATEGORY
+        // ==========================================
+
+        if (
+            category.trim() === "Other" &&
+            !description?.trim()
+        ) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Other description is required."
+            });
+        }
+
+
+        // ==========================================
+        // PREPARE PUBLIC FEEDBACK
+        // business_id = NULL
+        // ==========================================
+
+        const feedbackData = {
+            business_id: null,
+            category: category.trim(),
+            kifle_ketema: kifle_ketema.trim(),
+            kebele: kebele.trim(),
+            sefer: sefer.trim(),
+            rating: numericRating,
+            description:
+                description?.trim() || null
+        };
+
+
+        console.log(
+            "FINAL PUBLIC FEEDBACK DATA:",
+            feedbackData
+        );
+
+
+        // ==========================================
+        // CREATE PUBLIC FEEDBACK
+        // ==========================================
+
+        const feedback =
+            await feedbackService.createFeedback(
+                feedbackData
+            );
+
+
+        return res.status(201).json({
+            success: true,
+            message:
+                "Public feedback submitted successfully.",
+            data: feedback
+        });
+
+    } catch (error) {
+        console.error(
+            "Create Public Feedback Error:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+// ==========================================
+// GET ALL FEEDBACK
+// MUNICIPAL ADMIN
+// ==========================================
+
+const getFeedbacks = async (
+    req,
+    res,
+    next
+) => {
+    try {
+        console.log("=================================");
+        console.log("MUNICIPAL ADMIN FEEDBACK");
+        console.log("USER:", req.user);
+        console.log("=================================");
+
 
         const kifle_ketema =
             req.user?.kifle_ketema ||
-            req.user?.assigned_kifle_ketema;
+            req.user?.assigned_kifle_ketema ||
+            null;
 
-        console.log(
-            "Municipal Admin:",
-            req.user
-        );
 
         console.log(
             "Admin Kifle Ketema:",
             kifle_ketema
         );
 
-        if (!kifle_ketema) {
-
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Municipal administrator Kifle Ketema is not assigned."
-            });
-
-        }
 
         const feedbacks =
             await feedbackService.getAllFeedback(
                 kifle_ketema
             );
+
 
         return res.status(200).json({
             success: true,
@@ -156,7 +405,6 @@ const getFeedbacks = async (req, res, next) => {
         });
 
     } catch (error) {
-
         console.error(
             "Get Feedback Error:",
             error
@@ -166,14 +414,17 @@ const getFeedbacks = async (req, res, next) => {
     }
 };
 
+
 // ==========================================
-// Get Feedback By ID
+// GET FEEDBACK BY ID
 // ==========================================
 
-const getFeedbackById = async (req, res, next) => {
-
+const getFeedbackById = async (
+    req,
+    res,
+    next
+) => {
     try {
-
         const feedback =
             await feedbackService.getFeedbackById(
                 req.params.id
@@ -181,110 +432,84 @@ const getFeedbackById = async (req, res, next) => {
 
 
         if (!feedback) {
-
             return res.status(404).json({
-
                 success: false,
-
                 message:
                     "Feedback not found."
-
             });
-
         }
 
 
         return res.status(200).json({
-
             success: true,
-
             data: feedback
-
         });
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "Get Feedback By ID Error:",
             error
         );
 
         next(error);
-
     }
-
 };
 
 
 // ==========================================
-// Update Feedback
+// UPDATE FEEDBACK
 // ==========================================
 
-const updateFeedback = async (req, res, next) => {
-
+const updateFeedback = async (
+    req,
+    res,
+    next
+) => {
     try {
-
         const feedback =
             await feedbackService.updateFeedback(
-
                 req.params.id,
-
                 req.body
-
             );
 
 
         if (!feedback) {
-
             return res.status(404).json({
-
                 success: false,
-
                 message:
                     "Feedback not found."
-
             });
-
         }
 
 
         return res.status(200).json({
-
             success: true,
-
             message:
                 "Feedback updated successfully.",
-
             data: feedback
-
         });
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "Update Feedback Error:",
             error
         );
 
         next(error);
-
     }
-
 };
 
 
 // ==========================================
-// Delete Feedback
+// DELETE FEEDBACK
 // ==========================================
 
-const deleteFeedback = async (req, res, next) => {
-
+const deleteFeedback = async (
+    req,
+    res,
+    next
+) => {
     try {
-
         const deleted =
             await feedbackService.deleteFeedback(
                 req.params.id
@@ -292,77 +517,58 @@ const deleteFeedback = async (req, res, next) => {
 
 
         if (!deleted) {
-
             return res.status(404).json({
-
                 success: false,
-
                 message:
                     "Feedback not found."
-
             });
-
         }
 
 
         return res.status(200).json({
-
             success: true,
-
             message:
                 "Feedback deleted successfully."
-
         });
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "Delete Feedback Error:",
             error
         );
 
         next(error);
-
     }
-
 };
 
 
 // ==========================================
-// Average Rating
+// AVERAGE RATING
 // ==========================================
 
-const averageRating = async (req, res, next) => {
-
+const averageRating = async (
+    req,
+    res,
+    next
+) => {
     try {
-
         const rating =
             await feedbackService.averageRating();
 
 
         return res.status(200).json({
-
             success: true,
-
             data: rating
-
         });
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.error(
             "Average Rating Error:",
             error
         );
 
         next(error);
-
     }
-
 };
 
 
@@ -371,17 +577,11 @@ const averageRating = async (req, res, next) => {
 // ==========================================
 
 module.exports = {
-
     createFeedback,
-
+    createPublicFeedback,
     getFeedbacks,
-
     getFeedbackById,
-
     updateFeedback,
-
     deleteFeedback,
-
     averageRating
-
 };

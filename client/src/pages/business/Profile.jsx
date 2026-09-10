@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -19,6 +18,23 @@ const Profile = () => {
   // =====================================================
 
   const { t } = useTranslation();
+
+  // =====================================================
+  // BUSINESS TYPES
+  // =====================================================
+
+  const businessTypes = [
+    "Cafe",
+    "Restaurant",
+    "Hotel",
+    "Hospital",
+    "School",
+    "University / College",
+    "Factory",
+    "Office",
+    "Clinic",
+    "Government Office",
+  ];
 
   // =====================================================
   // LOCATION DATA
@@ -69,6 +85,7 @@ const Profile = () => {
     kifleKetema: "",
     kebele: "",
     sefer: "",
+    houseNumber: "",
   });
 
   const [loading, setLoading] = useState(true);
@@ -115,9 +132,7 @@ const Profile = () => {
       const business = response.data?.data;
 
       if (!business) {
-        throw new Error(
-          t("profile.messages.profileNotLoaded")
-        );
+        throw new Error(t("profile.messages.profileNotLoaded"));
       }
 
       setProfile({
@@ -132,6 +147,7 @@ const Profile = () => {
           "",
         kebele: business.kebele || "",
         sefer: business.sefer || "",
+        houseNumber: business.house_number || "",
       });
     } catch (error) {
       console.error(
@@ -238,6 +254,19 @@ const Profile = () => {
       return;
     }
 
+    if (!profile.businessType) {
+      setToast({
+        show: true,
+        type: "error",
+        message:
+          t("profile.validation.businessTypeRequired") ||
+          "Business type is required.",
+      });
+
+      setUpdating(false);
+      return;
+    }
+
     if (!/^09\d{8}$/.test(profile.phoneNumber.trim())) {
       setToast({
         show: true,
@@ -297,6 +326,17 @@ const Profile = () => {
       return;
     }
 
+    if (!profile.houseNumber.trim()) {
+      setToast({
+        show: true,
+        type: "error",
+        message: t("profile.validation.houseNumberRequired"),
+      });
+
+      setUpdating(false);
+      return;
+    }
+
     // ===================================================
     // UPDATE
     // ===================================================
@@ -305,12 +345,13 @@ const Profile = () => {
       const payload = {
         business_name: profile.businessName.trim(),
         owner_name: profile.ownerName.trim(),
-        business_type: profile.businessType.trim(),
+        business_type: profile.businessType,
         phone_number: profile.phoneNumber.trim(),
         email: profile.email.trim().toLowerCase(),
         kifle_ketema: profile.kifleKetema,
         kebele: profile.kebele,
         sefer: profile.sefer,
+        house_number: profile.houseNumber.trim(),
       };
 
       console.log("Business Profile Update:", payload);
@@ -347,6 +388,7 @@ const Profile = () => {
             "",
           kebele: business.kebele || "",
           sefer: business.sefer || "",
+          houseNumber: business.house_number || "",
         });
       }
 
@@ -391,10 +433,6 @@ const Profile = () => {
       message: "",
     });
 
-    // ===================================================
-    // VALIDATION
-    // ===================================================
-
     if (!passwordData.currentPassword) {
       setToast({
         show: true,
@@ -436,10 +474,6 @@ const Profile = () => {
       setChangingPassword(false);
       return;
     }
-
-    // ===================================================
-    // CHANGE PASSWORD
-    // ===================================================
 
     try {
       const response = await API.put(
@@ -512,6 +546,18 @@ const Profile = () => {
     if (!value) return value;
 
     return t(`register.locations.${value}`, {
+      defaultValue: value,
+    });
+  };
+
+  // =====================================================
+  // BUSINESS TYPE TRANSLATION
+  // =====================================================
+
+  const getBusinessTypeLabel = (value) => {
+    if (!value) return value;
+
+    return t(`businessTypes.${value}`, {
       defaultValue: value,
     });
   };
@@ -610,18 +656,49 @@ const Profile = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-              <Input
-                label={t(
-                  "profile.fields.businessType"
-                )}
-                type="text"
-                name="businessType"
-                value={profile.businessType}
-                onChange={handleChange}
-                placeholder={t(
-                  "profile.placeholders.businessType"
-                )}
-              />
+              {/* Business Type Dropdown */}
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {t("profile.fields.businessType")}
+                </label>
+
+                <select
+                  name="businessType"
+                  value={profile.businessType}
+                  onChange={handleChange}
+                  required
+                  className="
+                    w-full
+                    border
+                    border-gray-300
+                    rounded-xl
+                    px-4
+                    py-3
+                    bg-white
+                    text-gray-700
+                    outline-none
+                    focus:ring-2
+                    focus:ring-green-500
+                    focus:border-green-500
+                  "
+                >
+                  <option value="">
+                    {t(
+                      "profile.placeholders.businessType"
+                    )}
+                  </option>
+
+                  {businessTypes.map((type) => (
+                    <option
+                      key={type}
+                      value={type}
+                    >
+                      {getBusinessTypeLabel(type)}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <Input
                 label={t(
@@ -661,7 +738,7 @@ const Profile = () => {
                 {t("profile.location.title")}
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                 {/* Kifle Ketema */}
 
@@ -823,6 +900,20 @@ const Profile = () => {
 
                   </select>
                 </div>
+
+                {/* House Number */}
+
+                <Input
+                  label={t("profile.fields.houseNumber")}
+                  type="text"
+                  name="houseNumber"
+                  value={profile.houseNumber}
+                  onChange={handleChange}
+                  placeholder={t(
+                    "profile.placeholders.houseNumber"
+                  )}
+                  required
+                />
 
               </div>
             </div>

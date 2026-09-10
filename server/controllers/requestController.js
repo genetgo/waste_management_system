@@ -1,15 +1,6 @@
-
 const requestService = require("../services/requestService");
 const requestRepository = require("../repositories/requestRepository");
 
-// ==========================================
-// Create On-Demand Request
-// Business Owner → Pending
-// ==========================================
-// ==========================================
-// Create On-Demand Request
-// Business Owner → Pending
-// ==========================================
 // ==========================================
 // Create On-Demand Request
 // Business Owner → Pending
@@ -30,7 +21,7 @@ const createRequest = async (req, res, next) => {
         if (!businessId) {
             return res.status(400).json({
                 success: false,
-                message: "Business owner ID is missing from token."
+                message: "Business owner ID is missing from token.",
             });
         }
 
@@ -50,21 +41,37 @@ const createRequest = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message:
-                    "Valid latitude and longitude are required."
+                    "Valid latitude and longitude are required.",
             });
         }
 
         if (latitude < -90 || latitude > 90) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid latitude."
+                message: "Invalid latitude.",
             });
         }
 
         if (longitude < -180 || longitude > 180) {
             return res.status(400).json({
                 success: false,
-                message: "Invalid longitude."
+                message: "Invalid longitude.",
+            });
+        }
+
+        // ==========================================
+        // House Number
+        // ==========================================
+        const houseNumber =
+            req.body.house_number !== undefined &&
+            req.body.house_number !== null
+                ? String(req.body.house_number).trim()
+                : "";
+
+        if (!houseNumber) {
+            return res.status(400).json({
+                success: false,
+                message: "House number is required.",
             });
         }
 
@@ -83,14 +90,20 @@ const createRequest = async (req, res, next) => {
             sefer:
                 req.body.sefer,
 
+            // IMPORTANT
+            house_number: houseNumber,
+
             latitude,
             longitude,
 
             preferred_collection_date:
                 req.body.preferred_collection_date,
 
+            // Business Owner's original description
             description:
-                req.body.description || null
+                req.body.description
+                    ? String(req.body.description).trim()
+                    : null,
         };
 
         console.log(
@@ -120,41 +133,37 @@ const createRequest = async (req, res, next) => {
             success: true,
             message:
                 "On-demand request submitted successfully.",
-            data: request
+            data: request,
         });
 
     } catch (error) {
-
         console.error(
             "CREATE REQUEST ERROR:",
-            error.message
+            error
         );
 
-        // ==========================================
-        // SEND ERROR DIRECTLY TO FRONTEND
-        // ==========================================
         return res.status(400).json({
             success: false,
             message:
                 error.message ||
-                "Failed to submit collection request."
+                "Failed to submit collection request.",
         });
     }
 };
+
+
 // ==========================================
 // Get All Requests
 // Municipal Admin / System Admin
 // ==========================================
 const getAllRequests = async (req, res, next) => {
     try {
-
         const requests =
             await requestService.getAllRequests();
 
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            data: requests
+            data: requests,
         });
 
     } catch (error) {
@@ -168,16 +177,21 @@ const getAllRequests = async (req, res, next) => {
 // ==========================================
 const getRequestById = async (req, res, next) => {
     try {
-
         const request =
             await requestService.getRequestById(
                 req.params.id
             );
 
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message: "Request not found.",
+            });
+        }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            data: request
+            data: request,
         });
 
     } catch (error) {
@@ -191,16 +205,24 @@ const getRequestById = async (req, res, next) => {
 // ==========================================
 const getMyRequests = async (req, res, next) => {
     try {
+        const businessId = req.user?.id;
+
+        if (!businessId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Business owner ID is missing from token.",
+            });
+        }
 
         const requests =
             await requestService.getRequestsByBusiness(
-                req.user.id
+                businessId
             );
 
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            data: requests
+            data: requests,
         });
 
     } catch (error) {
@@ -215,14 +237,12 @@ const getMyRequests = async (req, res, next) => {
 // ==========================================
 const getPendingRequests = async (req, res, next) => {
     try {
-
         const requests =
             await requestService.getPendingRequests();
 
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            data: requests
+            data: requests,
         });
 
     } catch (error) {
@@ -238,19 +258,35 @@ const getPendingRequests = async (req, res, next) => {
 // ==========================================
 const approveRequest = async (req, res, next) => {
     try {
+        const adminId = req.user?.id;
+
+        if (!adminId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Municipal administrator ID is missing from token.",
+            });
+        }
 
         const request =
             await requestService.approveRequest(
                 req.params.id,
-                req.user.id
+                adminId
             );
 
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Request not found or cannot be approved.",
+            });
+        }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message:
                 "Request approved successfully.",
-            data: request
+            data: request,
         });
 
     } catch (error) {
@@ -263,56 +299,186 @@ const approveRequest = async (req, res, next) => {
 // Reject Request
 // Pending → Rejected
 // Municipal Admin
+//
+// IMPORTANT:
+// Admin MUST provide rejection description.
+// Frontend sends:
+//
+// {
+//     description: "Reason for rejection"
+// }
+//
+// Backend stores it as rejection_reason.
 // ==========================================
 const rejectRequest = async (req, res, next) => {
     try {
+        const requestId = req.params.id;
 
+        const adminId = req.user?.id;
+
+        // ==========================================
+        // Validate Admin
+        // ==========================================
+        if (!adminId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Municipal administrator ID is missing from token.",
+            });
+        }
+
+        // ==========================================
+        // Get Rejection Description
+        // ==========================================
+        const rejectionReason =
+            req.body?.description !== undefined &&
+            req.body?.description !== null
+                ? String(req.body.description).trim()
+                : "";
+
+        // ==========================================
+        // Description REQUIRED
+        // ==========================================
+        if (!rejectionReason) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Rejection reason is required.",
+            });
+        }
+
+        // ==========================================
+        // Maximum Length
+        // ==========================================
+        if (rejectionReason.length > 500) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Rejection reason must not exceed 500 characters.",
+            });
+        }
+
+        console.log("=================================");
+        console.log("REJECT REQUEST");
+        console.log("REQUEST ID:", requestId);
+        console.log("ADMIN ID:", adminId);
+        console.log(
+            "REJECTION REASON:",
+            rejectionReason
+        );
+        console.log("=================================");
+
+        // ==========================================
+        // Reject Request
+        //
+        // IMPORTANT:
+        // requestService.rejectRequest()
+        // must accept:
+        //
+        // requestId
+        // rejectionReason
+        // adminId
+        // ==========================================
         const request =
             await requestService.rejectRequest(
-                req.params.id
+                requestId,
+                rejectionReason,
+                adminId
             );
 
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Request not found or cannot be rejected.",
+            });
+        }
 
-        res.status(200).json({
+        // ==========================================
+        // SUCCESS
+        // ==========================================
+        return res.status(200).json({
             success: true,
             message:
                 "Request rejected successfully.",
-            data: request
+            data: request,
         });
 
     } catch (error) {
+        console.error(
+            "REJECT REQUEST ERROR:",
+            error
+        );
+
         next(error);
     }
 };
 
 
 // ==========================================
-// Assign Collector
+// Assign Collection Team
 // Approved → Assigned
 // Municipal Admin
+//
+// Frontend sends:
+// {
+//     team_id: 1
+// }
+//
+// Backend automatically gets:
+// team.team_leader_id
+// and stores it as collector_id.
 // ==========================================
 const assignCollector = async (req, res, next) => {
     try {
-
-        const collectorId = req.body.collector_id;
+        const requestId = req.params.id;
+        const teamId = req.body?.team_id;
 
         // ==========================================
-        // Validate Collector ID
+        // Validate Request ID
         // ==========================================
-        if (!collectorId) {
+        if (!requestId) {
             return res.status(400).json({
                 success: false,
-                message: "Collector ID is required."
+                message: "Request ID is required.",
             });
         }
 
         // ==========================================
-        // Assign Collector
+        // Validate Collection Team ID
+        // ==========================================
+        if (!teamId) {
+            return res.status(400).json({
+                success: false,
+                message: "Collection Team ID is required.",
+            });
+        }
+
+        console.log("=================================");
+        console.log("ASSIGN COLLECTION TEAM");
+        console.log("REQUEST ID:", requestId);
+        console.log("TEAM ID:", teamId);
+        console.log("REQUEST BODY:", req.body);
+        console.log("=================================");
+
+        // ==========================================
+        // Assign Collection Team
+        // Repository will:
+        //
+        // 1. Check team exists
+        // 2. Check team is ACTIVE
+        // 3. Check Team Leader exists
+        // 4. Check Team Leader is active
+        // 5. Check Kifle Ketema matches
+        // 6. Check Kebele matches
+        // 7. Set team_id
+        // 8. Set collector_id = team_leader_id
+        // 9. Change status Approved → Assigned
         // ==========================================
         const request =
             await requestService.assignCollector(
-                req.params.id,
-                collectorId
+                requestId,
+                Number(teamId)
             );
 
         // ==========================================
@@ -322,109 +488,146 @@ const assignCollector = async (req, res, next) => {
             return res.status(400).json({
                 success: false,
                 message:
-                    "Collector cannot be assigned. The request may not be approved or the collector is inactive."
+                    "Collection team cannot be assigned. The request may not be approved or the team may be inactive.",
             });
         }
 
         // ==========================================
-        // Success
+        // SUCCESS
         // ==========================================
         return res.status(200).json({
             success: true,
-            message: "Collector assigned successfully.",
-            data: request
+            message:
+                "Collection team assigned successfully.",
+            data: request,
         });
 
     } catch (error) {
+        console.error(
+            "ASSIGN COLLECTION TEAM ERROR:",
+            error
+        );
+
         next(error);
     }
 };
-
 // ==========================================
 // Collector Starts Collection
 // Assigned → In Progress
 // ==========================================
-const startCollection = async(req,res)=>{
-
+const startCollection = async (req, res, next) => {
     try {
-
         const requestId = req.params.id;
+        const collectorId = req.user?.id;
 
-        const collectorId = req.user.id;
-
-
-        const result =
-        await requestRepository.startCollection(
-            requestId,
-            collectorId
-        );
-
-
-        if(!result){
-            return res.status(404).json({
-                message:"Request not found or not assigned"
+        // ==========================================
+        // Validate Collector
+        // ==========================================
+        if (!collectorId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Collector ID is missing from token.",
             });
         }
 
+        console.log("=================================");
+        console.log("START COLLECTION");
+        console.log("REQUEST ID:", requestId);
+        console.log("COLLECTOR ID:", collectorId);
+        console.log("=================================");
 
-        res.json({
-            success:true,
-            data:result
+        const result =
+            await requestRepository.startCollection(
+                requestId,
+                collectorId
+            );
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Request not found or not assigned to this collector.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Collection started successfully.",
+            data: result,
         });
 
+    } catch (error) {
+        console.error(
+            "START COLLECTION ERROR:",
+            error
+        );
 
-    } catch(error){
-
-        res.status(500).json({
-            message:error.message
-        });
-
+        next(error);
     }
-
 };
+
+
 // ==========================================
 // Collector Completes Collection
 // In Progress → Collected
 // ==========================================
-const completeCollection = async(req,res)=>{
-
+const completeCollection = async (
+    req,
+    res,
+    next
+) => {
     try {
+        const requestId = req.params.id;
+        const collectorId = req.user?.id;
 
-        const requestId=req.params.id;
-
-        const collectorId=req.user.id;
-
-
-        const result =
-        await requestRepository.completeCollection(
-            requestId,
-            collectorId
-        );
-
-
-        if(!result){
-
-            return res.status(404).json({
-                message:"Cannot complete collection"
+        // ==========================================
+        // Validate Collector
+        // ==========================================
+        if (!collectorId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Collector ID is missing from token.",
             });
-
         }
 
+        console.log("=================================");
+        console.log("COMPLETE COLLECTION");
+        console.log("REQUEST ID:", requestId);
+        console.log("COLLECTOR ID:", collectorId);
+        console.log("=================================");
 
-        res.json({
-            success:true,
-            data:result
+        const result =
+            await requestRepository.completeCollection(
+                requestId,
+                collectorId
+            );
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Cannot complete collection. Request may not be in progress or may not belong to this collector.",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message:
+                "Collection completed by collector. Waiting for business confirmation.",
+            data: result,
         });
 
+    } catch (error) {
+        console.error(
+            "COMPLETE COLLECTION ERROR:",
+            error
+        );
 
-    }catch(error){
-
-        res.status(500).json({
-            message:error.message
-        });
-
+        next(error);
     }
-
 };
 
 
@@ -432,21 +635,41 @@ const completeCollection = async(req,res)=>{
 // Business Owner Confirms Collection
 // Collected → Completed
 // ==========================================
-const confirmCompletion = async (req, res, next) => {
+const confirmCompletion = async (
+    req,
+    res,
+    next
+) => {
     try {
+        const businessId = req.user?.id;
+
+        if (!businessId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Business owner ID is missing from token.",
+            });
+        }
 
         const request =
             await requestService.confirmCompletion(
                 req.params.id,
-                req.user.id
+                businessId
             );
 
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Request not found or cannot be confirmed.",
+            });
+        }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message:
                 "Collection confirmed successfully. Request is now completed.",
-            data: request
+            data: request,
         });
 
     } catch (error) {
@@ -458,18 +681,30 @@ const confirmCompletion = async (req, res, next) => {
 // ==========================================
 // Collector Requests
 // ==========================================
-const getMyCollectorRequests = async (req, res, next) => {
+const getMyCollectorRequests = async (
+    req,
+    res,
+    next
+) => {
     try {
+        const collectorId = req.user?.id;
+
+        if (!collectorId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Collector ID is missing from token.",
+            });
+        }
 
         const requests =
             await requestService.getRequestsByCollector(
-                req.user.id
+                collectorId
             );
 
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
-            data: requests
+            data: requests,
         });
 
     } catch (error) {
@@ -483,21 +718,41 @@ const getMyCollectorRequests = async (req, res, next) => {
 // Business Owner
 // Pending / Approved → Cancelled
 // ==========================================
-const cancelRequest = async (req, res, next) => {
+const cancelRequest = async (
+    req,
+    res,
+    next
+) => {
     try {
+        const businessId = req.user?.id;
+
+        if (!businessId) {
+            return res.status(400).json({
+                success: false,
+                message:
+                    "Business owner ID is missing from token.",
+            });
+        }
 
         const request =
             await requestService.cancelRequest(
                 req.params.id,
-                req.user.id
+                businessId
             );
 
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Request not found or cannot be cancelled.",
+            });
+        }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message:
                 "Request cancelled successfully.",
-            data: request
+            data: request,
         });
 
     } catch (error) {
@@ -509,22 +764,21 @@ const cancelRequest = async (req, res, next) => {
 // ==========================================
 // Update Request Status
 // ==========================================
-const updateStatus = async (req, res, next) => {
+const updateStatus = async (
+    req,
+    res,
+    next
+) => {
     try {
-
         const { status } = req.body;
 
-
         if (!status) {
-
             return res.status(400).json({
                 success: false,
                 message:
-                    "Status is required."
+                    "Status is required.",
             });
-
         }
-
 
         const request =
             await requestService.updateStatus(
@@ -532,12 +786,19 @@ const updateStatus = async (req, res, next) => {
                 status
             );
 
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Request not found.",
+            });
+        }
 
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message:
                 "Request status updated successfully.",
-            data: request
+            data: request,
         });
 
     } catch (error) {
@@ -549,31 +810,30 @@ const updateStatus = async (req, res, next) => {
 // ==========================================
 // Delete Request
 // ==========================================
-const deleteRequest = async (req, res, next) => {
+const deleteRequest = async (
+    req,
+    res,
+    next
+) => {
     try {
-
         const request =
             await requestService.deleteRequest(
                 req.params.id
             );
 
-
         if (!request) {
-
             return res.status(404).json({
                 success: false,
                 message:
-                    "Request not found."
+                    "Request not found.",
             });
-
         }
 
-
-        res.status(200).json({
+        return res.status(200).json({
             success: true,
             message:
                 "Request deleted successfully.",
-            data: request
+            data: request,
         });
 
     } catch (error) {
@@ -583,32 +843,42 @@ const deleteRequest = async (req, res, next) => {
 
 
 // ==========================================
-// Export Controller
+// EXPORT CONTROLLER
 // ==========================================
 module.exports = {
 
-    // Business
+    // ==========================================
+    // Business Owner
+    // ==========================================
     createRequest,
     getMyRequests,
     cancelRequest,
     confirmCompletion,
 
+    // ==========================================
     // General
+    // ==========================================
     getAllRequests,
     getRequestById,
     getPendingRequests,
 
+    // ==========================================
     // Municipal Admin
+    // ==========================================
     approveRequest,
     rejectRequest,
     assignCollector,
 
+    // ==========================================
     // Collector
+    // ==========================================
     getMyCollectorRequests,
     startCollection,
     completeCollection,
 
-    // General status / delete
+    // ==========================================
+    // General Status / Delete
+    // ==========================================
     updateStatus,
-    deleteRequest
+    deleteRequest,
 };

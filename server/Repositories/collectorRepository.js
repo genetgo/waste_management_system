@@ -108,6 +108,8 @@ async getCollectorDashboard(collectorId) {
             c.assigned_kifle_ketema,
             c.kebele,
             c.sefer,
+            r.house_number,
+
             c.is_active,
 
 
@@ -235,34 +237,77 @@ async getAllCollectors(kifleKetema = null) {
 // =================================
 // Get Assigned Requests
 // =================================
-async getAssignedRequests(collectorId){
-
+async getAssignedRequests(collectorId) {
     const { rows } = await pool.query(
         `
         SELECT
-
             r.request_id,
+            r.business_id,
             r.collector_id,
+            r.team_id,
 
             r.kifle_ketema,
             r.kebele,
             r.sefer,
 
-            r.description,
+            b.business_name,
+            b.owner_name,
+            b.phone_number,
+            b.house_number,
 
+            r.description,
+            r.latitude,
+            r.longitude,
             r.preferred_collection_date,
             r.status,
 
-            b.business_name,
-            b.owner_name,
-            b.phone_number
+            ct.team_name,
+            ct.team_leader_id,
+
+            leader.full_name AS team_leader_name,
+            leader.phone_number AS team_leader_phone,
+            leader.email AS team_leader_email,
+
+            COALESCE(
+                json_agg(
+                    DISTINCT jsonb_build_object(
+                        'collector_id', member.collector_id,
+                        'full_name', member.full_name,
+                        'phone_number', member.phone_number,
+                        'email', member.email,
+                        'assigned_kifle_ketema',
+                            member.assigned_kifle_ketema,
+                        'kebele', member.kebele,
+                        'is_active', member.is_active
+                    )
+                ) FILTER (
+                    WHERE member.collector_id IS NOT NULL
+                ),
+                '[]'::json
+            ) AS team_members
 
         FROM on_demand_requests r
 
-        JOIN business_owners b
-            ON r.business_id = b.business_id
+        INNER JOIN business_owners b
+            ON b.business_id = r.business_id
 
-        WHERE r.collector_id = $1
+        LEFT JOIN collection_teams ct
+            ON ct.team_id = r.team_id
+
+        LEFT JOIN collectors leader
+            ON leader.collector_id = ct.team_leader_id
+
+        LEFT JOIN collection_team_members ctm
+            ON ctm.team_id = r.team_id
+
+        LEFT JOIN collectors member
+            ON member.collector_id = ctm.collector_id
+
+        WHERE
+            (
+                r.collector_id = $1
+                OR ctm.collector_id = $1
+            )
 
         AND r.status IN (
             'Assigned',
@@ -271,17 +316,132 @@ async getAssignedRequests(collectorId){
             'Completed'
         )
 
-        ORDER BY r.request_id DESC
+        GROUP BY
+            r.request_id,
+            r.business_id,
+            r.collector_id,
+            r.team_id,
+            r.kifle_ketema,
+            r.kebele,
+            r.sefer,
+            b.business_name,
+            b.owner_name,
+            b.phone_number,
+            b.house_number,
+            r.description,
+            r.latitude,
+            r.longitude,
+            r.preferred_collection_date,
+            r.status,
+            ct.team_name,
+            ct.team_leader_id,
+            leader.collector_id,
+            leader.full_name,
+            leader.phone_number,
+            leader.email
+
+        ORDER BY r.request_id DESC;
         `,
-        [
-            collectorId
-        ]
+        [collectorId]
     );
 
+    console.log(
+        "ASSIGNED REQUESTS FOR COLLECTOR:",
+        collectorId,
+        rows
+    );
 
     return rows;
-
 }
+
+
+
+async getAssignedRequestDetails(requestId, collectorId) {
+    const { rows } = await pool.query(
+        `
+        SELECT
+            r.request_id,
+            r.business_id,
+            r.team_id,
+            r.collector_id,
+
+            r.kifle_ketema,
+            r.kebele,
+            r.sefer,
+            r.latitude,
+            r.longitude,
+            r.preferred_collection_date,
+            r.description,
+            r.status,
+
+            b.business_name,
+            b.owner_name,
+            b.phone_number AS business_phone,
+            b.email AS business_email,
+            b.house_number,
+
+            ct.team_name,
+            ct.status AS team_status,
+            ct.team_leader_id,
+
+            leader.full_name AS team_leader_name,
+            leader.phone_number AS team_leader_phone,
+            leader.email AS team_leader_email,
+
+            COALESCE(
+                json_agg(
+                    DISTINCT jsonb_build_object(
+                        'collector_id', member.collector_id,
+                        'full_name', member.full_name,
+                        'phone_number', member.phone_number,
+                        'email', member.email,
+                        'assigned_kifle_ketema',
+                            member.assigned_kifle_ketema,
+                        'kebele', member.kebele,
+                        'is_active', member.is_active
+                    )
+                ) FILTER (
+                    WHERE member.collector_id IS NOT NULL
+                ),
+                '[]'
+            ) AS team_members
+
+        FROM on_demand_requests r
+
+        INNER JOIN business_owners b
+            ON b.business_id = r.business_id
+
+        LEFT JOIN collection_teams ct
+            ON ct.team_id = r.team_id
+
+        LEFT JOIN collectors leader
+            ON leader.collector_id = ct.team_leader_id
+
+        LEFT JOIN collection_team_members ctm
+            ON ctm.team_id = ct.team_id
+
+        LEFT JOIN collectors member
+            ON member.collector_id = ctm.collector_id
+
+        WHERE r.request_id = $1
+
+        AND (
+            r.collector_id = $2
+            OR ctm.collector_id = $2
+        )
+
+        GROUP BY
+            r.request_id,
+            b.business_id,
+            ct.team_id,
+            leader.collector_id;
+        `,
+        [requestId, collectorId]
+    );
+
+    return rows[0] || null;
+}
+
 
 // =================================
 // Get Collector Tasks

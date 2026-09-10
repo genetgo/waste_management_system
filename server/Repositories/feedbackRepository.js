@@ -1,133 +1,102 @@
 const { pool } = require("../config/db");
 
 // ===========================================
-// Get Feedback By Kifle Ketema
+// Get All Feedback
+// Municipal Admin
+//
+// business_id != NULL  => Business Feedback
+// business_id == NULL  => Public Feedback
 // ===========================================
-const getAllFeedback = async (kifle_ketema) => {
-
-    const { rows } = await pool.query(
-        `
+const getAllFeedback = async (kifle_ketema = null) => {
+    let query = `
         SELECT
             f.feedback_id,
-            f.resident_id,
             f.business_id,
-            f.comment,
+            f.category,
+            f.kifle_ketema,
+            f.kebele,
+            f.sefer,
             f.rating,
+            f.description,
             f.feedback_date,
             f.created_at,
-            f.sefer,
 
-            -- USER
-            COALESCE(
-                r.full_name,
-                b.owner_name,
-                b.business_name
-            ) AS user_name,
-
-            -- PHONE
-            COALESCE(
-                r.phone_number,
-                b.phone_number
-            ) AS phone_number,
-
-            -- EMAIL
-            COALESCE(
-                r.email,
-                b.email
-            ) AS email,
-
-            -- KEBELE
-            COALESCE(
-                r.kebele,
-                b.kebele
-            ) AS kebele,
-
-            -- KIFLE KETEMA
-            COALESCE(
-                r.kifle_ketema,
-                b.kifle_ketema
-            ) AS kifle_ketema,
-
-            -- BUSINESS
+            -- BUSINESS INFORMATION
             b.business_name,
             b.owner_name AS business_owner_name,
-
-            -- RESIDENT
-            r.full_name AS resident_name
+            b.phone_number AS business_phone,
+            b.email AS business_email
 
         FROM feedback f
 
-        LEFT JOIN residents r
-            ON f.resident_id = r.resident_id
-
         LEFT JOIN business_owners b
             ON f.business_id = b.business_id
+    `;
 
-        WHERE
-            COALESCE(
-                r.kifle_ketema,
-                b.kifle_ketema
-            ) = $1
+    const values = [];
 
+    // ===========================================
+    // FILTER BY KIFLE KETEMA
+    // ===========================================
+    if (kifle_ketema) {
+        query += `
+            WHERE f.kifle_ketema = $1
+        `;
+
+        values.push(kifle_ketema);
+    }
+
+    // ===========================================
+    // ORDER
+    // ===========================================
+    query += `
         ORDER BY f.created_at DESC
-        `,
-        [kifle_ketema]
+    `;
+
+    const { rows } = await pool.query(
+        query,
+        values
     );
 
     return rows;
 };
+
+
 // ===========================================
 // Get Feedback By ID
 // ===========================================
 const getFeedbackById = async (id) => {
-
-    const { rows } = await pool.query(`
+    const { rows } = await pool.query(
+        `
         SELECT
             f.feedback_id,
-            f.resident_id,
             f.business_id,
-            f.comment,
+            f.category,
+            f.kifle_ketema,
+            f.kebele,
+            f.sefer,
             f.rating,
+            f.description,
             f.feedback_date,
             f.created_at,
-            f.sefer,
-            f.kebele,
 
-            r.full_name AS resident_name,
-            r.phone_number AS resident_phone,
-
+            -- BUSINESS INFORMATION
             b.business_name,
             b.owner_name AS business_owner_name,
-            b.phone_number AS business_phone
+            b.phone_number AS business_phone,
+            b.email AS business_email
 
         FROM feedback f
-
-        LEFT JOIN residents r
-            ON f.resident_id = r.resident_id
 
         LEFT JOIN business_owners b
             ON f.business_id = b.business_id
 
         WHERE f.feedback_id = $1
-    `, [id]);
+        `,
+        [id]
+    );
 
     return rows[0] || null;
-};
-
-
-// ===========================================
-// Get Resident Feedback
-// ===========================================
-const getResidentFeedback = async (residentId) => {
-
-    const { rows } = await pool.query(`
-        SELECT *
-        FROM feedback
-        WHERE resident_id = $1
-        ORDER BY created_at DESC
-    `, [residentId]);
-
-    return rows;
 };
 
 
@@ -135,13 +104,36 @@ const getResidentFeedback = async (residentId) => {
 // Get Business Feedback
 // ===========================================
 const getBusinessFeedback = async (businessId) => {
+    const { rows } = await pool.query(
+        `
+        SELECT
+            f.feedback_id,
+            f.business_id,
+            f.category,
+            f.kifle_ketema,
+            f.kebele,
+            f.sefer,
+            f.rating,
+            f.description,
+            f.feedback_date,
+            f.created_at,
 
-    const { rows } = await pool.query(`
-        SELECT *
-        FROM feedback
-        WHERE business_id = $1
-        ORDER BY created_at DESC
-    `, [businessId]);
+            b.business_name,
+            b.owner_name AS business_owner_name,
+            b.phone_number AS business_phone,
+            b.email AS business_email
+
+        FROM feedback f
+
+        LEFT JOIN business_owners b
+            ON f.business_id = b.business_id
+
+        WHERE f.business_id = $1
+
+        ORDER BY f.created_at DESC
+        `,
+        [businessId]
+    );
 
     return rows;
 };
@@ -149,38 +141,49 @@ const getBusinessFeedback = async (businessId) => {
 
 // ===========================================
 // Create Feedback
+//
+// Business Feedback:
+// business_id = business owner's ID
+//
+// Public Feedback:
+// business_id = null
 // ===========================================
 const createFeedback = async (feedback) => {
-
     const {
-        resident_id,
         business_id,
-        comment,
+        category,
+        kifle_ketema,
+        kebele,
+        sefer,
         rating,
-        sefer
-        
+        description
     } = feedback;
 
-    const { rows } = await pool.query(`
+    const { rows } = await pool.query(
+        `
         INSERT INTO feedback
         (
-            resident_id,
             business_id,
-            comment,
+            category,
+            kifle_ketema,
+            kebele,
+            sefer,
             rating,
-            sefer
-            
+            description
         )
-        VALUES ($1, $2, $3, $4, $5)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
         RETURNING *
-    `, [
-        resident_id || null,
-        business_id || null,
-        comment,
-        rating,
-        sefer,
-        
-    ]);
+        `,
+        [
+            business_id || null,
+            category,
+            kifle_ketema,
+            kebele,
+            sefer,
+            rating,
+            description || null
+        ]
+    );
 
     return rows[0];
 };
@@ -190,30 +193,38 @@ const createFeedback = async (feedback) => {
 // Update Feedback
 // ===========================================
 const updateFeedback = async (id, feedback) => {
-
     const {
-        comment,
-        rating,
+        category,
+        kifle_ketema,
+        kebele,
         sefer,
-        kebele
+        rating,
+        description
     } = feedback;
 
-    const { rows } = await pool.query(`
+    const { rows } = await pool.query(
+        `
         UPDATE feedback
         SET
-            comment = $1,
-            rating = $2,
-            sefer = $3,
-            kebele = $4
-        WHERE feedback_id = $5
+            category = $1,
+            kifle_ketema = $2,
+            kebele = $3,
+            sefer = $4,
+            rating = $5,
+            description = $6
+        WHERE feedback_id = $7
         RETURNING *
-    `, [
-        comment,
-        rating,
-        sefer,
-        kebele,
-        id
-    ]);
+        `,
+        [
+            category,
+            kifle_ketema,
+            kebele,
+            sefer,
+            rating,
+            description || null,
+            id
+        ]
+    );
 
     return rows[0] || null;
 };
@@ -223,12 +234,14 @@ const updateFeedback = async (id, feedback) => {
 // Delete Feedback
 // ===========================================
 const deleteFeedback = async (id) => {
-
-    const { rows } = await pool.query(`
+    const { rows } = await pool.query(
+        `
         DELETE FROM feedback
         WHERE feedback_id = $1
         RETURNING *
-    `, [id]);
+        `,
+        [id]
+    );
 
     return rows[0] || null;
 };
@@ -238,13 +251,14 @@ const deleteFeedback = async (id) => {
 // Average Rating
 // ===========================================
 const averageRating = async () => {
-
-    const { rows } = await pool.query(`
+    const { rows } = await pool.query(
+        `
         SELECT
             ROUND(AVG(rating)::numeric, 2) AS average_rating,
             COUNT(*) AS total_feedback
         FROM feedback
-    `);
+        `
+    );
 
     return rows[0];
 };
@@ -253,7 +267,6 @@ const averageRating = async () => {
 module.exports = {
     getAllFeedback,
     getFeedbackById,
-    getResidentFeedback,
     getBusinessFeedback,
     createFeedback,
     updateFeedback,

@@ -144,6 +144,22 @@ router.delete(
 );
 
 
+router.post(
+    "/permissions",
+    protect,
+    roleMiddleware("SYSTEM_ADMIN"),
+    systemAdminController.createPermission
+);
+
+// =====================================
+// DELETE CUSTOM PERMISSION
+// =====================================
+router.delete(
+    "/permissions/:id",
+    protect,
+    roleMiddleware("SYSTEM_ADMIN"),
+    systemAdminController.deletePermission
+);
 // =====================================
 // ROLES
 // =====================================

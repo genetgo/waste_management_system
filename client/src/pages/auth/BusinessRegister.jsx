@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaBuilding } from "react-icons/fa";
@@ -31,11 +30,13 @@ export default function BusinessRegister() {
     "Cafe",
     "Restaurant",
     "Hotel",
-    "Jambo",
-    "Gulit",
+    "Hospital",
+    "School",
+    "University / College",
+    "Factory",
+    "Office",
+    "Clinic",
     "Government Office",
-    "Kera",
-    "Other",
   ];
 
   // ==========================================
@@ -50,11 +51,11 @@ export default function BusinessRegister() {
     confirmPassword: "",
 
     business_type: "",
-    business_description: "",
 
     kifle_ketema: "",
     kebele: "",
     sefer: "",
+    house_number: "",
   });
 
   // ==========================================
@@ -165,16 +166,11 @@ export default function BusinessRegister() {
       setFormData((prev) => ({
         ...prev,
         business_type: value,
-        business_description:
-          value === "Other"
-            ? prev.business_description
-            : "",
       }));
 
       setErrors((prev) => ({
         ...prev,
         business_type: "",
-        business_description: "",
       }));
 
       return;
@@ -299,26 +295,6 @@ export default function BusinessRegister() {
       );
     }
 
-    // Other Description
-    if (formData.business_type === "Other") {
-      const description =
-        formData.business_description.trim();
-
-      if (!description) {
-        newErrors.business_description = t(
-          "register.validation.businessDescriptionRequired"
-        );
-      } else if (description.length < 3) {
-        newErrors.business_description = t(
-          "register.validation.businessDescriptionMin"
-        );
-      } else if (description.length > 100) {
-        newErrors.business_description = t(
-          "register.validation.businessDescriptionMax"
-        );
-      }
-    }
-
     // Kifle Ketema
     if (!formData.kifle_ketema) {
       newErrors.kifle_ketema = t(
@@ -365,6 +341,23 @@ export default function BusinessRegister() {
           "register.validation.invalidSefer"
         );
       }
+    }
+
+    // House Number
+    const houseNumber = formData.house_number.trim();
+
+    if (!houseNumber) {
+      newErrors.house_number = t(
+        "register.validation.houseNumberRequired"
+      );
+    } else if (!/^\d+$/.test(houseNumber)) {
+      newErrors.house_number = t(
+        "register.validation.houseNumberInvalid"
+      );
+    } else if (houseNumber.length > 20) {
+      newErrors.house_number = t(
+        "register.validation.houseNumberMax"
+      );
     }
 
     setErrors(newErrors);
@@ -448,12 +441,11 @@ export default function BusinessRegister() {
         confirmPassword: formData.confirmPassword,
 
         business_type: formData.business_type,
-        business_description:
-          formData.business_description.trim(),
 
         kifle_ketema: formData.kifle_ketema,
         kebele: formData.kebele,
         sefer: formData.sefer,
+        house_number: formData.house_number.trim(),
       };
 
       console.log(
@@ -768,34 +760,6 @@ export default function BusinessRegister() {
               )}
             </div>
 
-            {/* Other Description */}
-            {formData.business_type === "Other" && (
-              <div>
-                <label className="block text-sm font-semibold mb-2">
-                  {t(
-                    "register.fields.businessDescription"
-                  )}
-                </label>
-
-                <Input
-                  type="text"
-                  name="business_description"
-                  placeholder={t(
-                    "register.placeholders.businessDescription"
-                  )}
-                  value={formData.business_description}
-                  onChange={handleChange}
-                  className="mb-0"
-                />
-
-                {errors.business_description && (
-                  <p className="text-red-600 text-sm mt-1">
-                    {errors.business_description}
-                  </p>
-                )}
-              </div>
-            )}
-
             {/* Kifle Ketema */}
             <div>
               <label className="block text-sm font-semibold mb-2">
@@ -908,6 +872,51 @@ export default function BusinessRegister() {
               {errors.sefer && (
                 <p className="text-red-600 text-sm mt-1">
                   {errors.sefer}
+                </p>
+              )}
+            </div>
+
+            {/* House Number */}
+            <div>
+              <label className="block text-sm font-semibold mb-2">
+                {t("register.fields.houseNumber")}
+              </label>
+
+              <Input
+                type="text"
+                name="house_number"
+                placeholder={t(
+                  "register.placeholders.houseNumber"
+                )}
+                value={formData.house_number || ""}
+                onChange={(e) => {
+                  const value = e.target.value;
+
+                  setFormData((prev) => ({
+                    ...prev,
+                    house_number: value,
+                  }));
+
+                  if (value && !/^\d+$/.test(value)) {
+                    setErrors((prev) => ({
+                      ...prev,
+                      house_number: t(
+                        "register.validation.houseNumberInvalid"
+                      ),
+                    }));
+                  } else {
+                    setErrors((prev) => ({
+                      ...prev,
+                      house_number: "",
+                    }));
+                  }
+                }}
+                className="mb-0"
+              />
+
+              {errors.house_number && (
+                <p className="text-red-600 text-sm mt-1">
+                  {errors.house_number}
                 </p>
               )}
             </div>

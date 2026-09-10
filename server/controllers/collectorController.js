@@ -276,6 +276,41 @@ const searchCollectors = async (req, res, next) => {
     }
 };
 
+const getAssignedRequestDetails = async (req, res, next) => {
+    try {
+        const requestId = req.params.id;
+        const collectorId = req.user.id;
+
+        if (!requestId) {
+            return res.status(400).json({
+                success: false,
+                message: "Request ID is required."
+            });
+        }
+
+        const request =
+            await collectorRepository.getAssignedRequestDetails(
+                requestId,
+                collectorId
+            );
+
+        if (!request) {
+            return res.status(404).json({
+                success: false,
+                message: "Assigned request not found."
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: request
+        });
+
+    } catch (error) {
+        console.error("GET ASSIGNED REQUEST DETAILS ERROR:", error);
+        next(error);
+    }
+};
 
 // =================================
 // Get Assigned Requests
@@ -745,5 +780,6 @@ module.exports = {
      startCollection,
     completeCollection,
     getCollectorSchedules,
+    getAssignedRequestDetails,
     getDashboard
 };

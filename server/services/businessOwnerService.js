@@ -1,5 +1,3 @@
-// services/businessOwnerService.js
-
 const db = require("../config/db");
 
 // =====================================
@@ -12,10 +10,12 @@ const createBusinessOwner = async (businessData) => {
     phone_number,
     email,
     password_hash,
-    
-    
+    business_type,
+    business_description,
     kebele,
     kifle_ketema,
+    sefer,
+    house_number,
     profile_image,
   } = businessData;
 
@@ -28,13 +28,17 @@ const createBusinessOwner = async (businessData) => {
       phone_number,
       email,
       password_hash,
-      address,
       business_type,
+      business_description,
       kebele,
       kifle_ketema,
+      sefer,
+      house_number,
       profile_image
     )
-    VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+    VALUES(
+      $1,$2,$3,LOWER($4),$5,$6,$7,$8,$9,$10,$11,$12
+    )
     RETURNING *;
     `,
     [
@@ -43,11 +47,13 @@ const createBusinessOwner = async (businessData) => {
       phone_number,
       email,
       password_hash,
-      address,
       business_type,
+      business_description || null,
       kebele,
       kifle_ketema,
-      profile_image,
+      sefer,
+      house_number,
+      profile_image || null,
     ]
   );
 
@@ -59,9 +65,9 @@ const createBusinessOwner = async (businessData) => {
 // =====================================
 const getAllBusinessOwners = async () => {
   const result = await db.query(`
-      SELECT *
-      FROM business_owners
-      ORDER BY business_id DESC
+    SELECT *
+    FROM business_owners
+    ORDER BY business_id DESC
   `);
 
   return result.rows;
@@ -73,10 +79,10 @@ const getAllBusinessOwners = async () => {
 const getBusinessById = async (business_id) => {
   const result = await db.query(
     `
-      SELECT *
-      FROM business_owners
-      WHERE business_id=$1
-  `,
+    SELECT *
+    FROM business_owners
+    WHERE business_id=$1
+    `,
     [business_id]
   );
 
@@ -89,10 +95,10 @@ const getBusinessById = async (business_id) => {
 const getBusinessByEmail = async (email) => {
   const result = await db.query(
     `
-      SELECT *
-      FROM business_owners
-      WHERE email=$1
-  `,
+    SELECT *
+    FROM business_owners
+    WHERE LOWER(email)=LOWER($1)
+    `,
     [email]
   );
 
@@ -105,10 +111,10 @@ const getBusinessByEmail = async (email) => {
 const getBusinessByPhone = async (phone_number) => {
   const result = await db.query(
     `
-      SELECT *
-      FROM business_owners
-      WHERE phone_number=$1
-  `,
+    SELECT *
+    FROM business_owners
+    WHERE phone_number=$1
+    `,
     [phone_number]
   );
 
@@ -124,10 +130,12 @@ const updateBusinessOwner = async (business_id, data) => {
     owner_name,
     phone_number,
     email,
-    address,
     business_type,
+    business_description,
     kebele,
     kifle_ketema,
+    sefer,
+    house_number,
     profile_image,
   } = data;
 
@@ -138,14 +146,18 @@ const updateBusinessOwner = async (business_id, data) => {
       business_name=$1,
       owner_name=$2,
       phone_number=$3,
-      email=$4,
-      address=$5,
-      business_type=$6,
+      email=LOWER($4),
+      business_type=$5,
+      business_description=$6,
       kebele=$7,
       kifle_ketema=$8,
-      profile_image=$9,
+      sefer=$9,
+      house_number=$10,
+      profile_image=$11,
       updated_at=CURRENT_TIMESTAMP
-    WHERE business_id=$10
+
+    WHERE business_id=$13
+
     RETURNING *;
     `,
     [
@@ -153,11 +165,13 @@ const updateBusinessOwner = async (business_id, data) => {
       owner_name,
       phone_number,
       email,
-      address,
       business_type,
+      business_description || null,
       kebele,
       kifle_ketema,
-      profile_image,
+      sefer,
+      house_number,
+      profile_image || null,
       business_id,
     ]
   );
@@ -171,10 +185,10 @@ const updateBusinessOwner = async (business_id, data) => {
 const deleteBusinessOwner = async (business_id) => {
   const result = await db.query(
     `
-      DELETE FROM business_owners
-      WHERE business_id=$1
-      RETURNING *;
-  `,
+    DELETE FROM business_owners
+    WHERE business_id=$1
+    RETURNING *;
+    `,
     [business_id]
   );
 
@@ -187,12 +201,13 @@ const deleteBusinessOwner = async (business_id) => {
 const activateBusiness = async (business_id) => {
   const result = await db.query(
     `
-      UPDATE business_owners
-      SET is_active=true,
-          updated_at=CURRENT_TIMESTAMP
-      WHERE business_id=$1
-      RETURNING *;
-  `,
+    UPDATE business_owners
+    SET
+      is_active=true,
+      updated_at=CURRENT_TIMESTAMP
+    WHERE business_id=$1
+    RETURNING *;
+    `,
     [business_id]
   );
 
@@ -205,12 +220,13 @@ const activateBusiness = async (business_id) => {
 const deactivateBusiness = async (business_id) => {
   const result = await db.query(
     `
-      UPDATE business_owners
-      SET is_active=false,
-          updated_at=CURRENT_TIMESTAMP
-      WHERE business_id=$1
-      RETURNING *;
-  `,
+    UPDATE business_owners
+    SET
+      is_active=false,
+      updated_at=CURRENT_TIMESTAMP
+    WHERE business_id=$1
+    RETURNING *;
+    `,
     [business_id]
   );
 
@@ -231,7 +247,11 @@ const searchBusinesses = async (keyword) => {
       OR email ILIKE $1
       OR phone_number ILIKE $1
       OR business_type ILIKE $1
-      OR address ILIKE $1
+      OR business_description ILIKE $1
+      OR kebele ILIKE $1
+      OR kifle_ketema ILIKE $1
+      OR sefer ILIKE $1
+      OR house_number ILIKE $1
     ORDER BY business_id DESC;
     `,
     [`%${keyword}%`]
@@ -246,10 +266,10 @@ const searchBusinesses = async (keyword) => {
 const getBusinessesByType = async (business_type) => {
   const result = await db.query(
     `
-      SELECT *
-      FROM business_owners
-      WHERE business_type=$1
-  `,
+    SELECT *
+    FROM business_owners
+    WHERE business_type=$1
+    `,
     [business_type]
   );
 
@@ -262,10 +282,10 @@ const getBusinessesByType = async (business_type) => {
 const getBusinessesByKebele = async (kebele) => {
   const result = await db.query(
     `
-      SELECT *
-      FROM business_owners
-      WHERE kebele=$1
-  `,
+    SELECT *
+    FROM business_owners
+    WHERE kebele=$1
+    `,
     [kebele]
   );
 
@@ -278,10 +298,10 @@ const getBusinessesByKebele = async (kebele) => {
 const getBusinessesByKifleKetema = async (kifle_ketema) => {
   const result = await db.query(
     `
-      SELECT *
-      FROM business_owners
-      WHERE kifle_ketema=$1
-  `,
+    SELECT *
+    FROM business_owners
+    WHERE kifle_ketema=$1
+    `,
     [kifle_ketema]
   );
 
@@ -293,8 +313,8 @@ const getBusinessesByKifleKetema = async (kifle_ketema) => {
 // =====================================
 const countBusinesses = async () => {
   const result = await db.query(`
-      SELECT COUNT(*) AS total
-      FROM business_owners
+    SELECT COUNT(*) AS total
+    FROM business_owners
   `);
 
   return Number(result.rows[0].total);

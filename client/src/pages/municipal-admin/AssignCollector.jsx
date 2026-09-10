@@ -6,60 +6,144 @@ const AssignCollector = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [collectors, setCollectors] = useState([]);
-  const [selectedCollector, setSelectedCollector] = useState("");
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState("");
+  const [request, setRequest] = useState(null);
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // ==========================================
-  // Load Collectors
+  // Load Request + Collection Teams
   // ==========================================
   useEffect(() => {
-    loadCollectors();
-  }, []);
+    if (id) {
+      loadData();
+    }
+  }, [id]);
 
-  const loadCollectors = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
 
-      const res = await API.get("/collectors");
+      // ========================================
+      // Load Request
+      // ========================================
+      const requestRes = await API.get(`/requests/${id}`);
 
       console.log("=================================");
-      console.log("COLLECTORS RESPONSE:");
-      console.log(res.data);
+      console.log("REQUEST RESPONSE:");
+      console.log(requestRes.data);
       console.log("=================================");
 
-      const data = res.data?.data || res.data || [];
+      const requestData =
+        requestRes.data?.data ||
+        requestRes.data?.request ||
+        requestRes.data;
 
-      // ==========================================
-      // Only Active Collectors
-      // ==========================================
-      const activeCollectors = Array.isArray(data)
-        ? data.filter(
-            (collector) =>
-              collector.is_active === true
-          )
-        : [];
+      if (!requestData) {
+        throw new Error("Request not found.");
+      }
 
-      console.log(
-        "ACTIVE COLLECTORS:",
-        activeCollectors
+      setRequest(requestData);
+
+      // ========================================
+      // Load Collection Teams
+      // ========================================
+      const teamsRes =
+        await API.get("/collection-teams");
+
+      console.log("=================================");
+      console.log("COLLECTION TEAMS RESPONSE:");
+      console.log(teamsRes.data);
+      console.log("=================================");
+
+      const teamData =
+        teamsRes.data?.data ||
+        teamsRes.data ||
+        [];
+
+      if (!Array.isArray(teamData)) {
+        setTeams([]);
+        return;
+      }
+
+      // ========================================
+      // Only ACTIVE teams
+      // ========================================
+      const activeTeams = teamData.filter(
+        (team) =>
+          String(team.status).toUpperCase() === "ACTIVE"
       );
 
-      setCollectors(activeCollectors);
+      // ========================================
+      // Only teams with Team Leader / Driver
+      // ========================================
+      const teamsWithLeader = activeTeams.filter(
+        (team) =>
+          team.team_leader_id ||
+          team.team_leader_name
+      );
+
+      // ========================================
+      // Match Request Location
+      //
+      // Request:
+      //   kifle_ketema
+      //   kebele
+      //
+      // Team:
+      //   kifle_ketema
+      //   kebele
+      // ========================================
+      const matchingTeams = teamsWithLeader.filter(
+        (team) => {
+          const sameKifle =
+            String(team.kifle_ketema || "")
+              .trim()
+              .toLowerCase() ===
+            String(requestData.kifle_ketema || "")
+              .trim()
+              .toLowerCase();
+
+          const sameKebele =
+            String(team.kebele || "")
+              .trim()
+              .toLowerCase() ===
+            String(requestData.kebele || "")
+              .trim()
+              .toLowerCase();
+
+          return sameKifle && sameKebele;
+        }
+      );
+
+      console.log(
+        "ACTIVE TEAMS:",
+        activeTeams
+      );
+
+      console.log(
+        "MATCHING TEAMS:",
+        matchingTeams
+      );
+
+      setTeams(matchingTeams);
 
     } catch (error) {
       console.error(
-        "Load collectors error:",
+        "Load assign data error:",
         error.response?.data || error.message
       );
 
       alert(
         error.response?.data?.message ||
-        "Failed to load collectors."
+          error.message ||
+          "Failed to load request and collection teams."
       );
 
-      setCollectors([]);
+      setRequest(null);
+      setTeams([]);
 
     } finally {
       setLoading(false);
@@ -67,18 +151,41 @@ const AssignCollector = () => {
   };
 
   // ==========================================
-  // Assign Collector
+  // Assign Collection Team
   // Approved → Assigned
   // ==========================================
   const assignCollector = async () => {
-
     if (!id) {
       alert("Request ID is missing.");
       return;
     }
 
-    if (!selectedCollector) {
-      alert("Please select a collector.");
+    if (!selectedTeam) {
+      alert("Please select a collection team.");
+      return;
+    }
+
+    const selectedTeamData = teams.find(
+      (team) =>
+        String(team.team_id) ===
+        String(selectedTeam)
+    );
+
+    if (!selectedTeamData) {
+      alert("Selected collection team was not found.");
+      return;
+    }
+
+    // ========================================
+    // Safety Check
+    // ========================================
+    if (
+      !selectedTeamData.team_leader_id &&
+      !selectedTeamData.team_leader_name
+    ) {
+      alert(
+        "This team does not have a Team Leader / Driver."
+      );
       return;
     }
 
@@ -86,43 +193,51 @@ const AssignCollector = () => {
       setSaving(true);
 
       console.log("=================================");
-      console.log("ASSIGN COLLECTOR");
+      console.log("ASSIGN COLLECTION TEAM");
       console.log("REQUEST ID:", id);
       console.log(
-        "COLLECTOR ID:",
-        selectedCollector
+        "TEAM ID:",
+        selectedTeamData.team_id
+      );
+      console.log(
+        "TEAM NAME:",
+        selectedTeamData.team_name
+      );
+      console.log(
+        "TEAM LEADER:",
+        selectedTeamData.team_leader_name
       );
       console.log("=================================");
 
       const res = await API.patch(
         `/requests/${id}/assign`,
         {
-          collector_id: selectedCollector,
+          team_id: Number(
+            selectedTeamData.team_id
+          ),
         }
       );
 
       console.log(
-        "ASSIGN RESPONSE:",
+        "ASSIGN TEAM RESPONSE:",
         res.data
       );
 
-      alert("Collector Assigned Successfully");
+      alert(
+        "Collection Team Assigned Successfully"
+      );
 
-      // ==========================================
-      // Return to Collection Requests page
-      // ==========================================
       navigate("/municipal-admin/requests");
 
     } catch (error) {
-
       console.error(
-        "Assign collector error:",
+        "Assign team error:",
         error.response?.data || error.message
       );
 
       alert(
         error.response?.data?.message ||
-        "Failed to assign collector."
+          "Failed to assign collection team."
       );
 
     } finally {
@@ -144,8 +259,36 @@ const AssignCollector = () => {
     return (
       <div className="flex justify-center items-center h-72">
         <h2 className="text-lg font-semibold">
-          Loading Collectors...
+          Loading Collection Teams...
         </h2>
+      </div>
+    );
+  }
+
+  // ==========================================
+  // Request Not Found
+  // ==========================================
+  if (!request) {
+    return (
+      <div className="max-w-3xl mx-auto mt-8 bg-white shadow-lg rounded-xl p-8">
+        <h2 className="text-xl font-bold text-red-600">
+          Request not found.
+        </h2>
+
+        <button
+          onClick={handleCancel}
+          className="
+            mt-6
+            bg-gray-600
+            hover:bg-gray-700
+            text-white
+            px-6
+            py-3
+            rounded-lg
+          "
+        >
+          Back to Requests
+        </button>
       </div>
     );
   }
@@ -166,7 +309,7 @@ const AssignCollector = () => {
         </h1>
 
         <p className="text-gray-500 mt-2">
-          Select the appropriate collector for this
+          Select a collection team for this
           collection request.
         </p>
 
@@ -177,61 +320,213 @@ const AssignCollector = () => {
       </div>
 
       {/* ======================================
-          Collector Selection
+          Request Information
       ======================================= */}
-      <div className="space-y-2">
+      <div
+        className="
+          mb-6
+          bg-gray-50
+          border
+          border-gray-200
+          rounded-lg
+          p-4
+        "
+      >
+
+        <h3 className="font-semibold text-gray-700 mb-3">
+          Request Information
+        </h3>
+
+        <div className="space-y-1 text-sm">
+
+          <p>
+            <span className="font-semibold">
+              Business:
+            </span>{" "}
+            {request.business_name || "-"}
+          </p>
+
+          <p>
+            <span className="font-semibold">
+              Kifle Ketema:
+            </span>{" "}
+            {request.kifle_ketema || "-"}
+          </p>
+
+          <p>
+            <span className="font-semibold">
+              Kebele:
+            </span>{" "}
+            {request.kebele || "-"}
+          </p>
+
+          <p>
+            <span className="font-semibold">
+              Sefer:
+            </span>{" "}
+            {request.sefer || "-"}
+          </p>
+
+          <p>
+            <span className="font-semibold">
+              Status:
+            </span>{" "}
+            {request.status || "-"}
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* ======================================
+          Collection Team Selection
+      ======================================= */}
+      <div className="space-y-3">
 
         <label className="font-semibold text-gray-700">
-          Collector
+          Collection Team
         </label>
 
-        <select
-          value={selectedCollector}
-          onChange={(e) =>
-            setSelectedCollector(e.target.value)
-          }
-          className="
-            w-full
-            border
-            border-gray-300
-            rounded-lg
-            p-3
-            focus:outline-none
-            focus:ring-2
-            focus:ring-blue-500
-          "
-        >
+        {teams.length === 0 ? (
 
-          <option value="">
-            ----- Select Collector -----
-          </option>
+          <div
+            className="
+              border
+              border-yellow-300
+              bg-yellow-50
+              rounded-lg
+              p-4
+            "
+          >
 
-          {collectors.length === 0 ? (
+            <p className="font-semibold text-yellow-700">
+              No suitable collection team available.
+            </p>
 
-            <option disabled>
-              No active collectors available
-            </option>
+            <p className="text-sm text-gray-600 mt-1">
+              An ACTIVE team with a Team Leader /
+              Driver is required for{" "}
+              <span className="font-semibold">
+                {request.kifle_ketema}
+              </span>
+              {" / "}
+              <span className="font-semibold">
+                {request.kebele}
+              </span>
+              .
+            </p>
 
-          ) : (
+          </div>
 
-            collectors.map((collector) => (
+        ) : (
 
-              <option
-                key={collector.collector_id}
-                value={collector.collector_id}
-              >
-                {collector.full_name}
-                {" | "}
-                {collector.assigned_kifle_ketema || "-"}
-                {" | "}
-                {collector.kebele || "-"}
-              </option>
+          <div className="space-y-3">
 
-            ))
+            {teams.map((team) => {
 
-          )}
+              const teamId =
+                String(team.team_id);
 
-        </select>
+              const isSelected =
+                selectedTeam === teamId;
+
+              return (
+                <label
+                  key={team.team_id}
+                  className={`
+                    flex
+                    items-start
+                    gap-4
+                    border
+                    rounded-lg
+                    p-4
+                    cursor-pointer
+                    transition
+                    ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-300 hover:bg-gray-50"
+                    }
+                  `}
+                >
+
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => {
+                      if (isSelected) {
+                        setSelectedTeam("");
+                      } else {
+                        setSelectedTeam(teamId);
+                      }
+                    }}
+                    className="mt-1 w-5 h-5"
+                  />
+
+                  {/* Team Information */}
+                  <div className="flex-1">
+
+                    <div className="flex justify-between items-start">
+
+                      <p className="font-bold text-gray-800 text-lg">
+                        {team.team_name ||
+                          `Team ${team.team_id}`}
+                      </p>
+
+                      <span
+                        className="
+                          text-xs
+                          font-semibold
+                          bg-green-100
+                          text-green-700
+                          px-2
+                          py-1
+                          rounded
+                        "
+                      >
+                        ACTIVE
+                      </span>
+
+                    </div>
+
+                    <p className="text-sm text-gray-600 mt-2">
+                      Kifle Ketema:{" "}
+                      <span className="font-semibold">
+                        {team.kifle_ketema || "-"}
+                      </span>
+                    </p>
+
+                    <p className="text-sm text-gray-600">
+                      Kebele:{" "}
+                      <span className="font-semibold">
+                        {team.kebele || "-"}
+                      </span>
+                    </p>
+
+                    <p className="text-sm text-gray-600 mt-2">
+                      Team Leader / Driver:{" "}
+                      <span className="font-semibold text-gray-800">
+                        {team.team_leader_name ||
+                          "Not Assigned"}
+                      </span>
+                    </p>
+
+                    <p className="text-sm text-gray-600">
+                      Members:{" "}
+                      <span className="font-semibold">
+                        {team.member_count ?? 0}
+                      </span>
+                    </p>
+
+                  </div>
+
+                </label>
+              );
+            })}
+
+          </div>
+        )}
 
       </div>
 
@@ -266,8 +561,8 @@ const AssignCollector = () => {
           onClick={assignCollector}
           disabled={
             saving ||
-            !selectedCollector ||
-            collectors.length === 0
+            !selectedTeam ||
+            teams.length === 0
           }
           className="
             flex-1
@@ -289,7 +584,7 @@ const AssignCollector = () => {
       </div>
 
       {/* ======================================
-          Available Collectors
+          Team Information
       ======================================= */}
       <div
         className="
@@ -302,70 +597,15 @@ const AssignCollector = () => {
         "
       >
 
-        <h3
-          className="
-            font-semibold
-            text-blue-700
-            mb-3
-          "
-        >
-          Available Collectors
+        <h3 className="font-semibold text-blue-700 mb-2">
+          Collection Team
         </h3>
 
-        {collectors.length === 0 ? (
-
-          <p className="text-gray-500">
-            No active collectors available.
-          </p>
-
-        ) : (
-
-          <div className="space-y-3">
-
-            {collectors.map((collector) => (
-
-              <div
-                key={collector.collector_id}
-                className="
-                  flex
-                  justify-between
-                  items-center
-                  border-b
-                  border-blue-100
-                  pb-3
-                "
-              >
-
-                <div>
-
-                  <p className="font-semibold text-gray-800">
-                    {collector.full_name}
-                  </p>
-
-                  <p className="text-sm text-gray-600">
-                    {collector.assigned_kifle_ketema || "-"}
-                    {" | "}
-                    {collector.kebele || "-"}
-                  </p>
-
-                </div>
-
-                <span
-                  className="
-                    font-bold
-                    text-green-600
-                  "
-                >
-                  Active
-                </span>
-
-              </div>
-
-            ))}
-
-          </div>
-
-        )}
+        <p className="text-sm text-gray-600">
+          The Team Leader will serve as the Driver.
+          The other collectors will work together
+          with the Driver during waste collection.
+        </p>
 
       </div>
 

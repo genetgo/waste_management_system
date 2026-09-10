@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import scheduleService from "../../services/scheduleService";
 
 // Shared Components
@@ -16,14 +16,21 @@ const Schedule = () => {
 
   const fetchSchedule = async () => {
     try {
-      const response = await scheduleService.getMySchedule();
-console.log("Response:", response);
-console.log("Schedules:", response.data);
-      if (response.success) {
-        setSchedules(response.data);
+      setLoading(true);
+
+      // PUBLIC schedule
+      const response = await scheduleService.getSchedules();
+
+      console.log("Public Schedule Response:", response);
+
+      if (response?.success) {
+        setSchedules(response.data || []);
+      } else {
+        setSchedules([]);
       }
     } catch (error) {
-      console.error("Schedule Error:", error);
+      console.error("Public Schedule Error:", error);
+      setSchedules([]);
     } finally {
       setLoading(false);
     }
@@ -40,125 +47,124 @@ console.log("Schedules:", response.data);
   return (
     <ErrorBoundary>
       <div className="max-w-5xl mx-auto p-6">
-
+        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-800">
             Waste Collection Schedule
           </h1>
 
           <p className="text-gray-500 mt-2">
-            Your assigned waste collection schedule.
+            View available waste collection schedules.
           </p>
         </div>
 
+        {/* No Schedule */}
         {schedules.length === 0 ? (
-
           <Card className="text-center py-10">
-
-            <div className="text-6xl mb-4">
-              📅
-            </div>
+            <div className="text-6xl mb-4">📅</div>
 
             <h2 className="text-xl font-semibold text-gray-700">
               No Schedule Found
             </h2>
 
             <p className="text-gray-500 mt-2">
-              There is no collection schedule assigned to your address.
+              There are currently no waste collection schedules available.
             </p>
-
           </Card>
-
         ) : (
-
+          /* Schedule Cards */
           <div className="grid md:grid-cols-2 gap-6">
-
             {schedules.map((schedule) => (
-
               <Card
                 key={schedule.schedule_id}
                 className="p-6 shadow-lg rounded-2xl border"
               >
-
+                {/* Day + Status */}
                 <div className="flex justify-between items-center mb-5">
-
                   <h2 className="text-lg font-bold text-blue-700">
                     {schedule.day_of_week}
                   </h2>
 
                   <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
-                    {schedule.status}
+                    {schedule.status || "Active"}
                   </span>
-
                 </div>
 
                 <div className="space-y-3">
-
-                  <div className="flex justify-between">
+                  {/* Kifle Ketema */}
+                  <div className="flex justify-between gap-4">
                     <span className="font-semibold text-gray-500">
                       Kifle Ketema
                     </span>
 
-                    <span className="font-bold">
-                      {schedule.kifle_ketema}
+                    <span className="font-bold text-right">
+                      {schedule.kifle_ketema || "N/A"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between">
+                  {/* Kebele */}
+                  <div className="flex justify-between gap-4">
                     <span className="font-semibold text-gray-500">
                       Kebele
                     </span>
 
-                    <span className="font-bold">
-                      {schedule.kebele}
+                    <span className="font-bold text-right">
+                      {schedule.kebele || "N/A"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between">
+                  {/* Sefer */}
+                  <div className="flex justify-between gap-4">
                     <span className="font-semibold text-gray-500">
                       Sefer
                     </span>
 
-                    <span className="font-bold">
-                      {schedule.sefer}
+                    <span className="font-bold text-right">
+                      {schedule.sefer || "N/A"}
                     </span>
                   </div>
 
                   <hr />
 
-                  <div className="flex justify-between">
+                  {/* Frequency */}
+                  <div className="flex justify-between gap-4">
                     <span className="font-semibold text-gray-500">
                       Frequency
                     </span>
 
-                    <span className="font-bold text-green-700">
-                      {schedule.frequency}
+                    <span className="font-bold text-green-700 text-right">
+                      {schedule.frequency || "N/A"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between">
+                  {/* Collection Time */}
+                  <div className="flex justify-between gap-4">
                     <span className="font-semibold text-gray-500">
                       Collection Time
                     </span>
 
-                    <span className="font-bold">
-                      {schedule.start_time} - {schedule.end_time}
+                    <span className="font-bold text-right">
+                      {schedule.start_time || "--"}{" "}
+                      -{" "}
+                      {schedule.end_time || "--"}
                     </span>
                   </div>
 
                   <hr />
 
-                  <div className="flex justify-between">
+                  {/* Collector */}
+                  <div className="flex justify-between gap-4">
                     <span className="font-semibold text-gray-500">
                       Collector
                     </span>
 
-                    <span className="font-bold">
+                    <span className="font-bold text-right">
                       {schedule.collector_name || "Not Assigned"}
                     </span>
                   </div>
 
-                  <div className="flex justify-between">
+                  {/* Phone */}
+                  <div className="flex justify-between gap-4">
                     <span className="font-semibold text-gray-500">
                       Phone
                     </span>
@@ -176,17 +182,11 @@ console.log("Schedules:", response.data);
                       </span>
                     )}
                   </div>
-
                 </div>
-
               </Card>
-
             ))}
-
           </div>
-
         )}
-
       </div>
     </ErrorBoundary>
   );

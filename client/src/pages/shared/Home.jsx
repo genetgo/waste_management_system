@@ -32,7 +32,6 @@ export default function Home() {
         relative
       "
     >
-
       {/* ==========================================
           LANGUAGE BUTTONS
       ========================================== */}
@@ -97,7 +96,7 @@ export default function Home() {
       <div
         className="
           w-full
-          max-w-lg
+          max-w-5xl
           bg-white
           rounded-3xl
           shadow-2xl
@@ -110,8 +109,9 @@ export default function Home() {
           text-center
         "
       >
-
-        {/* LOGO */}
+        {/* ==========================================
+            LOGO
+        ========================================== */}
         <div className="flex justify-center mb-6">
           <div
             className="
@@ -135,7 +135,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* BADGE */}
+        {/* ==========================================
+            BADGE
+        ========================================== */}
         <div className="flex justify-center">
           <span
             className="
@@ -157,9 +159,10 @@ export default function Home() {
           </span>
         </div>
 
-        {/* TITLE */}
+        {/* ==========================================
+            TITLE
+        ========================================== */}
         <div className="mt-5 space-y-3">
-
           <h1
             className="
               text-2xl
@@ -185,12 +188,12 @@ export default function Home() {
           >
             {t("home.description")}
           </p>
-
         </div>
 
-        {/* WASTE COLLECTION */}
+        {/* ==========================================
+            WASTE COLLECTION
+        ========================================== */}
         <div className="flex justify-center mt-8">
-
           <div
             className="
               w-full
@@ -202,7 +205,6 @@ export default function Home() {
               border-emerald-100
             "
           >
-
             <div className="text-3xl mb-2">
               🗑️
             </div>
@@ -210,31 +212,31 @@ export default function Home() {
             <p className="text-sm font-semibold text-emerald-700">
               {t("home.wasteCollection")}
             </p>
-
           </div>
-
         </div>
 
-        {/* BUTTONS */}
+        {/* ==========================================
+            BUTTONS - HORIZONTAL
+        ========================================== */}
         <div
           className="
             flex
-            flex-col
-            sm:flex-row
+            flex-row
+            flex-wrap
             gap-3
             justify-center
+            items-center
             mt-8
           "
         >
-
+          {/* LOGIN */}
           <button
             type="button"
             onClick={() => navigate(ROUTES.LOGIN)}
             className="
-              w-full
-              sm:w-fit
-              min-w-[150px]
-              px-7
+              flex-1
+              min-w-[180px]
+              px-5
               py-3
               bg-emerald-600
               hover:bg-emerald-700
@@ -242,25 +244,25 @@ export default function Home() {
               text-white
               font-semibold
               text-sm
-              sm:text-base
               rounded-xl
               shadow-lg
               shadow-emerald-600/20
               transition
               duration-200
+              whitespace-nowrap
             "
           >
-            {t("home.getStarted")}
+            🔐 {t("home.login")}
           </button>
 
+          {/* CREATE ACCOUNT */}
           <button
             type="button"
             onClick={() => navigate(ROUTES.REGISTER)}
             className="
-              w-full
-              sm:w-fit
-              min-w-[150px]
-              px-7
+              flex-1
+              min-w-[180px]
+              px-5
               py-3
               bg-white
               border
@@ -271,18 +273,71 @@ export default function Home() {
               hover:text-emerald-700
               font-semibold
               text-sm
-              sm:text-base
               rounded-xl
               transition
               duration-200
+              whitespace-nowrap
             "
           >
-            {t("home.createAccount")}
+            📝 {t("home.createAccount")}
           </button>
 
+          {/* SCHEDULE VIEW */}
+          <button
+            type="button"
+            onClick={() => navigate("/schedule")}
+            className="
+              flex-1
+              min-w-[180px]
+              px-5
+              py-3
+              bg-blue-600
+              hover:bg-blue-700
+              active:bg-blue-800
+              text-white
+              font-semibold
+              text-sm
+              rounded-xl
+              shadow-lg
+              shadow-blue-600/20
+              transition
+              duration-200
+              whitespace-nowrap
+            "
+          >
+            📅 {t("home.scheduleView")}
+          </button>
+
+          {/* FEEDBACK */}
+          <button
+            type="button"
+            onClick={() => navigate("/feedback")}
+            className="
+              flex-1
+              min-w-[180px]
+              px-5
+              py-3
+              bg-amber-500
+              hover:bg-amber-600
+              active:bg-amber-700
+              text-white
+              font-semibold
+              text-sm
+              rounded-xl
+              shadow-lg
+              shadow-amber-500/20
+              transition
+              duration-200
+              whitespace-nowrap
+            "
+          >
+            💬 {t("home.feedback")}
+          </button>
         </div>
 
-        {/* FOOTER */}
+        {/* ==========================================
+            FOOTER
+        ========================================== */}
         <div
           className="
             text-xs
@@ -295,7 +350,6 @@ export default function Home() {
         >
           {t("home.footer")}
         </div>
-
       </div>
     </div>
   );

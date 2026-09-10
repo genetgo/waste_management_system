@@ -30,10 +30,8 @@ router.post(
 // ==========================================
 router.get(
     "/",
-    protect,
     scheduleController.getAllSchedules
 );
-
 // ==========================================
 // Get Schedule By ID
 // ==========================================
