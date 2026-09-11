@@ -216,17 +216,17 @@ export default function Home() {
         </div>
 
         {/* ==========================================
-            BUTTONS - HORIZONTAL
+            BUTTONS - 2 x 2
         ========================================== */}
         <div
           className="
-            flex
-            flex-row
-            flex-wrap
+            grid
+            grid-cols-2
             gap-3
-            justify-center
-            items-center
             mt-8
+            w-full
+            max-w-2xl
+            mx-auto
           "
         >
           {/* LOGIN */}
@@ -234,8 +234,7 @@ export default function Home() {
             type="button"
             onClick={() => navigate(ROUTES.LOGIN)}
             className="
-              flex-1
-              min-w-[180px]
+              w-full
               px-5
               py-3
               bg-emerald-600
@@ -260,20 +259,18 @@ export default function Home() {
             type="button"
             onClick={() => navigate(ROUTES.REGISTER)}
             className="
-              flex-1
-              min-w-[180px]
+              w-full
               px-5
               py-3
-              bg-white
-              border
-              border-gray-200
-              hover:border-emerald-300
-              hover:bg-emerald-50
-              text-gray-700
-              hover:text-emerald-700
+              bg-emerald-600
+              hover:bg-emerald-700
+              active:bg-emerald-800
+              text-white
               font-semibold
               text-sm
               rounded-xl
+              shadow-lg
+              shadow-emerald-600/20
               transition
               duration-200
               whitespace-nowrap
@@ -287,8 +284,7 @@ export default function Home() {
             type="button"
             onClick={() => navigate("/schedule")}
             className="
-              flex-1
-              min-w-[180px]
+              w-full
               px-5
               py-3
               bg-blue-600
@@ -313,19 +309,18 @@ export default function Home() {
             type="button"
             onClick={() => navigate("/feedback")}
             className="
-              flex-1
-              min-w-[180px]
+              w-full
               px-5
               py-3
-              bg-amber-500
-              hover:bg-amber-600
-              active:bg-amber-700
+              bg-blue-600
+              hover:bg-blue-700
+              active:bg-blue-800
               text-white
               font-semibold
               text-sm
               rounded-xl
               shadow-lg
-              shadow-amber-500/20
+              shadow-blue-600/20
               transition
               duration-200
               whitespace-nowrap
@@ -354,3 +349,4 @@ export default function Home() {
     </div>
   );
 }
+

@@ -1,9 +1,10 @@
-
 import React, { useEffect, useState } from "react";
 import API from "../../services/api";
 
 // ==========================================
 // Decode Logged-in User
+// Only ROLE is taken from JWT.
+// Kifle Ketema comes from SERVER.
 // ==========================================
 const getUserFromToken = () => {
     try {
@@ -29,151 +30,129 @@ const getUserFromToken = () => {
 
 // ==========================================
 // Location Data
+// Kebele + Sefer stay HARD-CODED
 // ==========================================
 const locations = {
 
     Abima: {
-
         "Kebele 01": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 02": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 03": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 04": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ]
-
     },
 
     Menkorer: {
-
         "Kebele 05": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 06": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 07": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 08": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ]
-
     },
 
     "Nigus Teklehaymanot": {
-
         "Kebele 09": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 10": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 11": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 12": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 13": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ]
-
     },
 
     "Tedila Gualu": {
-
         "Kebele 14": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 15": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 16": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 17": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ],
-
         "Kebele 18": [
             "Sefer 01",
             "Sefer 02",
             "Sefer 03",
             "Sefer 04"
         ]
-
     }
-
 };
 
 
@@ -184,29 +163,43 @@ const Schedules = () => {
 
     const tokenUser = getUserFromToken();
 
-    const userRole = tokenUser?.role || "";
-
-    const assignedKifleKetema =
-        tokenUser?.assigned_kifle_ketema || "";
+    const userRole = String(
+        tokenUser?.role || ""
+    ).toUpperCase();
 
 
     // ==========================================
     // State
+    // Kifle Ketema comes from SERVER
     // ==========================================
+    const [assignedKifleKetema, setAssignedKifleKetema] =
+        useState("");
 
-    const [schedules, setSchedules] = useState([]);
-
-    const [collectors, setCollectors] = useState([]);
-
-    const [loading, setLoading] = useState(true);
+    const [kifleKetemas, setKifleKetemas] =
+        useState([]);
 
 
+    const [schedules, setSchedules] =
+        useState([]);
+
+    const [teams, setTeams] =
+        useState([]);
+
+    const [loading, setLoading] =
+        useState(true);
+
+
+    // ==========================================
+    // Form
+    // ==========================================
     const [formData, setFormData] = useState({
 
+        team_id: "",
+
+        // Team Leader = Driver
         collector_id: "",
 
-        kifle_ketema:
-            assignedKifleKetema || "",
+        kifle_ketema: "",
 
         kebele: "",
 
@@ -223,51 +216,256 @@ const Schedules = () => {
         end_time: "",
 
         status: "ACTIVE"
-
     });
 
 
     // ==========================================
     // Available Kebeles
+    // FROM LOCAL locations ONLY
     // ==========================================
-
     const kebeles =
         formData.kifle_ketema
             ? Object.keys(
-                locations[formData.kifle_ketema] || {}
+                locations[
+                    formData.kifle_ketema
+                ] || {}
             )
             : [];
 
 
     // ==========================================
     // Available Sefers
+    // FROM LOCAL locations ONLY
     // ==========================================
-
     const sefers =
         formData.kifle_ketema &&
         formData.kebele
             ? locations[
                 formData.kifle_ketema
-            ]?.[formData.kebele] || []
+            ]?.[
+                formData.kebele
+            ] || []
             : [];
 
 
     // ==========================================
-    // Load Data
+    // Available Teams
+    // Filter Kifle + Kebele
     // ==========================================
+    const availableTeams = teams.filter((team) => {
 
+        const teamKifle =
+            String(
+                team.kifle_ketema || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        const selectedKifle =
+            String(
+                formData.kifle_ketema || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        const teamKebele =
+            String(
+                team.kebele || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        const selectedKebele =
+            String(
+                formData.kebele || ""
+            )
+                .trim()
+                .toLowerCase();
+
+        return (
+            teamKifle === selectedKifle &&
+            teamKebele === selectedKebele &&
+            String(
+                team.status || ""
+            ).toUpperCase() === "ACTIVE"
+        );
+    });
+
+
+    // ==========================================
+    // Selected Team
+    // ==========================================
+    const selectedTeam =
+        teams.find(
+            (team) =>
+                Number(team.team_id) ===
+                Number(formData.team_id)
+        ) || null;
+
+
+    // ==========================================
+    // LOAD KIFLE KETEMA
+    // ONLY KIFLE COMES FROM SERVER
+    // ==========================================
+    const loadKifleKetemas = async () => {
+
+        try {
+
+            const res =
+                await API.get(
+                    "/schedules/kifle-ketemas"
+                );
+
+            const rawData =
+                Array.isArray(res.data?.data)
+                    ? res.data.data
+                    : [];
+
+            const kifles =
+                rawData
+                    .map((item) => {
+
+                        if (
+                            typeof item ===
+                            "string"
+                        ) {
+                            return item;
+                        }
+
+                        return (
+                            item?.kifle_ketema ||
+                            item?.assigned_kifle_ketema ||
+                            ""
+                        );
+                    })
+                    .filter(Boolean);
+
+            const uniqueKifles =
+                [
+                    ...new Set(kifles)
+                ];
+
+            console.log(
+                "KIFLE KETEMAS FROM SERVER:",
+                uniqueKifles
+            );
+
+            setKifleKetemas(
+                uniqueKifles
+            );
+
+
+            // ==========================================
+            // Municipal Admin
+            // Only assigned Kifle
+            // ==========================================
+            if (
+                userRole ===
+                    "MUNICIPAL_ADMIN" &&
+                uniqueKifles.length > 0
+            ) {
+
+                const serverKifle =
+                    uniqueKifles[0];
+
+                setAssignedKifleKetema(
+                    serverKifle
+                );
+
+                setFormData((prev) => ({
+                    ...prev,
+                    kifle_ketema:
+                        serverKifle
+                }));
+            }
+
+            // ==========================================
+            // System Admin
+            // First Kifle can be selected
+            // ==========================================
+            if (
+                userRole ===
+                    "SYSTEM_ADMIN" &&
+                uniqueKifles.length > 0 &&
+                !formData.kifle_ketema
+            ) {
+
+                setFormData((prev) => ({
+                    ...prev,
+                    kifle_ketema:
+                        prev.kifle_ketema ||
+                        uniqueKifles[0]
+                }));
+            }
+
+            return uniqueKifles;
+
+        } catch (error) {
+
+            console.error(
+                "Kifle Ketema Load Error:",
+                error.response?.data ||
+                error
+            );
+
+            setKifleKetemas([]);
+
+            return [];
+        }
+    };
+
+
+    // ==========================================
+    // LOAD ALL DATA
+    // ==========================================
     useEffect(() => {
 
         const loadData = async () => {
 
-            setLoading(true);
+            try {
 
-            await Promise.all([
-                loadSchedules(),
-                loadCollectors()
-            ]);
+                setLoading(true);
 
-            setLoading(false);
+                const serverKifles =
+                    await loadKifleKetemas();
+
+                let currentKifle = "";
+
+                if (
+                    userRole ===
+                    "MUNICIPAL_ADMIN"
+                ) {
+
+                    currentKifle =
+                        serverKifles[0] || "";
+
+                } else {
+
+                    currentKifle =
+                        serverKifles[0] || "";
+                }
+
+
+                await Promise.all([
+                    loadSchedules(
+                        currentKifle
+                    ),
+                    loadTeams(
+                        currentKifle
+                    )
+                ]);
+
+            } catch (error) {
+
+                console.error(
+                    "Load Data Error:",
+                    error
+                );
+
+            } finally {
+
+                setLoading(false);
+            }
         };
 
         loadData();
@@ -276,100 +474,105 @@ const Schedules = () => {
 
 
     // ==========================================
-    // Load Collectors
+    // LOAD COLLECTION TEAMS
     // ==========================================
-
-    const loadCollectors = async () => {
+    const loadTeams = async (
+        kifleOverride = ""
+    ) => {
 
         try {
 
-            const res = await API.get("/collectors");
+            const res =
+                await API.get(
+                    "/collection-teams"
+                );
 
             const data =
-                Array.isArray(res.data?.data)
+                Array.isArray(
+                    res.data?.data
+                )
                     ? res.data.data
-                    : Array.isArray(res.data)
+                    : Array.isArray(
+                        res.data
+                    )
                         ? res.data
                         : [];
 
 
             console.log(
-                "ALL COLLECTORS:",
+                "ALL COLLECTION TEAMS:",
                 data
             );
 
 
             // ==========================================
-            // Municipal Admin → Own Kifle Only
+            // Filter using SERVER KIFLE
             // ==========================================
-
             if (
-                userRole === "MUNICIPAL_ADMIN" &&
-                assignedKifleKetema
+                kifleOverride
             ) {
 
-                const filteredCollectors =
+                const filteredTeams =
                     data.filter(
-                        (collector) =>
+                        (team) =>
                             String(
-                                collector.assigned_kifle_ketema || ""
-                            ).trim().toLowerCase()
+                                team.kifle_ketema ||
+                                ""
+                            )
+                                .trim()
+                                .toLowerCase()
                             ===
                             String(
-                                assignedKifleKetema
-                            ).trim().toLowerCase()
+                                kifleOverride
+                            )
+                                .trim()
+                                .toLowerCase()
                     );
 
-
-                console.log(
-                    "COLLECTORS FOR",
-                    assignedKifleKetema,
-                    ":",
-                    filteredCollectors
-                );
-
-
-                setCollectors(
-                    filteredCollectors
+                setTeams(
+                    filteredTeams
                 );
 
             } else {
 
-                setCollectors(data);
-
+                setTeams(data);
             }
 
         } catch (error) {
 
             console.error(
-                "Collectors Load Error:",
-                error.response?.data || error
+                "Collection Teams Load Error:",
+                error.response?.data ||
+                error
             );
 
-            setCollectors([]);
-
+            setTeams([]);
         }
-
     };
 
 
     // ==========================================
-    // Load Schedules
+    // LOAD SCHEDULES
     // ==========================================
-
-    const loadSchedules = async () => {
+    const loadSchedules = async (
+        kifleOverride = ""
+    ) => {
 
         try {
 
-            const res = await API.get(
-                "/schedules"
-            );
-
+            const res =
+                await API.get(
+                    "/schedules"
+                );
 
             const data =
-                Array.isArray(res.data?.data)
+                Array.isArray(
+                    res.data?.data
+                )
                     ? res.data.data
-                    : Array.isArray(res.data)
+                    : Array.isArray(
+                        res.data
+                    )
                         ? res.data
                         : [];
 
@@ -381,34 +584,28 @@ const Schedules = () => {
 
 
             // ==========================================
-            // Municipal Admin → Own Kifle Only
+            // Filter using SERVER KIFLE
             // ==========================================
-
             if (
-                userRole === "MUNICIPAL_ADMIN" &&
-                assignedKifleKetema
+                kifleOverride
             ) {
 
                 const filteredSchedules =
                     data.filter(
                         (schedule) =>
                             String(
-                                schedule.kifle_ketema || ""
-                            ).trim().toLowerCase()
+                                schedule.kifle_ketema ||
+                                ""
+                            )
+                                .trim()
+                                .toLowerCase()
                             ===
                             String(
-                                assignedKifleKetema
-                            ).trim().toLowerCase()
+                                kifleOverride
+                            )
+                                .trim()
+                                .toLowerCase()
                     );
-
-
-                console.log(
-                    "SCHEDULES FOR",
-                    assignedKifleKetema,
-                    ":",
-                    filteredSchedules
-                );
-
 
                 setSchedules(
                     filteredSchedules
@@ -417,27 +614,24 @@ const Schedules = () => {
             } else {
 
                 setSchedules(data);
-
             }
 
         } catch (error) {
 
             console.error(
                 "Schedule Load Error:",
-                error.response?.data || error
+                error.response?.data ||
+                error
             );
 
             setSchedules([]);
-
         }
-
     };
 
 
     // ==========================================
-    // Handle Input Change
+    // Generic Input Change
     // ==========================================
-
     const handleChange = (e) => {
 
         const {
@@ -445,391 +639,486 @@ const Schedules = () => {
             value
         } = e.target;
 
-
-        setFormData(prev => ({
-
+        setFormData((prev) => ({
             ...prev,
-
             [name]: value
-
         }));
-
     };
 
 
     // ==========================================
-    // Collector Change
+    // KIFLE CHANGE
+    // Kifle comes from SERVER
+    // Kebele + Sefer stay LOCAL
     // ==========================================
+    const handleKifleChange = async (e) => {
 
-    const handleCollectorChange = (e) => {
+        const value =
+            e.target.value;
 
-        setFormData(prev => ({
-
+        setFormData((prev) => ({
             ...prev,
 
-            collector_id: e.target.value
-
-        }));
-
-    };
-
-
-    // ==========================================
-    // Kifle Change
-    // ==========================================
-
-    const handleKifleChange = (e) => {
-
-        setFormData(prev => ({
-
-            ...prev,
-
-            kifle_ketema: e.target.value,
+            kifle_ketema: value,
 
             kebele: "",
 
-            sefers: [],
+            team_id: "",
 
-            collector_id: ""
+            collector_id: "",
 
+            sefers: []
         }));
 
+
+        // Reload teams/schedules for selected Kifle
+        await Promise.all([
+            loadTeams(value),
+            loadSchedules(value)
+        ]);
     };
 
 
     // ==========================================
     // Kebele Change
     // ==========================================
-
     const handleKebeleChange = (e) => {
 
-        setFormData(prev => ({
+        const value =
+            e.target.value;
 
+        setFormData((prev) => ({
             ...prev,
 
-            kebele: e.target.value,
+            kebele: value,
+
+            team_id: "",
+
+            collector_id: "",
 
             sefers: []
-
         }));
-
     };
 
 
     // ==========================================
-    // Multiple Sefer
+    // TEAM CHANGE
+    // Team Leader = Driver
     // ==========================================
+    const handleTeamChange = async (e) => {
 
+        const teamId =
+            e.target.value;
+
+        if (!teamId) {
+
+            setFormData((prev) => ({
+                ...prev,
+
+                team_id: "",
+
+                collector_id: ""
+            }));
+
+            return;
+        }
+
+
+        try {
+
+            const res =
+                await API.get(
+                    `/collection-teams/${teamId}`
+                );
+
+            const team =
+                res.data?.data ||
+                null;
+
+
+            console.log(
+                "SELECTED TEAM:",
+                team
+            );
+
+
+            setFormData((prev) => ({
+                ...prev,
+
+                team_id:
+                    teamId,
+
+                // Team Leader = Driver
+                collector_id:
+                    team?.team_leader_id
+                        ? String(
+                            team.team_leader_id
+                        )
+                        : ""
+            }));
+
+
+            // Update detailed team
+            if (team) {
+
+                setTeams(
+                    (prevTeams) =>
+                        prevTeams.map(
+                            (item) =>
+                                Number(
+                                    item.team_id
+                                ) ===
+                                Number(
+                                    team.team_id
+                                )
+                                    ? {
+                                        ...item,
+                                        ...team
+                                    }
+                                    : item
+                        )
+                );
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Load Selected Team Error:",
+                error.response?.data ||
+                error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Failed to load collection team."
+            );
+        }
+    };
+
+
+    // ==========================================
+    // SEFER CHANGE
+    // ==========================================
     const handleSeferChange = (sefer) => {
 
-        setFormData(prev => {
+        setFormData((prev) => {
 
             let selected = [
                 ...prev.sefers
             ];
 
-
             if (
-                selected.includes(sefer)
+                selected.includes(
+                    sefer
+                )
             ) {
 
                 selected =
                     selected.filter(
-                        item => item !== sefer
+                        (item) =>
+                            item !==
+                            sefer
                     );
 
             } else {
 
-                selected.push(sefer);
-
+                selected.push(
+                    sefer
+                );
             }
 
-
             return {
-
                 ...prev,
-
-                sefers: selected
-
+                sefers:
+                    selected
             };
-
         });
-
     };
 
 
-    
-// ==========================================
-// Create Schedule
-// ==========================================
-
-const createSchedule = async (e) => {
-
-    e.preventDefault();
-
-
     // ==========================================
-    // Required Validation
+    // CREATE SCHEDULE
     // ==========================================
+    const createSchedule = async (e) => {
 
-    if (!formData.collector_id) {
-
-        alert(
-            "Please select collector."
-        );
-
-        return;
-
-    }
+        e.preventDefault();
 
 
-    if (!formData.kifle_ketema) {
-
-        alert(
-            "Kifle Ketema is required."
-        );
-
-        return;
-
-    }
-
-
-    if (!formData.kebele) {
-
-        alert(
-            "Please select kebele."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        !formData.sefers ||
-        formData.sefers.length === 0
-    ) {
-
-        alert(
-            "Please select at least one sefer."
-        );
-
-        return;
-
-    }
-
-
-    // ==========================================
-    // Initial Date Required
-    // ==========================================
-
-    if (!formData.initial_date) {
-
-        alert(
-            "Please select initial date."
-        );
-
-        return;
-
-    }
-
-
-    // ==========================================
-    // Day Required
-    // ==========================================
-
-    if (!formData.day_of_week) {
-
-        alert(
-            "Please select day."
-        );
-
-        return;
-
-    }
-
-
-    // ==========================================
-    // Time Validation
-    // ==========================================
-
-    if (
-        !formData.start_time ||
-        !formData.end_time
-    ) {
-
-        alert(
-            "Please select start and end time."
-        );
-
-        return;
-
-    }
-
-
-    if (
-        formData.start_time >=
-        formData.end_time
-    ) {
-
-        alert(
-            "End time must be after start time."
-        );
-
-        return;
-
-    }
-
-
-    // ==========================================
-    // Create Schedule
-    // ==========================================
-
-    try {
-
-        // ------------------------------------------
-        // Create one schedule for each selected Sefer
-        // ------------------------------------------
-
-        for (
-            const sefer of formData.sefers
+        // ==========================================
+        // Validation
+        // ==========================================
+        if (
+            !formData.kifle_ketema
         ) {
 
-            try {
+            alert(
+                "Kifle Ketema is required."
+            );
 
-                await API.post(
-                    "/schedules",
-                    {
+            return;
+        }
 
-                        collector_id:
-                            formData.collector_id,
 
-                        kifle_ketema:
-                            formData.kifle_ketema,
+        if (
+            !formData.kebele
+        ) {
 
-                        kebele:
-                            formData.kebele,
+            alert(
+                "Please select Kebele."
+            );
 
-                        sefer:
-                            sefer,
+            return;
+        }
 
-                        day_of_week:
-                            formData.day_of_week,
 
-                        frequency:
-                            formData.frequency,
+        if (
+            !formData.team_id
+        ) {
 
-                        initial_date:
-                            formData.initial_date,
+            alert(
+                "Please select Collection Team."
+            );
 
-                        start_time:
-                            formData.start_time,
+            return;
+        }
 
-                        end_time:
-                            formData.end_time,
 
-                        status:
-                            "ACTIVE"
+        if (!selectedTeam) {
 
-                    }
-                );
+            alert(
+                "Selected Collection Team was not found."
+            );
 
-            } catch (error) {
+            return;
+        }
 
-                // ------------------------------------------
-                // Backend duplicate/conflict
-                // ------------------------------------------
 
-                if (
-                    error.response?.status === 409
-                ) {
+        if (
+            !selectedTeam.team_leader_id
+        ) {
 
-                    alert(
-                        error.response?.data?.message ||
-                        `Schedule conflict found for ${sefer}.`
-                    );
+            alert(
+                "This team does not have a Team Leader / Driver."
+            );
 
-                    return;
+            return;
+        }
 
-                }
 
-                throw error;
+        if (
+            !formData.sefers ||
+            formData.sefers.length === 0
+        ) {
 
-            }
+            alert(
+                "Please select at least one Sefer."
+            );
 
+            return;
+        }
+
+
+        if (
+            !formData.initial_date
+        ) {
+
+            alert(
+                "Please select initial date."
+            );
+
+            return;
+        }
+
+
+        if (
+            !formData.day_of_week
+        ) {
+
+            alert(
+                "Please select day."
+            );
+
+            return;
+        }
+
+
+        if (
+            !formData.start_time ||
+            !formData.end_time
+        ) {
+
+            alert(
+                "Please select start and end time."
+            );
+
+            return;
+        }
+
+
+        if (
+            formData.start_time >=
+            formData.end_time
+        ) {
+
+            alert(
+                "End time must be after start time."
+            );
+
+            return;
         }
 
 
         // ==========================================
-        // Success
+        // CREATE
+        // One schedule for each Sefer
         // ==========================================
+        try {
 
-        alert(
-            "Schedule created successfully."
-        );
-
-
-        // ==========================================
-        // Reset Form
-        // ==========================================
-
-        setFormData({
-
-            collector_id: "",
-
-            kifle_ketema:
-                userRole === "MUNICIPAL_ADMIN"
-                    ? assignedKifleKetema
-                    : "",
-
-            kebele: "",
-
-            sefers: [],
-
-            day_of_week: "",
-
-            frequency: "Every 2 Weeks",
-
-            initial_date: "",
-
-            start_time: "",
-
-            end_time: "",
-
-            status: "ACTIVE"
-
-        });
+            setLoading(true);
 
 
-        // ==========================================
-        // Reload Schedules
-        // ==========================================
+            for (
+                const sefer
+                of formData.sefers
+            ) {
 
-        await loadSchedules();
+                try {
+
+                    await API.post(
+                        "/schedules",
+                        {
+
+                            team_id:
+                                Number(
+                                    selectedTeam.team_id
+                                ),
+
+                            // Team Leader = Driver
+                            collector_id:
+                                Number(
+                                    selectedTeam.team_leader_id
+                                ),
+
+                            // Kifle from SERVER
+                            kifle_ketema:
+                                formData.kifle_ketema,
+
+                            // Kebele from LOCAL locations
+                            kebele:
+                                formData.kebele,
+
+                            // Sefer from LOCAL locations
+                            sefer:
+                                sefer,
+
+                            day_of_week:
+                                formData.day_of_week,
+
+                            frequency:
+                                formData.frequency,
+
+                            initial_date:
+                                formData.initial_date,
+
+                            start_time:
+                                formData.start_time,
+
+                            end_time:
+                                formData.end_time,
+
+                            status:
+                                "ACTIVE"
+                        }
+                    );
+
+                } catch (error) {
+
+                    if (
+                        error.response?.status ===
+                        409
+                    ) {
+
+                        alert(
+                            error.response?.data?.message ||
+                            `Schedule conflict found for ${sefer}.`
+                        );
+
+                        return;
+                    }
+
+                    throw error;
+                }
+            }
 
 
-    } catch (error) {
-
-        console.error(
-            "Create Schedule Error:",
-            error.response?.data || error
-        );
+            alert(
+                "Schedule created successfully."
+            );
 
 
-        alert(
-            error.response?.data?.message ||
-            "Create schedule failed."
-        );
+            // ==========================================
+            // RESET
+            // ==========================================
+            setFormData({
 
-    }
+                team_id: "",
 
-};
+                collector_id: "",
 
-            
+                // Keep server Kifle
+                kifle_ketema:
+                    userRole ===
+                    "MUNICIPAL_ADMIN"
+                        ? assignedKifleKetema
+                        : "",
+
+                kebele: "",
+
+                sefers: [],
+
+                day_of_week: "",
+
+                frequency:
+                    "Every 2 Weeks",
+
+                initial_date: "",
+
+                start_time: "",
+
+                end_time: "",
+
+                status: "ACTIVE"
+            });
+
+
+            await loadSchedules(
+                assignedKifleKetema ||
+                formData.kifle_ketema
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Create Schedule Error:",
+                error.response?.data ||
+                error
+            );
+
+            alert(
+                error.response?.data?.message ||
+                "Create schedule failed."
+            );
+
+        } finally {
+
+            setLoading(false);
+        }
+    };
+
+
     // ==========================================
-    // Delete Schedule
+    // DELETE SCHEDULE
     // ==========================================
-
     const deleteSchedule = async (id) => {
 
         if (
@@ -839,7 +1128,6 @@ const createSchedule = async (e) => {
         ) {
 
             return;
-
         }
 
 
@@ -849,31 +1137,29 @@ const createSchedule = async (e) => {
                 `/schedules/${id}`
             );
 
-
-            await loadSchedules();
+            await loadSchedules(
+                formData.kifle_ketema
+            );
 
         } catch (error) {
 
             console.error(
                 "Delete Schedule Error:",
-                error.response?.data || error
+                error.response?.data ||
+                error
             );
-
 
             alert(
                 error.response?.data?.message ||
                 "Failed to delete schedule."
             );
-
         }
-
     };
 
 
     // ==========================================
-    // Loading
+    // LOADING
     // ==========================================
-
     if (loading) {
 
         return (
@@ -898,16 +1184,13 @@ const createSchedule = async (e) => {
                 </div>
 
             </div>
-
         );
-
     }
 
 
     // ==========================================
     // UI
     // ==========================================
-
     return (
 
         <div className="p-6 space-y-6">
@@ -916,7 +1199,6 @@ const createSchedule = async (e) => {
             {/* ==========================================
                 HEADER
             ========================================== */}
-
             <div>
 
                 <h1 className="
@@ -928,7 +1210,8 @@ const createSchedule = async (e) => {
                 </h1>
 
 
-                {userRole === "MUNICIPAL_ADMIN" &&
+                {userRole ===
+                    "MUNICIPAL_ADMIN" &&
                     assignedKifleKetema && (
 
                         <p className="
@@ -944,22 +1227,24 @@ const createSchedule = async (e) => {
                                 font-bold
                                 text-blue-600
                             ">
-                                {assignedKifleKetema}
+                                {
+                                    assignedKifleKetema
+                                }
                             </span>
 
                         </p>
-
                     )}
 
             </div>
 
 
             {/* ==========================================
-                CREATE SCHEDULE FORM
+                CREATE FORM
             ========================================== */}
-
             <form
-                onSubmit={createSchedule}
+                onSubmit={
+                    createSchedule
+                }
                 className="
                     bg-white
                     p-6
@@ -973,74 +1258,9 @@ const createSchedule = async (e) => {
             >
 
 
-                {/* Collector */}
-
-                <div>
-
-                    <label className="
-                        block
-                        font-medium
-                        mb-1
-                    ">
-                        Select Collector
-                    </label>
-
-
-                    <select
-                        value={
-                            formData.collector_id
-                        }
-                        onChange={
-                            handleCollectorChange
-                        }
-                        className="
-                            border
-                            p-3
-                            rounded
-                            w-full
-                        "
-                        required
-                    >
-
-                        <option value="">
-                            Select Collector
-                        </option>
-
-
-                        {collectors.length === 0 ? (
-
-                            <option disabled>
-                                No collectors available
-                            </option>
-
-                        ) : (
-
-                            collectors.map(
-                                collector => (
-
-                                    <option
-                                        key={
-                                            collector.collector_id
-                                        }
-                                        value={
-                                            collector.collector_id
-                                        }
-                                    >
-                                        {collector.full_name}
-                                    </option>
-
-                                )
-                            )
-
-                        )}
-
-                    </select>
-
-                </div>
-
-
-                {/* Kifle Ketema */}
-
+                {/* ==========================================
+                    KIFLE KETEMA
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1052,7 +1272,8 @@ const createSchedule = async (e) => {
                     </label>
 
 
-                    {userRole === "MUNICIPAL_ADMIN" ? (
+                    {userRole ===
+                    "MUNICIPAL_ADMIN" ? (
 
                         <div className="
                             border
@@ -1063,7 +1284,12 @@ const createSchedule = async (e) => {
                             font-semibold
                             text-gray-700
                         ">
-                            {assignedKifleKetema || "-"}
+
+                            {
+                                assignedKifleKetema ||
+                                "Loading..."
+                            }
+
                         </div>
 
                     ) : (
@@ -1088,28 +1314,30 @@ const createSchedule = async (e) => {
                                 Select Kifle Ketema
                             </option>
 
-                            {Object.keys(
-                                locations
-                            ).map(kifle => (
 
-                                <option
-                                    key={kifle}
-                                    value={kifle}
-                                >
-                                    {kifle}
-                                </option>
+                            {kifleKetemas.map(
+                                (kifle) => (
 
-                            ))}
+                                    <option
+                                        key={kifle}
+                                        value={kifle}
+                                    >
+                                        {kifle}
+                                    </option>
+
+                                )
+                            )}
 
                         </select>
-
                     )}
 
                 </div>
 
 
-                {/* Kebele */}
-
+                {/* ==========================================
+                    KEBELE
+                    LOCAL ONLY
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1146,7 +1374,7 @@ const createSchedule = async (e) => {
 
 
                         {kebeles.map(
-                            kebele => (
+                            (kebele) => (
 
                                 <option
                                     key={kebele}
@@ -1163,8 +1391,347 @@ const createSchedule = async (e) => {
                 </div>
 
 
-                {/* Sefer */}
+                {/* ==========================================
+                    COLLECTION TEAM
+                ========================================== */}
+                <div>
 
+                    <label className="
+                        block
+                        font-medium
+                        mb-1
+                    ">
+                        Select Collection Team
+                    </label>
+
+
+                    <select
+                        value={
+                            formData.team_id
+                        }
+                        onChange={
+                            handleTeamChange
+                        }
+                        disabled={
+                            !formData.kebele
+                        }
+                        className="
+                            border
+                            p-3
+                            rounded
+                            w-full
+                        "
+                        required
+                    >
+
+                        <option value="">
+
+                            {!formData.kebele
+                                ? "Select Kebele first"
+                                : "Select Collection Team"
+                            }
+
+                        </option>
+
+
+                        {formData.kebele &&
+                        availableTeams.length ===
+                            0 ? (
+
+                            <option
+                                value=""
+                                disabled
+                            >
+                                No active teams for this Kebele
+                            </option>
+
+                        ) : (
+
+                            availableTeams.map(
+                                (team) => (
+
+                                    <option
+                                        key={
+                                            team.team_id
+                                        }
+                                        value={
+                                            team.team_id
+                                        }
+                                    >
+                                        {
+                                            team.team_name
+                                        }
+                                    </option>
+
+                                )
+                            )
+                        )}
+
+                    </select>
+
+
+                    {/* ==========================================
+                        TEAM INFORMATION
+                    ========================================== */}
+                    {selectedTeam && (
+
+                        <div className="
+                            mt-3
+                            bg-blue-50
+                            border
+                            border-blue-200
+                            rounded-lg
+                            p-4
+                            text-sm
+                            space-y-3
+                        ">
+
+
+                            {/* Team */}
+                            <div>
+
+                                <p className="
+                                    font-bold
+                                    text-blue-800
+                                    text-base
+                                ">
+                                    Collection Team
+                                </p>
+
+
+                                <p>
+                                    <strong>
+                                        Team:
+                                    </strong>{" "}
+                                    {
+                                        selectedTeam.team_name ||
+                                        "-"
+                                    }
+                                </p>
+
+
+                                <p>
+                                    <strong>
+                                        Kifle Ketema:
+                                    </strong>{" "}
+                                    {
+                                        selectedTeam.kifle_ketema ||
+                                        "-"
+                                    }
+                                </p>
+
+
+                                <p>
+                                    <strong>
+                                        Kebele:
+                                    </strong>{" "}
+                                    {
+                                        selectedTeam.kebele ||
+                                        "-"
+                                    }
+                                </p>
+
+                            </div>
+
+
+                            {/* Team Leader / Driver */}
+                            <div className="
+                                border-t
+                                pt-3
+                            ">
+
+                                <p className="
+                                    font-bold
+                                    text-green-700
+                                ">
+                                    Team Leader / Driver
+                                </p>
+
+
+                                <p>
+                                    <strong>
+                                        Name:
+                                    </strong>{" "}
+                                    {
+                                        selectedTeam.team_leader_name ||
+                                        "-"
+                                    }
+                                </p>
+
+
+                                <p>
+                                    <strong>
+                                        Phone:
+                                    </strong>{" "}
+                                    {
+                                        selectedTeam.team_leader_phone ||
+                                        "-"
+                                    }
+                                </p>
+
+
+                                <p>
+                                    <strong>
+                                        Email:
+                                    </strong>{" "}
+                                    {
+                                        selectedTeam.team_leader_email ||
+                                        "-"
+                                    }
+                                </p>
+
+
+                                <p className="
+                                    text-xs
+                                    text-green-700
+                                    mt-1
+                                ">
+                                    The Team Leader will serve as
+                                    the Driver.
+                                </p>
+
+                            </div>
+
+
+                            {/* Team Members */}
+                            <div className="
+                                border-t
+                                pt-3
+                            ">
+
+                                <p className="
+                                    font-bold
+                                    text-purple-700
+                                    mb-2
+                                ">
+                                    Team Members
+                                </p>
+
+
+                                {Array.isArray(
+                                    selectedTeam.collectors
+                                ) &&
+                                selectedTeam.collectors.length >
+                                    0 ? (
+
+                                    <div className="
+                                        space-y-2
+                                    ">
+
+                                        {
+                                            selectedTeam.collectors.map(
+                                                (member) => (
+
+                                                    <div
+                                                        key={
+                                                            member.collector_id
+                                                        }
+                                                        className="
+                                                            bg-white
+                                                            border
+                                                            rounded-lg
+                                                            p-3
+                                                        "
+                                                    >
+
+                                                        <p className="
+                                                            font-semibold
+                                                        ">
+                                                            {
+                                                                member.full_name ||
+                                                                "-"
+                                                            }
+                                                        </p>
+
+
+                                                        <p>
+                                                            Phone:{" "}
+                                                            {
+                                                                member.phone_number ||
+                                                                "-"
+                                                            }
+                                                        </p>
+
+
+                                                        <p>
+                                                            Email:{" "}
+                                                            {
+                                                                member.email ||
+                                                                "-"
+                                                            }
+                                                        </p>
+
+
+                                                        <p>
+                                                            Kifle Ketema:{" "}
+                                                            {
+                                                                member.assigned_kifle_ketema ||
+                                                                "-"
+                                                            }
+                                                        </p>
+
+
+                                                        <p>
+                                                            Kebele:{" "}
+                                                            {
+                                                                member.kebele ||
+                                                                "-"
+                                                            }
+                                                        </p>
+
+                                                    </div>
+                                                )
+                                            )
+                                        }
+
+                                    </div>
+
+                                ) : (
+
+                                    <p className="
+                                        text-gray-500
+                                    ">
+                                        No team members found.
+                                    </p>
+                                )}
+
+                            </div>
+
+
+                            {/* Member Count */}
+                            <div className="
+                                border-t
+                                pt-2
+                                font-semibold
+                            ">
+
+                                Members:{" "}
+
+                                {
+                                    Number(
+                                        selectedTeam.collector_count
+                                    ) ||
+                                    (
+                                        Array.isArray(
+                                            selectedTeam.collectors
+                                        )
+                                            ? selectedTeam.collectors.length
+                                            : 0
+                                    )
+                                }
+
+                            </div>
+
+                        </div>
+                    )}
+
+                </div>
+
+
+                {/* ==========================================
+                    SEFER
+                    LOCAL ONLY
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1176,56 +1743,69 @@ const createSchedule = async (e) => {
                     </label>
 
 
-                    <div className="
-                        grid
-                        grid-cols-2
-                        gap-2
-                    ">
+                    {!formData.kebele ? (
 
-                        {sefers.map(
-                            sefer => (
+                        <p className="
+                            text-gray-500
+                            text-sm
+                        ">
+                            Select Kebele first.
+                        </p>
 
-                                <label
-                                    key={sefer}
-                                    className="
-                                        flex
-                                        items-center
-                                        gap-2
-                                        border
-                                        p-2
-                                        rounded
-                                        cursor-pointer
-                                    "
-                                >
+                    ) : (
 
-                                    <input
-                                        type="checkbox"
-                                        checked={
-                                            formData.sefers.includes(
-                                                sefer
-                                            )
-                                        }
-                                        onChange={() =>
-                                            handleSeferChange(
-                                                sefer
-                                            )
-                                        }
-                                    />
+                        <div className="
+                            grid
+                            grid-cols-2
+                            gap-2
+                        ">
 
-                                    {sefer}
+                            {sefers.map(
+                                (sefer) => (
 
-                                </label>
+                                    <label
+                                        key={sefer}
+                                        className="
+                                            flex
+                                            items-center
+                                            gap-2
+                                            border
+                                            p-2
+                                            rounded
+                                            cursor-pointer
+                                            hover:bg-gray-50
+                                        "
+                                    >
 
-                            )
-                        )}
+                                        <input
+                                            type="checkbox"
+                                            checked={
+                                                formData.sefers.includes(
+                                                    sefer
+                                                )
+                                            }
+                                            onChange={() =>
+                                                handleSeferChange(
+                                                    sefer
+                                                )
+                                            }
+                                        />
 
-                    </div>
+                                        {sefer}
+
+                                    </label>
+                                )
+                            )}
+
+                        </div>
+                    )}
 
                 </div>
 
 
-                {/* Initial Date */}
-
+                {/* ==========================================
+                    INITIAL DATE
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1267,8 +1847,9 @@ const createSchedule = async (e) => {
                 </div>
 
 
-                {/* Day */}
-
+                {/* ==========================================
+                    DAY
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1301,27 +1882,27 @@ const createSchedule = async (e) => {
                             Select Day
                         </option>
 
-                        <option>
+                        <option value="Monday">
                             Monday
                         </option>
 
-                        <option>
+                        <option value="Tuesday">
                             Tuesday
                         </option>
 
-                        <option>
+                        <option value="Wednesday">
                             Wednesday
                         </option>
 
-                        <option>
+                        <option value="Thursday">
                             Thursday
                         </option>
 
-                        <option>
+                        <option value="Friday">
                             Friday
                         </option>
 
-                        <option>
+                        <option value="Saturday">
                             Saturday
                         </option>
 
@@ -1330,8 +1911,9 @@ const createSchedule = async (e) => {
                 </div>
 
 
-                {/* Frequency */}
-
+                {/* ==========================================
+                    FREQUENCY
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1359,15 +1941,15 @@ const createSchedule = async (e) => {
                         "
                     >
 
-                        <option>
+                        <option value="Every Week">
                             Every Week
                         </option>
 
-                        <option>
+                        <option value="Every 2 Weeks">
                             Every 2 Weeks
                         </option>
 
-                        <option>
+                        <option value="Monthly">
                             Monthly
                         </option>
 
@@ -1376,8 +1958,9 @@ const createSchedule = async (e) => {
                 </div>
 
 
-                {/* Start Time */}
-
+                {/* ==========================================
+                    START TIME
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1410,8 +1993,9 @@ const createSchedule = async (e) => {
                 </div>
 
 
-                {/* End Time */}
-
+                {/* ==========================================
+                    END TIME
+                ========================================== */}
                 <div>
 
                     <label className="
@@ -1444,12 +2028,19 @@ const createSchedule = async (e) => {
                 </div>
 
 
-                {/* Create */}
-
+                {/* ==========================================
+                    CREATE BUTTON
+                ========================================== */}
                 <button
                     type="submit"
                     disabled={
-                        collectors.length === 0
+                        !formData.kifle_ketema ||
+                        !formData.kebele ||
+                        !formData.team_id ||
+                        !formData.collector_id ||
+                        !selectedTeam ||
+                        !selectedTeam.team_leader_id ||
+                        formData.sefers.length === 0
                     }
                     className="
                         bg-blue-600
@@ -1462,11 +2053,8 @@ const createSchedule = async (e) => {
                         font-semibold
                     "
                 >
-
-                    Create Schedule
-
+                    Create Team Schedule
                 </button>
-
 
             </form>
 
@@ -1474,7 +2062,6 @@ const createSchedule = async (e) => {
             {/* ==========================================
                 EXISTING SCHEDULES
             ========================================== */}
-
             <div className="
                 bg-white
                 rounded-xl
@@ -1498,7 +2085,8 @@ const createSchedule = async (e) => {
                     </h2>
 
 
-                    {userRole === "MUNICIPAL_ADMIN" &&
+                    {userRole ===
+                        "MUNICIPAL_ADMIN" &&
                         assignedKifleKetema && (
 
                             <span className="
@@ -1510,9 +2098,10 @@ const createSchedule = async (e) => {
                                 text-sm
                                 font-semibold
                             ">
-                                {assignedKifleKetema}
+                                {
+                                    assignedKifleKetema
+                                }
                             </span>
-
                         )}
 
                 </div>
@@ -1533,7 +2122,7 @@ const createSchedule = async (e) => {
                     <table className="
                         w-full
                         border
-                        min-w-[1050px]
+                        min-w-[1200px]
                     ">
 
                         <thead>
@@ -1543,7 +2132,11 @@ const createSchedule = async (e) => {
                             ">
 
                                 <th className="border p-2">
-                                    Collector
+                                    Team
+                                </th>
+
+                                <th className="border p-2">
+                                    Team Leader / Driver
                                 </th>
 
                                 <th className="border p-2">
@@ -1586,188 +2179,171 @@ const createSchedule = async (e) => {
                         <tbody>
 
                             {schedules.map(
-                                schedule => {
+                                (schedule) => (
 
-                                    const collectorName =
-                                        schedule.collector_name ||
-                                        collectors.find(
-                                            collector =>
-                                                String(
-                                                    collector.collector_id
-                                                ) ===
-                                                String(
-                                                    schedule.collector_id
-                                                )
-                                        )?.full_name ||
-                                        "Not Assigned";
+                                    <tr
+                                        key={
+                                            schedule.schedule_id
+                                        }
+                                        className="
+                                            hover:bg-gray-50
+                                        "
+                                    >
 
-
-                                    return (
-
-                                        <tr
-                                            key={
-                                                schedule.schedule_id
+                                        <td className="
+                                            border
+                                            p-2
+                                            font-semibold
+                                        ">
+                                            {
+                                                schedule.team_name ||
+                                                "Not Assigned"
                                             }
-                                            className="
-                                                hover:bg-gray-50
-                                            "
-                                        >
-
-                                            {/* Collector */}
-
-                                            <td className="
-                                                border
-                                                p-2
-                                                font-semibold
-                                            ">
-
-                                                {collectorName}
-
-                                            </td>
+                                        </td>
 
 
-                                            {/* Kifle */}
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.team_leader_name ||
+                                                schedule.collector_name ||
+                                                "Not Assigned"
+                                            }
+                                        </td>
 
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-                                                {
-                                                    schedule.kifle_ketema
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.kifle_ketema ||
+                                                "-"
+                                            }
+                                        </td>
+
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.kebele ||
+                                                "-"
+                                            }
+                                        </td>
+
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.sefer ||
+                                                "-"
+                                            }
+                                        </td>
+
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.initial_date
+                                                    ? String(
+                                                        schedule.initial_date
+                                                    ).slice(
+                                                        0,
+                                                        10
+                                                    )
+                                                    : "-"
+                                            }
+                                        </td>
+
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.day_of_week ||
+                                                "-"
+                                            }
+                                        </td>
+
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.start_time ||
+                                                "-"
+                                            }
+
+                                            {" - "}
+
+                                            {
+                                                schedule.end_time ||
+                                                "-"
+                                            }
+                                        </td>
+
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+                                            {
+                                                schedule.frequency ||
+                                                "-"
+                                            }
+                                        </td>
+
+
+                                        <td className="
+                                            border
+                                            p-2
+                                        ">
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    deleteSchedule(
+                                                        schedule.schedule_id
+                                                    )
                                                 }
-                                            </td>
+                                                className="
+                                                    bg-red-600
+                                                    hover:bg-red-700
+                                                    text-white
+                                                    px-3
+                                                    py-1
+                                                    rounded
+                                                "
+                                            >
+                                                Delete
+                                            </button>
 
+                                        </td>
 
-                                            {/* Kebele */}
+                                    </tr>
 
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-                                                {
-                                                    schedule.kebele
-                                                }
-                                            </td>
-
-
-                                            {/* Sefer */}
-
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-                                                {
-                                                    schedule.sefer
-                                                }
-                                            </td>
-
-
-                                            {/* Initial Date */}
-
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-                                                <td className="border p-2">
-    {schedule.initial_date
-        ? String(schedule.initial_date).slice(0, 10)
-        : "-"}
-</td>
-                                            </td>
-
-
-                                            {/* Day */}
-
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-                                                {
-                                                    schedule.day_of_week
-                                                }
-                                            </td>
-
-
-                                            {/* Time */}
-
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-
-                                                {
-                                                    schedule.start_time
-                                                }
-
-                                                {" - "}
-
-                                                {
-                                                    schedule.end_time
-                                                }
-
-                                            </td>
-
-
-                                            {/* Frequency */}
-
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-
-                                                {
-                                                    schedule.frequency
-                                                }
-
-                                            </td>
-
-
-                                            {/* Delete */}
-
-                                            <td className="
-                                                border
-                                                p-2
-                                            ">
-
-                                                <button
-                                                    onClick={() =>
-                                                        deleteSchedule(
-                                                            schedule.schedule_id
-                                                        )
-                                                    }
-                                                    className="
-                                                        bg-red-600
-                                                        hover:bg-red-700
-                                                        text-white
-                                                        px-3
-                                                        py-1
-                                                        rounded
-                                                    "
-                                                >
-                                                    Delete
-                                                </button>
-
-                                            </td>
-
-                                        </tr>
-
-                                    );
-
-                                }
+                                )
                             )}
 
                         </tbody>
 
                     </table>
-
                 )}
 
             </div>
 
         </div>
-
     );
-
 };
 
 
