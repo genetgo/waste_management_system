@@ -1,4 +1,3 @@
-// server/controllers/feedbackController.js
 
 const feedbackService = require("../services/feedbackService");
 
@@ -9,11 +8,13 @@ const feedbackService = require("../services/feedbackService");
 
 const createFeedback = async (req, res, next) => {
     try {
+
         console.log("=================================");
         console.log("CREATE BUSINESS FEEDBACK");
         console.log("USER:", req.user);
         console.log("BODY:", req.body);
         console.log("=================================");
+
 
         // ==========================================
         // AUTHENTICATION
@@ -26,6 +27,7 @@ const createFeedback = async (req, res, next) => {
             .toUpperCase();
 
         const userId = req.user?.id;
+
 
         if (!userId) {
             return res.status(401).json({
@@ -53,12 +55,14 @@ const createFeedback = async (req, res, next) => {
 
 
         // ==========================================
-        // GET BUSINESS KIFLE KETEMA FROM JWT
+        // GET BUSINESS KIFLE KETEMA
+        // FROM JWT
         // ==========================================
 
         const kifle_ketema =
             req.user?.kifle_ketema ||
             req.user?.assigned_kifle_ketema;
+
 
         if (!kifle_ketema) {
             return res.status(400).json({
@@ -113,7 +117,11 @@ const createFeedback = async (req, res, next) => {
         }
 
 
-        if (rating === undefined || rating === null || rating === "") {
+        if (
+            rating === undefined ||
+            rating === null ||
+            rating === ""
+        ) {
             return res.status(400).json({
                 success: false,
                 message:
@@ -123,6 +131,7 @@ const createFeedback = async (req, res, next) => {
 
 
         const numericRating = Number(rating);
+
 
         if (
             Number.isNaN(numericRating) ||
@@ -138,32 +147,31 @@ const createFeedback = async (req, res, next) => {
 
 
         // ==========================================
-        // OTHER CATEGORY
-        // ==========================================
-
-        if (
-            category.trim() === "Other" &&
-            !description?.trim()
-        ) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Other description is required."
-            });
-        }
-
-
-        // ==========================================
         // PREPARE BUSINESS FEEDBACK
+        //
+        // ALL CATEGORIES ALLOWED
+        // COMMENT/DESCRIPTION OPTIONAL
         // ==========================================
 
         const feedbackData = {
+
             business_id: userId,
-            category: category.trim(),
-            kifle_ketema: kifle_ketema.trim(),
-            kebele: kebele.trim(),
-            sefer: sefer.trim(),
-            rating: numericRating,
+
+            category:
+                category.trim(),
+
+            kifle_ketema:
+                kifle_ketema.trim(),
+
+            kebele:
+                kebele.trim(),
+
+            sefer:
+                sefer.trim(),
+
+            rating:
+                numericRating,
+
             description:
                 description?.trim() || null
         };
@@ -187,12 +195,15 @@ const createFeedback = async (req, res, next) => {
 
         return res.status(201).json({
             success: true,
+
             message:
                 "Business feedback submitted successfully.",
+
             data: feedback
         });
 
     } catch (error) {
+
         console.error(
             "Create Business Feedback Error:",
             error
@@ -201,6 +212,7 @@ const createFeedback = async (req, res, next) => {
         next(error);
     }
 };
+
 
 
 // ==========================================
@@ -212,9 +224,11 @@ const createPublicFeedback = async (
     res,
     next
 ) => {
+
     try {
+
         console.log("=================================");
-        console.log("PUBLIC FEEDBACK REQUEST");
+        console.log("CREATE PUBLIC FEEDBACK");
         console.log("BODY:", req.body);
         console.log("=================================");
 
@@ -273,7 +287,11 @@ const createPublicFeedback = async (
         }
 
 
-        if (rating === undefined || rating === null || rating === "") {
+        if (
+            rating === undefined ||
+            rating === null ||
+            rating === ""
+        ) {
             return res.status(400).json({
                 success: false,
                 message:
@@ -283,6 +301,7 @@ const createPublicFeedback = async (
 
 
         const numericRating = Number(rating);
+
 
         if (
             Number.isNaN(numericRating) ||
@@ -298,33 +317,30 @@ const createPublicFeedback = async (
 
 
         // ==========================================
-        // OTHER CATEGORY
-        // ==========================================
-
-        if (
-            category.trim() === "Other" &&
-            !description?.trim()
-        ) {
-            return res.status(400).json({
-                success: false,
-                message:
-                    "Other description is required."
-            });
-        }
-
-
-        // ==========================================
         // PREPARE PUBLIC FEEDBACK
+        //
         // business_id = NULL
         // ==========================================
 
         const feedbackData = {
+
             business_id: null,
-            category: category.trim(),
-            kifle_ketema: kifle_ketema.trim(),
-            kebele: kebele.trim(),
-            sefer: sefer.trim(),
-            rating: numericRating,
+
+            category:
+                category.trim(),
+
+            kifle_ketema:
+                kifle_ketema.trim(),
+
+            kebele:
+                kebele.trim(),
+
+            sefer:
+                sefer.trim(),
+
+            rating:
+                numericRating,
+
             description:
                 description?.trim() || null
         };
@@ -337,7 +353,7 @@ const createPublicFeedback = async (
 
 
         // ==========================================
-        // CREATE PUBLIC FEEDBACK
+        // CREATE
         // ==========================================
 
         const feedback =
@@ -348,12 +364,15 @@ const createPublicFeedback = async (
 
         return res.status(201).json({
             success: true,
+
             message:
                 "Public feedback submitted successfully.",
+
             data: feedback
         });
 
     } catch (error) {
+
         console.error(
             "Create Public Feedback Error:",
             error
@@ -362,6 +381,7 @@ const createPublicFeedback = async (
         next(error);
     }
 };
+
 
 
 // ==========================================
@@ -374,7 +394,9 @@ const getFeedbacks = async (
     res,
     next
 ) => {
+
     try {
+
         console.log("=================================");
         console.log("MUNICIPAL ADMIN FEEDBACK");
         console.log("USER:", req.user);
@@ -405,6 +427,7 @@ const getFeedbacks = async (
         });
 
     } catch (error) {
+
         console.error(
             "Get Feedback Error:",
             error
@@ -413,6 +436,7 @@ const getFeedbacks = async (
         next(error);
     }
 };
+
 
 
 // ==========================================
@@ -424,7 +448,9 @@ const getFeedbackById = async (
     res,
     next
 ) => {
+
     try {
+
         const feedback =
             await feedbackService.getFeedbackById(
                 req.params.id
@@ -446,6 +472,7 @@ const getFeedbackById = async (
         });
 
     } catch (error) {
+
         console.error(
             "Get Feedback By ID Error:",
             error
@@ -454,6 +481,136 @@ const getFeedbackById = async (
         next(error);
     }
 };
+
+
+
+// ==========================================
+// GET PUBLIC FEEDBACK BY ID
+//
+// Used by public user to check:
+// Pending -> Viewed
+// ==========================================
+
+const getPublicFeedbackById = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const feedback =
+            await feedbackService.getFeedbackById(
+                req.params.id
+            );
+
+
+        if (!feedback) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Feedback not found."
+            });
+        }
+
+
+        // ==========================================
+        // PUBLIC FEEDBACK ONLY
+        // business_id must be NULL
+        // ==========================================
+
+        if (feedback.business_id !== null) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Public feedback not found."
+            });
+        }
+
+
+        return res.status(200).json({
+            success: true,
+            data: feedback
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Get Public Feedback Error:",
+            error
+        );
+
+        next(error);
+    }
+};
+
+
+
+// ==========================================
+// MARK FEEDBACK AS VIEWED
+// MUNICIPAL ADMIN
+//
+// Pending -> Viewed
+// Already Viewed -> stays Viewed
+// ==========================================
+
+const markFeedbackAsViewed = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        console.log("=================================");
+        console.log("MARK FEEDBACK AS VIEWED");
+        console.log("FEEDBACK ID:", req.params.id);
+        console.log("USER:", req.user);
+        console.log("=================================");
+
+
+        const feedback =
+            await feedbackService.markFeedbackAsViewed(
+                req.params.id
+            );
+
+
+        if (!feedback) {
+            return res.status(404).json({
+                success: false,
+                message:
+                    "Feedback not found."
+            });
+        }
+
+
+        console.log(
+            "FEEDBACK STATUS:",
+            feedback.status
+        );
+
+
+        return res.status(200).json({
+
+            success: true,
+
+            message:
+                "Feedback marked as Viewed.",
+
+            data: feedback
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Mark Feedback As Viewed Error:",
+            error
+        );
+
+        next(error);
+    }
+};
+
 
 
 // ==========================================
@@ -465,7 +622,9 @@ const updateFeedback = async (
     res,
     next
 ) => {
+
     try {
+
         const feedback =
             await feedbackService.updateFeedback(
                 req.params.id,
@@ -483,13 +642,17 @@ const updateFeedback = async (
 
 
         return res.status(200).json({
+
             success: true,
+
             message:
                 "Feedback updated successfully.",
+
             data: feedback
         });
 
     } catch (error) {
+
         console.error(
             "Update Feedback Error:",
             error
@@ -500,8 +663,10 @@ const updateFeedback = async (
 };
 
 
+
 // ==========================================
 // DELETE FEEDBACK
+// MUNICIPAL ADMIN
 // ==========================================
 
 const deleteFeedback = async (
@@ -509,7 +674,16 @@ const deleteFeedback = async (
     res,
     next
 ) => {
+
     try {
+
+        console.log("=================================");
+        console.log("DELETE FEEDBACK");
+        console.log("FEEDBACK ID:", req.params.id);
+        console.log("USER:", req.user);
+        console.log("=================================");
+
+
         const deleted =
             await feedbackService.deleteFeedback(
                 req.params.id
@@ -526,12 +700,17 @@ const deleteFeedback = async (
 
 
         return res.status(200).json({
+
             success: true,
+
             message:
-                "Feedback deleted successfully."
+                "Feedback deleted successfully.",
+
+            data: deleted
         });
 
     } catch (error) {
+
         console.error(
             "Delete Feedback Error:",
             error
@@ -540,6 +719,7 @@ const deleteFeedback = async (
         next(error);
     }
 };
+
 
 
 // ==========================================
@@ -551,17 +731,22 @@ const averageRating = async (
     res,
     next
 ) => {
+
     try {
+
         const rating =
             await feedbackService.averageRating();
 
 
         return res.status(200).json({
+
             success: true,
+
             data: rating
         });
 
     } catch (error) {
+
         console.error(
             "Average Rating Error:",
             error
@@ -572,16 +757,28 @@ const averageRating = async (
 };
 
 
+
 // ==========================================
 // EXPORT
 // ==========================================
 
 module.exports = {
+
     createFeedback,
+
     createPublicFeedback,
+
     getFeedbacks,
+
     getFeedbackById,
+
+    getPublicFeedbackById,
+
+    markFeedbackAsViewed,
+
     updateFeedback,
+
     deleteFeedback,
+
     averageRating
 };

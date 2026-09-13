@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+
+import React, {
+    useEffect,
+    useState
+} from "react";
 
 import Card from "../../components/common/Card";
 import Select from "../../components/common/Select";
-import Textarea from "../../components/common/Textarea";
 import Button from "../../components/common/Button";
 import Toast from "../../components/common/Toast";
 
@@ -15,25 +18,30 @@ const Feedback = () => {
     // ==========================================
 
     const locations = {
+
         Abima: {
+
             "Kebele 01": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 02": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 03": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 04": [
                 "Sefer 01",
                 "Sefer 02",
@@ -43,24 +51,28 @@ const Feedback = () => {
         },
 
         Menkorer: {
+
             "Kebele 05": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 06": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 07": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 08": [
                 "Sefer 01",
                 "Sefer 02",
@@ -70,30 +82,35 @@ const Feedback = () => {
         },
 
         "Nigus Teklehaymanot": {
+
             "Kebele 09": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 10": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 11": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 12": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 13": [
                 "Sefer 01",
                 "Sefer 02",
@@ -103,30 +120,35 @@ const Feedback = () => {
         },
 
         "Tedila Gualu": {
+
             "Kebele 14": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 15": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 16": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 17": [
                 "Sefer 01",
                 "Sefer 02",
                 "Sefer 03",
                 "Sefer 04"
             ],
+
             "Kebele 18": [
                 "Sefer 01",
                 "Sefer 02",
@@ -136,30 +158,143 @@ const Feedback = () => {
         }
     };
 
+
     // ==========================================
     // FORM DATA
     // ==========================================
 
     const [formData, setFormData] = useState({
+
         category: "Service Quality",
+
         kifle_ketema: "",
+
         kebele: "",
+
         sefer: "",
-        rating: "5",
-        description: ""
+
+        rating: "5"
     });
+
 
     // ==========================================
     // STATES
     // ==========================================
 
-    const [submitting, setSubmitting] = useState(false);
+    const [submitting, setSubmitting] =
+        useState(false);
+
+    const [loadingFeedback, setLoadingFeedback] =
+        useState(false);
+
+    const [submittedFeedback, setSubmittedFeedback] =
+        useState(null);
 
     const [toast, setToast] = useState({
+
         show: false,
+
         type: "success",
+
         message: ""
     });
+
+
+    // ==========================================
+    // LOAD SAVED PUBLIC FEEDBACK
+    // ==========================================
+
+    useEffect(() => {
+
+        const feedbackId =
+            localStorage.getItem(
+                "public_feedback_id"
+            );
+
+        if (!feedbackId) {
+            return;
+        }
+
+        loadFeedbackStatus(feedbackId);
+
+    }, []);
+
+
+    // ==========================================
+    // LOAD FEEDBACK STATUS
+    // ==========================================
+
+    const loadFeedbackStatus = async (
+        feedbackId
+    ) => {
+
+        try {
+
+            setLoadingFeedback(true);
+
+            console.log(
+                "================================="
+            );
+
+            console.log(
+                "LOAD PUBLIC FEEDBACK STATUS"
+            );
+
+            console.log(
+                "Feedback ID:",
+                feedbackId
+            );
+
+            console.log(
+                "================================="
+            );
+
+
+            const response =
+                await API.get(
+                    `/feedback/public/${feedbackId}`
+                );
+
+
+            console.log(
+                "PUBLIC FEEDBACK STATUS RESPONSE:",
+                response.data
+            );
+
+
+            if (
+                response.data?.success
+            ) {
+
+                setSubmittedFeedback(
+                    response.data.data
+                );
+
+            }
+
+        } catch (error) {
+
+            console.error(
+                "Load Public Feedback Error:",
+                error
+            );
+
+            console.error(
+                "Status:",
+                error?.response?.status
+            );
+
+            console.error(
+                "Server response:",
+                error?.response?.data
+            );
+
+        } finally {
+
+            setLoadingFeedback(false);
+        }
+    };
+
 
     // ==========================================
     // HANDLE CHANGE
@@ -172,82 +307,96 @@ const Feedback = () => {
             value
         } = e.target;
 
+
         setFormData((prev) => {
 
-            // ==========================================
-            // KIFLE KETEMA CHANGED
-            // ==========================================
+            // ==================================
+            // KIFLE KETEMA
+            // ==================================
 
-            if (name === "kifle_ketema") {
+            if (
+                name === "kifle_ketema"
+            ) {
 
                 return {
+
                     ...prev,
-                    kifle_ketema: value,
+
+                    kifle_ketema:
+                        value,
+
                     kebele: "",
+
                     sefer: ""
                 };
             }
 
-            // ==========================================
-            // KEBELE CHANGED
-            // ==========================================
 
-            if (name === "kebele") {
+            // ==================================
+            // KEBELE
+            // ==================================
+
+            if (
+                name === "kebele"
+            ) {
 
                 return {
+
                     ...prev,
-                    kebele: value,
+
+                    kebele:
+                        value,
+
                     sefer: ""
                 };
             }
 
-            // ==========================================
-            // CATEGORY CHANGED
-            // ==========================================
-
-            if (name === "category") {
-
-                return {
-                    ...prev,
-                    category: value,
-                    description:
-                        value === "Other"
-                            ? prev.description
-                            : ""
-                };
-            }
 
             return {
+
                 ...prev,
-                [name]: value
+
+                [name]:
+                    value
             };
+
         });
 
-        // Hide previous toast
+
         setToast({
+
             show: false,
+
             type: "",
+
             message: ""
         });
     };
 
+
     // ==========================================
-    // SUBMIT
+    // SUBMIT FEEDBACK
     // ==========================================
 
     const handleSubmit = async (e) => {
 
         e.preventDefault();
 
-        // ==========================================
-        // KIFLE KETEMA VALIDATION
-        // ==========================================
 
-        if (!formData.kifle_ketema) {
+        // ==================================
+        // KIFLE KETEMA VALIDATION
+        // ==================================
+
+        if (
+            !formData.kifle_ketema
+        ) {
 
             setToast({
+
                 show: true,
+
                 type: "error",
+
                 message:
                     "Please select your Kifle Ketema."
             });
@@ -255,15 +404,21 @@ const Feedback = () => {
             return;
         }
 
-        // ==========================================
-        // KEBELE VALIDATION
-        // ==========================================
 
-        if (!formData.kebele) {
+        // ==================================
+        // KEBELE VALIDATION
+        // ==================================
+
+        if (
+            !formData.kebele
+        ) {
 
             setToast({
+
                 show: true,
+
                 type: "error",
+
                 message:
                     "Please select your Kebele."
             });
@@ -271,15 +426,21 @@ const Feedback = () => {
             return;
         }
 
-        // ==========================================
-        // SEFER VALIDATION
-        // ==========================================
 
-        if (!formData.sefer) {
+        // ==================================
+        // SEFER VALIDATION
+        // ==================================
+
+        if (
+            !formData.sefer
+        ) {
 
             setToast({
+
                 show: true,
+
                 type: "error",
+
                 message:
                     "Please select your Sefer."
             });
@@ -287,35 +448,43 @@ const Feedback = () => {
             return;
         }
 
-        // ==========================================
-        // OTHER DESCRIPTION VALIDATION
-        // Only required when Other is selected
-        // ==========================================
+
+        // ==================================
+        // CATEGORY VALIDATION
+        // ==================================
 
         if (
-            formData.category === "Other" &&
-            !formData.description?.trim()
+            !formData.category
         ) {
 
             setToast({
+
                 show: true,
+
                 type: "error",
+
                 message:
-                    "Please describe your issue."
+                    "Please select a feedback category."
             });
 
             return;
         }
 
-        // ==========================================
-        // RATING VALIDATION
-        // ==========================================
 
-        if (!formData.rating) {
+        // ==================================
+        // RATING VALIDATION
+        // ==================================
+
+        if (
+            !formData.rating
+        ) {
 
             setToast({
+
                 show: true,
+
                 type: "error",
+
                 message:
                     "Please select a rating."
             });
@@ -323,19 +492,29 @@ const Feedback = () => {
             return;
         }
 
+
         setSubmitting(true);
 
+
         setToast({
+
             show: false,
+
             type: "",
+
             message: ""
         });
 
+
         try {
 
-            // ==========================================
-            // PUBLIC FEEDBACK DATA
-            // ==========================================
+            // ==================================
+            // FEEDBACK DATA
+            //
+            // IMPORTANT:
+            // category value is the FULL CATEGORY
+            // name that will be stored in PostgreSQL.
+            // ==================================
 
             const feedbackData = {
 
@@ -352,13 +531,11 @@ const Feedback = () => {
                     formData.sefer,
 
                 rating:
-                    Number(formData.rating),
-
-                description:
-                    formData.category === "Other"
-                        ? formData.description.trim()
-                        : ""
+                    Number(
+                        formData.rating
+                    )
             };
+
 
             console.log(
                 "================================="
@@ -377,57 +554,109 @@ const Feedback = () => {
                 "================================="
             );
 
-            // ==========================================
-            // SEND TO SERVER
-            // ==========================================
 
-            const response = await API.post(
-                "/feedback/public",
-                feedbackData
-            );
+            // ==================================
+            // SEND REQUEST
+            // ==================================
+
+            const response =
+                await API.post(
+                    "/feedback/public",
+                    feedbackData
+                );
+
 
             console.log(
                 "PUBLIC FEEDBACK RESPONSE:",
                 response.data
             );
 
-            // ==========================================
-            // SUCCESS
-            // ==========================================
 
-            if (response.data?.success) {
+            // ==================================
+            // SUCCESS
+            // ==================================
+
+            if (
+                response.data?.success
+            ) {
+
+                const createdFeedback =
+                    response.data?.data;
+
+
+                // ==================================
+                // SAVE FEEDBACK ID
+                // ==================================
+
+                if (
+                    createdFeedback?.feedback_id
+                ) {
+
+                    localStorage.setItem(
+
+                        "public_feedback_id",
+
+                        String(
+                            createdFeedback.feedback_id
+                        )
+                    );
+
+
+                    setSubmittedFeedback(
+                        createdFeedback
+                    );
+                }
+
+
+                // ==================================
+                // SUCCESS TOAST
+                // ==================================
 
                 setToast({
+
                     show: true,
+
                     type: "success",
+
                     message:
                         response.data.message ||
                         "Your feedback has been submitted successfully."
                 });
 
-                // ==========================================
+
+                // ==================================
                 // RESET FORM
-                // ==========================================
+                // ==================================
 
                 setFormData({
-                    category: "Service Quality",
+
+                    category:
+                        "Service Quality",
+
                     kifle_ketema: "",
+
                     kebele: "",
+
                     sefer: "",
-                    rating: "5",
-                    description: ""
+
+                    rating: "5"
                 });
+
 
             } else {
 
                 setToast({
+
                     show: true,
+
                     type: "error",
+
                     message:
                         response.data?.message ||
                         "Unable to submit your feedback."
                 });
             }
+
 
         } catch (error) {
 
@@ -446,15 +675,21 @@ const Feedback = () => {
                 error?.response?.data
             );
 
+
             const message =
                 error?.response?.data?.message ||
                 "Unable to submit your feedback. Please try again.";
 
+
             setToast({
+
                 show: true,
+
                 type: "error",
+
                 message
             });
+
 
         } finally {
 
@@ -462,38 +697,53 @@ const Feedback = () => {
         }
     };
 
+
     // ==========================================
     // CATEGORY OPTIONS
+    //
+    // IMPORTANT:
+    // value = EXACT CATEGORY STORED IN DATABASE
+    //
+    // NO "Other"
+    // NO DESCRIPTION
     // ==========================================
 
     const categoryOptions = [
 
         {
-            value: "Service Quality",
-            label: "Service Quality"
+            value:
+                "Service Quality",
+
+            label:
+                "Service Quality"
         },
 
         {
-            value: "Delay",
-            label: "Collection Delay"
+            value:
+                "Collection Delay",
+
+            label:
+                "Collection Delay"
         },
 
         {
-            value: "Collector",
-            label: "Collector Service"
+            value:
+                "Collector",
+
+            label:
+                "Collector Service"
         },
 
         {
-            value: "Schedule",
-            label: "Collection Schedule"
-        },
+            value:
+                "Schedule",
 
-        {
-            value: "Other",
-            label: "Other"
+            label:
+                "Collection Schedule"
         }
 
     ];
+
 
     // ==========================================
     // RATING OPTIONS
@@ -502,76 +752,128 @@ const Feedback = () => {
     const ratingOptions = [
 
         {
-            value: "5",
-            label: "★★★★★  Excellent"
+            value:
+                "5",
+
+            label:
+                "★★★★★  Excellent"
         },
 
         {
-            value: "4",
-            label: "★★★★☆  Very Good"
+            value:
+                "4",
+
+            label:
+                "★★★★☆  Very Good"
         },
 
         {
-            value: "3",
-            label: "★★★☆☆  Good"
+            value:
+                "3",
+
+            label:
+                "★★★☆☆  Good"
         },
 
         {
-            value: "2",
-            label: "★★☆☆☆  Fair"
+            value:
+                "2",
+
+            label:
+                "★★☆☆☆  Fair"
         },
 
         {
-            value: "1",
-            label: "★☆☆☆☆  Poor"
+            value:
+                "1",
+
+            label:
+                "★☆☆☆☆  Poor"
         }
 
     ];
+
 
     // ==========================================
     // KIFLE KETEMA OPTIONS
     // ==========================================
 
     const kifleKetemaOptions =
-        Object.keys(locations).map((item) => ({
-            value: item,
-            label: item
+        Object.keys(
+            locations
+        ).map((item) => ({
+
+            value:
+                item,
+
+            label:
+                item
         }));
+
 
     // ==========================================
     // KEBELE OPTIONS
     // ==========================================
 
     const kebeleOptions =
+
         formData.kifle_ketema
+
             ? Object.keys(
+
                 locations[
                     formData.kifle_ketema
                 ] || {}
+
             ).map((item) => ({
-                value: item,
-                label: item
+
+                value:
+                    item,
+
+                label:
+                    item
             }))
+
             : [];
+
 
     // ==========================================
     // SEFER OPTIONS
     // ==========================================
 
     const seferOptions =
+
         formData.kifle_ketema &&
         formData.kebele
+
             ? (
+
                 locations[
                     formData.kifle_ketema
                 ]?.[
                     formData.kebele
                 ] || []
+
             ).map((item) => ({
-                value: item,
-                label: item
+
+                value:
+                    item,
+
+                label:
+                    item
             }))
+
             : [];
+
+
+    // ==========================================
+    // STATUS
+    // ==========================================
+
+    const feedbackStatus =
+        submittedFeedback?.status ||
+        "Pending";
+
 
     // ==========================================
     // UI
@@ -627,6 +929,7 @@ const Feedback = () => {
                         💬
                     </div>
 
+
                     <div>
 
                         <h1
@@ -638,6 +941,7 @@ const Feedback = () => {
                         >
                             Feedback & Complaints
                         </h1>
+
 
                         <p
                             className="
@@ -657,13 +961,16 @@ const Feedback = () => {
 
             </div>
 
+
             {/* ======================================
                 FORM
             ====================================== */}
 
             <Card>
 
-                <div className="mb-5">
+                <div
+                    className="mb-5"
+                >
 
                     <h2
                         className="
@@ -675,6 +982,7 @@ const Feedback = () => {
                         Submit Your Feedback
                     </h2>
 
+
                     <p
                         className="
                             text-xs
@@ -682,11 +990,12 @@ const Feedback = () => {
                             mt-1
                         "
                     >
-                        Select your location and submit your
-                        feedback. 
+                        Select your location, feedback category,
+                        and rating.
                     </p>
 
                 </div>
+
 
                 <form
                     onSubmit={handleSubmit}
@@ -700,11 +1009,18 @@ const Feedback = () => {
                     <Select
                         label="Kifle Ketema"
                         name="kifle_ketema"
-                        value={formData.kifle_ketema}
-                        onChange={handleChange}
-                        options={kifleKetemaOptions}
+                        value={
+                            formData.kifle_ketema
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        options={
+                            kifleKetemaOptions
+                        }
                         required
                     />
+
 
                     {/* ==================================
                         KEBELE
@@ -713,11 +1029,18 @@ const Feedback = () => {
                     <Select
                         label="Kebele"
                         name="kebele"
-                        value={formData.kebele}
-                        onChange={handleChange}
-                        options={kebeleOptions}
+                        value={
+                            formData.kebele
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        options={
+                            kebeleOptions
+                        }
                         required
                     />
+
 
                     {/* ==================================
                         SEFER
@@ -726,11 +1049,18 @@ const Feedback = () => {
                     <Select
                         label="Sefer"
                         name="sefer"
-                        value={formData.sefer}
-                        onChange={handleChange}
-                        options={seferOptions}
+                        value={
+                            formData.sefer
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        options={
+                            seferOptions
+                        }
                         required
                     />
+
 
                     {/* ==================================
                         CATEGORY
@@ -739,30 +1069,18 @@ const Feedback = () => {
                     <Select
                         label="Feedback Category"
                         name="category"
-                        value={formData.category}
-                        onChange={handleChange}
-                        options={categoryOptions}
+                        value={
+                            formData.category
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        options={
+                            categoryOptions
+                        }
                         required
                     />
 
-                    {/* ==================================
-                        OTHER DESCRIPTION
-                        ONLY WHEN OTHER IS SELECTED
-                    ================================== */}
-
-                    {formData.category === "Other" && (
-
-                        <Textarea
-                            label="Other Description"
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            placeholder="Please describe your issue or feedback..."
-                            rows={6}
-                            required
-                        />
-
-                    )}
 
                     {/* ==================================
                         RATING
@@ -771,11 +1089,18 @@ const Feedback = () => {
                     <Select
                         label="Rating"
                         name="rating"
-                        value={formData.rating}
-                        onChange={handleChange}
-                        options={ratingOptions}
+                        value={
+                            formData.rating
+                        }
+                        onChange={
+                            handleChange
+                        }
+                        options={
+                            ratingOptions
+                        }
                         required
                     />
+
 
                     {/* ==================================
                         INFORMATION
@@ -791,11 +1116,19 @@ const Feedback = () => {
                         "
                     >
 
-                        <div className="flex gap-3">
+                        <div
+                            className="
+                                flex
+                                gap-3
+                            "
+                        >
 
-                            <span className="text-lg">
+                            <span
+                                className="text-lg"
+                            >
                                 ℹ️
                             </span>
+
 
                             <div>
 
@@ -809,6 +1142,7 @@ const Feedback = () => {
                                     Before submitting
                                 </p>
 
+
                                 <p
                                     className="
                                         text-xs
@@ -817,10 +1151,9 @@ const Feedback = () => {
                                     "
                                 >
                                     Please select your Kifle
-                                    Ketema, Kebele, and Sefer.
-                                    If you select Other, please
-                                    provide a description.
-                                    No login is required.
+                                    Ketema, Kebele, Sefer,
+                                    feedback category, and
+                                    rating. No login is required.
                                 </p>
 
                             </div>
@@ -828,6 +1161,7 @@ const Feedback = () => {
                         </div>
 
                     </div>
+
 
                     {/* ==================================
                         SUBMIT BUTTON
@@ -844,8 +1178,12 @@ const Feedback = () => {
                         <Button
                             type="submit"
                             variant="primary"
-                            loading={submitting}
-                            disabled={submitting}
+                            loading={
+                                submitting
+                            }
+                            disabled={
+                                submitting
+                            }
                         >
                             {submitting
                                 ? "Submitting..."
@@ -858,6 +1196,321 @@ const Feedback = () => {
 
             </Card>
 
+
+            {/* ======================================
+                MY FEEDBACK STATUS
+            ====================================== */}
+
+            {submittedFeedback && (
+
+                <div
+                    className="
+                        bg-white
+                        border
+                        rounded-2xl
+                        shadow-sm
+                        p-6
+                    "
+                >
+
+                    <div
+                        className="
+                            flex
+                            items-center
+                            justify-between
+                            gap-4
+                            mb-5
+                        "
+                    >
+
+                        <div>
+
+                            <h2
+                                className="
+                                    text-lg
+                                    font-bold
+                                    text-gray-800
+                                "
+                            >
+                                Your Feedback
+                            </h2>
+
+
+                            <p
+                                className="
+                                    text-xs
+                                    text-gray-500
+                                    mt-1
+                                "
+                            >
+                                Feedback ID #
+                                {
+                                    submittedFeedback.feedback_id
+                                }
+                            </p>
+
+                        </div>
+
+
+                        {/* STATUS BADGE */}
+
+                        <span
+                            className={`
+                                inline-flex
+                                px-4
+                                py-2
+                                rounded-full
+                                text-sm
+                                font-semibold
+
+                                ${
+                                    feedbackStatus ===
+                                    "Viewed"
+
+                                        ? "bg-green-100 text-green-700"
+
+                                        : "bg-yellow-100 text-yellow-700"
+                                }
+                            `}
+                        >
+                            {feedbackStatus}
+                        </span>
+
+                    </div>
+
+
+                    {/* ==================================
+                        FEEDBACK DETAILS
+                    ================================== */}
+
+                    <div
+                        className="
+                            grid
+                            grid-cols-1
+                            md:grid-cols-2
+                            gap-4
+                        "
+                    >
+
+                        <div
+                            className="
+                                bg-gray-50
+                                rounded-xl
+                                p-4
+                            "
+                        >
+
+                            <p
+                                className="
+                                    text-xs
+                                    text-gray-500
+                                "
+                            >
+                                Kifle Ketema
+                            </p>
+
+
+                            <p
+                                className="
+                                    font-semibold
+                                    text-gray-800
+                                    mt-1
+                                "
+                            >
+                                {
+                                    submittedFeedback.kifle_ketema
+                                }
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            className="
+                                bg-gray-50
+                                rounded-xl
+                                p-4
+                            "
+                        >
+
+                            <p
+                                className="
+                                    text-xs
+                                    text-gray-500
+                                "
+                            >
+                                Kebele
+                            </p>
+
+
+                            <p
+                                className="
+                                    font-semibold
+                                    text-gray-800
+                                    mt-1
+                                "
+                            >
+                                {
+                                    submittedFeedback.kebele
+                                }
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            className="
+                                bg-gray-50
+                                rounded-xl
+                                p-4
+                            "
+                        >
+
+                            <p
+                                className="
+                                    text-xs
+                                    text-gray-500
+                                "
+                            >
+                                Sefer
+                            </p>
+
+
+                            <p
+                                className="
+                                    font-semibold
+                                    text-gray-800
+                                    mt-1
+                                "
+                            >
+                                {
+                                    submittedFeedback.sefer
+                                }
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            className="
+                                bg-gray-50
+                                rounded-xl
+                                p-4
+                            "
+                        >
+
+                            <p
+                                className="
+                                    text-xs
+                                    text-gray-500
+                                "
+                            >
+                                Category
+                            </p>
+
+
+                            <p
+                                className="
+                                    font-semibold
+                                    text-gray-800
+                                    mt-1
+                                "
+                            >
+                                {
+                                    submittedFeedback.category
+                                }
+                            </p>
+
+                        </div>
+
+
+                        <div
+                            className="
+                                bg-gray-50
+                                rounded-xl
+                                p-4
+                                md:col-span-2
+                            "
+                        >
+
+                            <p
+                                className="
+                                    text-xs
+                                    text-gray-500
+                                "
+                            >
+                                Rating
+                            </p>
+
+
+                            <p
+                                className="
+                                    font-semibold
+                                    text-gray-800
+                                    mt-1
+                                "
+                            >
+                                {
+                                    "★".repeat(
+                                        Number(
+                                            submittedFeedback.rating
+                                        ) || 0
+                                    )
+                                }
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    {/* ==================================
+                        REFRESH STATUS
+                    ================================== */}
+
+                    <div
+                        className="
+                            mt-5
+                            flex
+                            justify-end
+                        "
+                    >
+
+                        <button
+                            type="button"
+                            onClick={() =>
+                                loadFeedbackStatus(
+                                    submittedFeedback.feedback_id
+                                )
+                            }
+                            disabled={
+                                loadingFeedback
+                            }
+                            className="
+                                px-5
+                                py-2.5
+                                rounded-xl
+                                bg-blue-600
+                                text-white
+                                text-sm
+                                font-semibold
+                                hover:bg-blue-700
+                                disabled:opacity-50
+                                disabled:cursor-not-allowed
+                            "
+                        >
+                            {loadingFeedback
+                                ? "Checking..."
+                                : "🔄 Check Feedback Status"}
+                        </button>
+
+                    </div>
+
+                </div>
+
+            )}
+
+
             {/* ======================================
                 TOAST
             ====================================== */}
@@ -865,12 +1518,21 @@ const Feedback = () => {
             {toast.show && (
 
                 <Toast
-                    type={toast.type}
-                    message={toast.message}
+                    type={
+                        toast.type
+                    }
+
+                    message={
+                        toast.message
+                    }
+
                     onClose={() =>
                         setToast({
+
                             show: false,
+
                             type: "success",
+
                             message: ""
                         })
                     }
@@ -881,5 +1543,6 @@ const Feedback = () => {
         </div>
     );
 };
+
 
 export default Feedback;

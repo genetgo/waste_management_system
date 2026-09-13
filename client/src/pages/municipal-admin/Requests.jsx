@@ -337,18 +337,22 @@ const Requests = () => {
   // Format Date
   // ==========================================
   const formatDate = (date) => {
-    if (!date) {
-      return "-";
-    }
+  if (!date) {
+    return "-";
+  }
 
-    const parsedDate = new Date(date);
+  const parsedDate = new Date(date);
 
-    if (isNaN(parsedDate.getTime())) {
-      return "-";
-    }
+  if (isNaN(parsedDate.getTime())) {
+    return "-";
+  }
 
-    return parsedDate.toLocaleDateString();
-  };
+  return parsedDate.toLocaleDateString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric"
+  });
+};
 
   // ==========================================
   // Status Badge

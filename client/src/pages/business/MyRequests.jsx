@@ -116,33 +116,36 @@ const MyRequests = () => {
     };
 
     // ==========================================
-    // FORMAT DATE
-    // ==========================================
+// FORMAT DATE
+// ==========================================
 
-    const formatDate = (date) => {
-        if (!date) {
-            return t(
-                "myRequests.common.notAvailable",
-                {
-                    defaultValue: "-"
-                }
-            );
-        }
+const formatDate = (date) => {
+    if (!date) {
+        return t(
+            "myRequests.common.notAvailable",
+            {
+                defaultValue: "-"
+            }
+        );
+    }
 
-        const parsedDate = new Date(date);
+    const parsedDate = new Date(date);
 
-        if (Number.isNaN(parsedDate.getTime())) {
-            return t(
-                "myRequests.common.notAvailable",
-                {
-                    defaultValue: "-"
-                }
-            );
-        }
+    if (Number.isNaN(parsedDate.getTime())) {
+        return t(
+            "myRequests.common.notAvailable",
+            {
+                defaultValue: "-"
+            }
+        );
+    }
 
-        return parsedDate.toLocaleDateString();
-    };
-
+    return parsedDate.toLocaleDateString("en-US", {
+        month: "numeric",
+        day: "numeric",
+        year: "numeric"
+    });
+};
     // ==========================================
     // GET HOUSE NUMBER
     // ==========================================

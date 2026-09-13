@@ -1,63 +1,177 @@
+
 const express = require("express");
+
 const router = express.Router();
 
-const feedbackController = require("../controllers/feedbackController");
-const protect = require("../middleware/authMiddleware");
+const feedbackController =
+    require("../controllers/feedbackController");
 
-const roleMiddlewareImport = require("../middleware/roleMiddleware");
+
+// ==========================================
+// AUTH MIDDLEWARE
+// ==========================================
+
+const authMiddlewareImport =
+    require("../middleware/authMiddleware");
+
+const protect =
+    authMiddlewareImport.protect ||
+    authMiddlewareImport;
+
+
+// ==========================================
+// ROLE MIDDLEWARE
+// ==========================================
+
+const roleMiddlewareImport =
+    require("../middleware/roleMiddleware");
+
 const roleMiddleware =
-    roleMiddlewareImport.roleMiddleware || roleMiddlewareImport;
+    roleMiddlewareImport.roleMiddleware ||
+    roleMiddlewareImport;
+
 
 // ==========================================
-// Create Feedback
-// Resident / Business Owner
+// CREATE BUSINESS FEEDBACK
+//
+// Business Owner
+// Login Required
 // ==========================================
+
 router.post(
     "/",
     protect,
     feedbackController.createFeedback
 );
+
+
+// ==========================================
+// CREATE PUBLIC FEEDBACK
+//
+// Public User
+// No Login Required
+// ==========================================
+
 router.post(
     "/public",
     feedbackController.createPublicFeedback
 );
+
+
 // ==========================================
-// Get All Feedback
-// PUBLIC
-// Home Page → Feedback
+// GET PUBLIC FEEDBACK BY ID
+//
+// Public User
+// No Login Required
+//
+// Used to check:
+// Pending -> Viewed
+//
+// IMPORTANT:
+// MUST COME BEFORE /:id
+// ==========================================
+
+router.get(
+    "/public/:id",
+    feedbackController.getPublicFeedbackById
+);
+
+
+// ==========================================
+// GET ALL FEEDBACK
+//
+// Municipal Admin
+// System Admin
+//
+// Login + Role Required
 // ==========================================
 
 router.get(
     "/",
+    protect,
+    roleMiddleware(
+        "MunicipalAdmin",
+        "SystemAdmin"
+    ),
     feedbackController.getFeedbacks
 );
 
+
 // ==========================================
-// Get Feedback By ID
+// MARK FEEDBACK AS VIEWED
+//
+// Municipal Admin
+// System Admin
+//
+// Pending -> Viewed
+// Already Viewed -> stays Viewed
+//
+// IMPORTANT:
+// MUST COME BEFORE /:id
 // ==========================================
+
+router.patch(
+    "/:id/view",
+    protect,
+    roleMiddleware(
+        "MunicipalAdmin",
+        "SystemAdmin"
+    ),
+    feedbackController.markFeedbackAsViewed
+);
+
+
+// ==========================================
+// GET FEEDBACK BY ID
+//
+// Authenticated users
+// ==========================================
+
 router.get(
     "/:id",
     protect,
     feedbackController.getFeedbackById
 );
 
+
 // ==========================================
-// Update Feedback
+// UPDATE FEEDBACK
+//
+// Municipal Admin
+// System Admin
 // ==========================================
+
 router.put(
     "/:id",
     protect,
+    roleMiddleware(
+        "MunicipalAdmin",
+        "SystemAdmin"
+    ),
     feedbackController.updateFeedback
 );
 
+
 // ==========================================
-// Delete Feedback
+// DELETE FEEDBACK
+//
+// Municipal Admin
+// System Admin
 // ==========================================
+
 router.delete(
     "/:id",
     protect,
-    roleMiddleware("SYSTEM_ADMIN"),
+    roleMiddleware(
+        "MunicipalAdmin",
+        "SystemAdmin"
+    ),
     feedbackController.deleteFeedback
 );
+
+
+// ==========================================
+// EXPORT
+// ==========================================
 
 module.exports = router;

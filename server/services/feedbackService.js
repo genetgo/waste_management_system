@@ -1,4 +1,3 @@
-// server/services/feedbackService.js
 
 const feedbackRepository = require("../repositories/feedbackRepository");
 
@@ -15,6 +14,7 @@ const getAllFeedback = async (kifle_ketema = null) => {
             );
 
         return feedbacks;
+
     } catch (error) {
         console.error(
             "Get All Feedback Service Error:",
@@ -33,15 +33,14 @@ const getAllFeedback = async (kifle_ketema = null) => {
 const getFeedbackById = async (id) => {
     try {
         if (!id) {
-            throw new Error(
-                "Feedback ID is required."
-            );
+            throw new Error("Feedback ID is required.");
         }
 
         const feedback =
             await feedbackRepository.getFeedbackById(id);
 
         return feedback;
+
     } catch (error) {
         console.error(
             "Get Feedback By ID Service Error:",
@@ -60,9 +59,7 @@ const getFeedbackById = async (id) => {
 const getBusinessFeedback = async (businessId) => {
     try {
         if (!businessId) {
-            throw new Error(
-                "Business ID is required."
-            );
+            throw new Error("Business ID is required.");
         }
 
         const feedbacks =
@@ -71,6 +68,7 @@ const getBusinessFeedback = async (businessId) => {
             );
 
         return feedbacks;
+
     } catch (error) {
         console.error(
             "Get Business Feedback Service Error:",
@@ -87,14 +85,19 @@ const getBusinessFeedback = async (businessId) => {
 //
 // business_id != null => Business Feedback
 // business_id == null => Public Feedback
+//
+// Supported Categories:
+// - Service Quality
+// - Delay / Collection Delay
+// - Collector
+// - Schedule
 // ===========================================
 
 const createFeedback = async (feedback) => {
     try {
+
         if (!feedback) {
-            throw new Error(
-                "Feedback data is required."
-            );
+            throw new Error("Feedback data is required.");
         }
 
 
@@ -157,8 +160,7 @@ const createFeedback = async (feedback) => {
         }
 
 
-        const rating =
-            Number(feedback.rating);
+        const rating = Number(feedback.rating);
 
 
         if (
@@ -173,26 +175,11 @@ const createFeedback = async (feedback) => {
 
 
         // ---------------------------------------
-        // Description
-        //
-        // Required only when category = Other
-        // ---------------------------------------
-
-        if (
-            feedback.category.trim() === "Other" &&
-            !feedback.description?.trim()
-        ) {
-            throw new Error(
-                "Other description is required."
-            );
-        }
-
-
-        // ---------------------------------------
         // Prepare Data
         // ---------------------------------------
 
         const feedbackData = {
+
             business_id:
                 feedback.business_id || null,
 
@@ -222,7 +209,7 @@ const createFeedback = async (feedback) => {
 
 
         // ---------------------------------------
-        // Save
+        // Save Feedback
         // ---------------------------------------
 
         const createdFeedback =
@@ -233,8 +220,46 @@ const createFeedback = async (feedback) => {
         return createdFeedback;
 
     } catch (error) {
+
         console.error(
             "Create Feedback Service Error:",
+            error
+        );
+
+        throw error;
+    }
+};
+
+
+// ===========================================
+// Mark Feedback As Viewed
+//
+// Pending -> Viewed
+// Already Viewed -> stays Viewed
+// ===========================================
+
+const markFeedbackAsViewed = async (id) => {
+    try {
+
+        if (!id) {
+            throw new Error(
+                "Feedback ID is required."
+            );
+        }
+
+
+        const feedback =
+            await feedbackRepository.markFeedbackAsViewed(
+                id
+            );
+
+
+        return feedback;
+
+    } catch (error) {
+
+        console.error(
+            "Mark Feedback As Viewed Service Error:",
             error
         );
 
@@ -252,6 +277,7 @@ const updateFeedback = async (
     feedback
 ) => {
     try {
+
         if (!id) {
             throw new Error(
                 "Feedback ID is required."
@@ -325,8 +351,7 @@ const updateFeedback = async (
         }
 
 
-        const rating =
-            Number(feedback.rating);
+        const rating = Number(feedback.rating);
 
 
         if (
@@ -336,20 +361,6 @@ const updateFeedback = async (
         ) {
             throw new Error(
                 "Rating must be between 1 and 5."
-            );
-        }
-
-
-        // ---------------------------------------
-        // Other Category Description
-        // ---------------------------------------
-
-        if (
-            feedback.category.trim() === "Other" &&
-            !feedback.description?.trim()
-        ) {
-            throw new Error(
-                "Other description is required."
             );
         }
 
@@ -382,9 +393,11 @@ const updateFeedback = async (
                 }
             );
 
+
         return updatedFeedback;
 
     } catch (error) {
+
         console.error(
             "Update Feedback Service Error:",
             error
@@ -401,6 +414,7 @@ const updateFeedback = async (
 
 const deleteFeedback = async (id) => {
     try {
+
         if (!id) {
             throw new Error(
                 "Feedback ID is required."
@@ -413,9 +427,11 @@ const deleteFeedback = async (id) => {
                 id
             );
 
+
         return deletedFeedback;
 
     } catch (error) {
+
         console.error(
             "Delete Feedback Service Error:",
             error
@@ -432,12 +448,14 @@ const deleteFeedback = async (id) => {
 
 const averageRating = async () => {
     try {
+
         const result =
             await feedbackRepository.averageRating();
 
         return result;
 
     } catch (error) {
+
         console.error(
             "Average Rating Service Error:",
             error
@@ -453,11 +471,20 @@ const averageRating = async () => {
 // ===========================================
 
 module.exports = {
+
     getAllFeedback,
+
     getFeedbackById,
+
     getBusinessFeedback,
+
     createFeedback,
+
+    markFeedbackAsViewed,
+
     updateFeedback,
+
     deleteFeedback,
+
     averageRating
 };

@@ -15,11 +15,13 @@ const roleMiddleware = (...roles) => {
             });
         }
 
-        const userRole = normalizeRole(req.user.role);
+        const rawUserRole = req.user.role;
+        const userRole = normalizeRole(rawUserRole);
+
         const allowedRoles = roles.map(normalizeRole);
 
         console.log("========== ROLE CHECK ==========");
-        console.log("Raw User Role:", req.user.role);
+        console.log("Raw User Role:", rawUserRole);
         console.log("Normalized User Role:", userRole);
         console.log("Allowed Roles:", roles);
         console.log("Normalized Allowed:", allowedRoles);
@@ -30,7 +32,8 @@ const roleMiddleware = (...roles) => {
             return res.status(403).json({
                 success: false,
                 message: "Access Forbidden",
-                userRole: req.user.role,
+                userRole: rawUserRole,
+                normalizedUserRole: userRole,
                 allowedRoles: roles
             });
         }
