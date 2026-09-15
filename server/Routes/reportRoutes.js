@@ -34,6 +34,12 @@ router.get(
 // IMPORTANT:
 // This MUST be BEFORE /:id
 // =====================================================
+router.post(
+    "/municipal/generate",
+    protect,
+    roleMiddleware("MunicipalAdmin", "SystemAdmin"),
+    reportController.generateMunicipalReport
+);
 router.get(
     "/municipal",
     protect,

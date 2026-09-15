@@ -138,21 +138,7 @@ const Dashboard = () => {
       =========================================== */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
 
-        {/* Residents */}
-        <div className="bg-white rounded-2xl shadow border p-6">
-          <p className="text-sm text-gray-500">
-            Total Residents
-          </p>
-
-          <h2 className="text-3xl font-bold text-blue-700 mt-2">
-            {stats.totalResidents}
-          </h2>
-
-          <p className="text-xs text-gray-400 mt-2">
-            Registered residents
-          </p>
-        </div>
-
+        
         {/* Businesses */}
         <div className="bg-white rounded-2xl shadow border p-6">
           <p className="text-sm text-gray-500">
@@ -241,23 +227,7 @@ const Dashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
 
-          <Link
-            to="/municipal-admin/residents"
-            className="bg-white rounded-2xl border shadow hover:shadow-lg transition p-6"
-          >
-            <div className="text-4xl mb-3">
-              👨‍👩‍👧
-            </div>
-
-            <h3 className="font-bold text-lg">
-              Residents
-            </h3>
-
-            <p className="text-sm text-gray-500 mt-2">
-              Manage registered residents.
-            </p>
-          </Link>
-
+          
           <Link
             to="/municipal-admin/business-owners"
             className="bg-white rounded-2xl border shadow hover:shadow-lg transition p-6"
@@ -396,179 +366,7 @@ const Dashboard = () => {
         
       </div>
 
-      {/* ==========================================
-          Today's Summary + Recent Activity
-      =========================================== */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-        {/* Today's Summary */}
-        <div className="bg-white rounded-2xl shadow border p-6">
-
-          <h2 className="text-xl font-bold text-gray-800 mb-5">
-            Today's Summary
-          </h2>
-
-          <div className="space-y-4">
-
-            <div className="flex justify-between items-center border-b pb-3">
-              <span className="text-gray-600">
-                🚛 Active Collectors
-              </span>
-
-              <span className="font-bold text-green-600 text-lg">
-                {stats.activeCollectors}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center border-b pb-3">
-              <span className="text-gray-600">
-                📅 Active Schedules
-              </span>
-
-              <span className="font-bold text-blue-600 text-lg">
-                {stats.totalSchedules}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center border-b pb-3">
-              <span className="text-gray-600">
-                ⏳ Pending Requests
-              </span>
-
-              <span className="font-bold text-orange-600 text-lg">
-                {stats.pendingRequests}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">
-                ✅ Completed Requests
-              </span>
-
-              <span className="font-bold text-emerald-600 text-lg">
-                {stats.completedRequests}
-              </span>
-            </div>
-
-          </div>
-        </div>
-
-        {/* Recent Activity */}
-        <div className="bg-white rounded-2xl shadow border p-6">
-
-          <h2 className="text-xl font-bold text-gray-800 mb-5">
-            Recent Activity
-          </h2>
-
-          <div className="space-y-4">
-
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">
-                👥
-              </span>
-
-              <div>
-                <p className="font-semibold">
-                  Residents
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {stats.totalResidents} registered residents.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">
-                🏢
-              </span>
-
-              <div>
-                <p className="font-semibold">
-                  Business Owners
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {stats.totalBusinesses} registered businesses.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">
-                🚛
-              </span>
-
-              <div>
-                <p className="font-semibold">
-                  Active Collectors
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {stats.activeCollectors} collectors are active.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3">
-              <span className="text-2xl">
-                ♻️
-              </span>
-
-              <div>
-                <p className="font-semibold">
-                  On-Demand Requests
-                </p>
-
-                <p className="text-sm text-gray-500">
-                  {stats.pendingRequests} pending and{" "}
-                  {stats.completedRequests} completed requests.
-                </p>
-              </div>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-      {/* ==========================================
-          Additional Statistics
-      =========================================== */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-
-        <div className="bg-white rounded-2xl shadow border p-5">
-          <p className="text-sm text-gray-500">
-            Notifications
-          </p>
-
-          <h2 className="text-2xl font-bold text-blue-600 mt-2">
-            {stats.totalNotifications}
-          </h2>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow border p-5">
-          <p className="text-sm text-gray-500">
-            Reports
-          </p>
-
-          <h2 className="text-2xl font-bold text-purple-600 mt-2">
-            {stats.totalReports}
-          </h2>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow border p-5">
-          <p className="text-sm text-gray-500">
-            Feedback
-          </p>
-
-          <h2 className="text-2xl font-bold text-emerald-600 mt-2">
-            {stats.totalFeedback}
-          </h2>
-        </div>
-
-      </div>
-
+   
     </div>
   );
 };
