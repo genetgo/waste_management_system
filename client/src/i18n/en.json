@@ -7,6 +7,7 @@
 "login": "Login",
 "createAccount": "Create Account",
 "scheduleView": "Schedule View",
+"about": "About",
 "feedback": "Feedback",
 "footer": "© 2026 Debre Markos Municipality."
 },
@@ -330,74 +331,88 @@
 },
 
 "feedback": {
-"title": "Feedback & Complaints",
-"description": "Share your experience or report a problem with the waste collection service.",
+  "title": "Feedback & Complaints",
 
+  "description": "Share your experience with the waste collection service or report a problem.",
 
-"form": {
-  "title": "Submit Your Feedback",
-  "description": "Please provide accurate information about your location and feedback."
+  "form": {
+    "title": "Submit Your Feedback",
+
+    "description": "Please provide your Kifle Ketema, Kebele, and Sefer information correctly."
+  },
+
+  "fields": {
+    "category": "Feedback Category",
+    "kifleKetema": "Kifle Ketema",
+    "kebele": "Kebele",
+    "sefer": "Sefer",
+    "rating": "Rating",
+    "description": "Description"
+  },
+
+  "categories": {
+    "serviceQuality": "Service Quality",
+    "delay": "Collection Delay",
+    "collector": "Collector Service",
+    "schedule": "Collection Schedule",
+    "other": "Other"
+  },
+
+  "ratings": {
+    "excellent": "★★★★★ Excellent",
+    "veryGood": "★★★★☆ Very Good",
+    "good": "★★★☆☆ Good",
+    "fair": "★★☆☆☆ Fair",
+    "poor": "★☆☆☆☆ Poor"
+  },
+
+  "placeholders": {
+    "description": "Describe your feedback, complaint, or experience with the service..."
+  },
+
+  "beforeSubmitting": {
+    "title": "Before Submitting",
+
+    "description": "The Kifle Ketema, Kebele, and Sefer information you provide will be included with your feedback."
+  },
+
+  "buttons": {
+    "submit": "Submit Feedback",
+    "submitting": "Submitting..."
+  },
+
+  "notAssigned": "Not Assigned",
+
+  "validation": {
+    "kifleKetemaMissing": "Kifle Ketema information is missing. Please select a Kifle Ketema.",
+
+    "kebeleMissing": "Kebele information is missing. Please select a Kebele.",
+
+    "seferMissing": "Sefer information is missing. Please select a Sefer.",
+
+    "otherDescriptionRequired": "Please enter a description for the Other category.",
+
+    "ratingRequired": "Please select a rating."
+  },
+
+  "success": "Your feedback was submitted successfully.",
+
+  "errors": {
+    "unable": "Unable to submit your feedback. Please try again."
+  },
+
+  "submitted": {
+    "title": "Your Feedback",
+    "id": "Feedback ID"
+  },
+
+  "status": {
+    "pending": "Pending",
+    "viewed": "Viewed",
+    "checking": "Checking...",
+    "check": "🔄 Check Feedback Status"
+  }
 },
-
-"fields": {
-  "category": "Feedback Category",
-  "kifleKetema": "Kifle Ketema",
-  "kebele": "Kebele",
-  "sefer": "Sefer",
-  "rating": "Rating",
-  "description": "Description"
-},
-
-"placeholders": {
-  "description": "Describe your feedback, complaint, or experience..."
-},
-
-"categories": {
-  "serviceQuality": "Service Quality",
-  "delay": "Collection Delay",
-  "collector": "Collector Service",
-  "schedule": "Collection Schedule",
-  "other": "Other"
-},
-
-"ratings": {
-  "excellent": "★★★★★  Excellent",
-  "veryGood": "★★★★☆  Very Good",
-  "good": "★★★☆☆  Good",
-  "fair": "★★☆☆☆  Fair",
-  "poor": "★☆☆☆☆  Poor"
-},
-
-"notAssigned": "Not assigned",
-
-"info": {
-  "title": "Before submitting",
-  "description": "The Kifle Ketema, Kebele, and Sefer information you provide will be included with your feedback."
-},
-
-"buttons": {
-  "submit": "Submit Feedback",
-  "submitting": "Submitting..."
-},
-
-"validation": {
-  "kifleKetemaMissing": "Kifle Ketema information is missing. Please provide your location.",
-  "kebeleMissing": "Kebele information is missing. Please provide your location.",
-  "seferMissing": "Sefer information is missing. Please provide your location.",
-  "descriptionRequired": "Please enter your description.",
-  "otherDescriptionRequired": "Please provide a description for the Other category.",
-  "ratingRequired": "Please select a rating."
-},
-
-"success": "Your feedback has been submitted successfully.",
-
-"errors": {
-  "unableToSubmit": "Unable to submit your feedback. Please try again."
-}
-
-
-},
-
 "myRequests": {
 "title": "My Collection Requests",
 "subtitle": "View your waste collection requests and their status.",
@@ -731,5 +746,45 @@
 }
 
 
+},
+"about": {
+  "backHome": "Back to Home",
+  "badge": "Smart City Initiative",
+  "title": "About the System",
+  "description": "Learn about Debre Markos Municipality and the Web-Based Waste Collection Management System.",
+
+  "debreMarkos": {
+    "title": "About Debre Markos Municipality",
+    "paragraph1": "Debre Markos Municipality is responsible for providing municipal services to the community, including waste collection and management services.",
+    "paragraph2": "As the city grows and waste generation increases, effective, reliable, and coordinated waste collection services become important for maintaining a clean urban environment."
+  },
+
+  "system": {
+    "title": "About the Waste Management System",
+    "paragraph1": "The Web-Based Waste Management System is developed to improve waste collection service delivery in Debre Markos Municipality through digital management.",
+    "paragraph2": "The system provides a centralized platform for managing waste collection activities, including collection schedules, on-demand requests, collection teams, feedback, notifications, and service monitoring."
+  },
+
+  "why": {
+    "title": "Why This System Was Developed",
+    "paragraph1": "The existing waste collection process is largely manual and does not provide an integrated digital platform for planning, communication, and service monitoring.",
+    "paragraph2": "This system was developed to provide a more organized and efficient approach to managing waste collection services for residential and commercial subscribers."
+  },
+
+  "goal": {
+    "title": "Our Main Goal",
+    "description": "The main goal of the system is to improve waste collection service delivery in Debre Markos Municipality through efficient scheduling, effective communication, service monitoring, and digital management."
+  },
+
+  "users": {
+    "title": "System Users",
+    "description": "The system supports the following user groups.",
+    "businessOwner": "Business Owners",
+    "collector": "Collectors",
+    "municipalAdmin": "Municipal Administrators",
+    "systemAdmin": "System Administrators"
+  },
+
+  "footer": "© 2026 Debre Markos Municipality. All rights reserved."
 }
 }

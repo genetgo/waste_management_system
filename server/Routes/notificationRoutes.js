@@ -1,14 +1,18 @@
 const express = require("express");
+
 const router = express.Router();
 
 const notificationController =
     require("../controllers/notificationController");
 
-const protect  =
+const protect =
     require("../middleware/authMiddleware");
 
 
-// Get my notifications
+// ============================================================
+// GET MY NOTIFICATIONS
+// GET /api/notifications
+// ============================================================
 router.get(
     "/",
     protect,
@@ -16,7 +20,10 @@ router.get(
 );
 
 
-// Get unread count
+// ============================================================
+// GET UNREAD COUNT
+// GET /api/notifications/unread-count
+// ============================================================
 router.get(
     "/unread-count",
     protect,
@@ -24,7 +31,10 @@ router.get(
 );
 
 
-// Mark all read
+// ============================================================
+// MARK ALL NOTIFICATIONS AS READ
+// PATCH /api/notifications/mark-all-read
+// ============================================================
 router.patch(
     "/mark-all-read",
     protect,
@@ -32,7 +42,10 @@ router.patch(
 );
 
 
-// Delete all
+// ============================================================
+// DELETE ALL NOTIFICATIONS
+// DELETE /api/notifications/delete-all
+// ============================================================
 router.delete(
     "/delete-all",
     protect,
@@ -40,15 +53,21 @@ router.delete(
 );
 
 
-// Get by id
+// ============================================================
+// GET NOTIFICATION DETAILS
+// GET /api/notifications/:id/details
+// ============================================================
 router.get(
-    "/:id",
+    "/:id/details",
     protect,
-    notificationController.getNotificationById
+    notificationController.getNotificationDetails
 );
 
 
-// Mark one read
+// ============================================================
+// MARK ONE NOTIFICATION AS READ
+// PATCH /api/notifications/:id/read
+// ============================================================
 router.patch(
     "/:id/read",
     protect,
@@ -56,11 +75,25 @@ router.patch(
 );
 
 
-// Delete one
+// ============================================================
+// DELETE ONE NOTIFICATION
+// DELETE /api/notifications/:id
+// ============================================================
 router.delete(
     "/:id",
     protect,
     notificationController.deleteNotification
+);
+
+
+// ============================================================
+// GET NOTIFICATION BY ID
+// GET /api/notifications/:id
+// ============================================================
+router.get(
+    "/:id",
+    protect,
+    notificationController.getNotificationById
 );
 
 

@@ -1,4 +1,3 @@
-
 import React, {
     useEffect,
     useMemo,
@@ -153,6 +152,7 @@ const Feedback = () => {
         } finally {
 
             setLoadingFeedback(false);
+
         }
     };
 
@@ -250,7 +250,9 @@ const Feedback = () => {
                 show: true,
                 type: "error",
                 message:
-                    "Category is required."
+                    t(
+                        "feedback.validation.otherDescriptionRequired"
+                    )
             });
 
             return;
@@ -258,7 +260,6 @@ const Feedback = () => {
 
         // --------------------------------------
         // COMMENT VALIDATION
-        //
         // ONLY OTHER NEEDS COMMENT
         // --------------------------------------
 
@@ -271,7 +272,9 @@ const Feedback = () => {
                 show: true,
                 type: "error",
                 message:
-                    "Please describe your feedback."
+                    t(
+                        "feedback.validation.otherDescriptionRequired"
+                    )
             });
 
             return;
@@ -307,11 +310,6 @@ const Feedback = () => {
 
             // ==================================
             // BACKEND DATA
-            // ==================================
-            //
-            // Category = FULL CATEGORY NAME
-            //
-            // Comment is sent ONLY for Other.
             // ==================================
 
             const feedbackData = {
@@ -470,15 +468,12 @@ const Feedback = () => {
         } finally {
 
             setSubmitting(false);
+
         }
     };
 
     // ==========================================
     // CATEGORY
-    // ==========================================
-    //
-    // IMPORTANT:
-    // VALUE = FULL CATEGORY NAME
     // ==========================================
 
     const categoryOptions = [
@@ -721,7 +716,9 @@ const Feedback = () => {
                                 mb-1
                             "
                         >
-                            Kifle Ketema
+                            {t(
+                                "feedback.fields.kifleKetema"
+                            )}
                         </label>
 
                         <input
@@ -887,7 +884,7 @@ const Feedback = () => {
 
                         <Textarea
                             label={t(
-                                "feedback.fields.comment"
+                                "feedback.fields.description"
                             )}
                             name="comment"
                             value={
@@ -896,7 +893,9 @@ const Feedback = () => {
                             onChange={
                                 handleChange
                             }
-                            placeholder="Please describe your feedback..."
+                            placeholder={t(
+                                "feedback.placeholders.description"
+                            )}
                             rows={6}
                             required
                         />
@@ -939,7 +938,9 @@ const Feedback = () => {
                                             text-yellow-800
                                         "
                                     >
-                                        Other Feedback
+                                        {t(
+                                            "feedback.categories.other"
+                                        )}
                                     </p>
 
                                     <p
@@ -949,9 +950,9 @@ const Feedback = () => {
                                             mt-1
                                         "
                                     >
-                                        Please explain your
-                                        feedback clearly in
-                                        the comment field.
+                                        {t(
+                                            "feedback.placeholders.description"
+                                        )}
                                     </p>
 
                                 </div>
@@ -1095,7 +1096,9 @@ const Feedback = () => {
                                     text-gray-800
                                 "
                             >
-                                Your Feedback
+                                {t(
+                                    "feedback.title"
+                                )}
                             </h2>
 
                             <p
@@ -1105,7 +1108,9 @@ const Feedback = () => {
                                     mt-1
                                 "
                             >
-                                Feedback ID #
+                                {t(
+                                    "feedback.fields.description"
+                                )} #
                                 {
                                     submittedFeedback.feedback_id
                                 }
@@ -1129,7 +1134,15 @@ const Feedback = () => {
                                 }
                             `}
                         >
-                            {feedbackStatus}
+                            {t(
+                                `feedback.status.${String(
+                                    feedbackStatus
+                                ).toLowerCase()}`,
+                                {
+                                    defaultValue:
+                                        feedbackStatus
+                                }
+                            )}
                         </span>
 
                     </div>
@@ -1163,7 +1176,9 @@ const Feedback = () => {
                                     text-gray-500
                                 "
                             >
-                                Kifle Ketema
+                                {t(
+                                    "feedback.fields.kifleKetema"
+                                )}
                             </p>
 
                             <p
@@ -1198,7 +1213,9 @@ const Feedback = () => {
                                     text-gray-500
                                 "
                             >
-                                Kebele
+                                {t(
+                                    "feedback.fields.kebele"
+                                )}
                             </p>
 
                             <p
@@ -1232,7 +1249,9 @@ const Feedback = () => {
                                     text-gray-500
                                 "
                             >
-                                Sefer
+                                {t(
+                                    "feedback.fields.sefer"
+                                )}
                             </p>
 
                             <p
@@ -1266,7 +1285,9 @@ const Feedback = () => {
                                     text-gray-500
                                 "
                             >
-                                Category
+                                {t(
+                                    "feedback.fields.category"
+                                )}
                             </p>
 
                             <p
@@ -1301,7 +1322,9 @@ const Feedback = () => {
                                     text-gray-500
                                 "
                             >
-                                Rating
+                                {t(
+                                    "feedback.fields.rating"
+                                )}
                             </p>
 
                             <p
@@ -1309,7 +1332,7 @@ const Feedback = () => {
                                     font-semibold
                                     text-gray-800
                                     mt-1
-                                "
+                            "
                             >
 
                                 {
@@ -1360,7 +1383,9 @@ const Feedback = () => {
                                         text-gray-500
                                     "
                                 >
-                                    Comment / Description
+                                    {t(
+                                        "feedback.fields.description"
+                                    )}
                                 </p>
 
                                 <p
@@ -1419,8 +1444,12 @@ const Feedback = () => {
                         >
 
                             {loadingFeedback
-                                ? "Checking..."
-                                : "🔄 Check Feedback Status"}
+                                ? t(
+                                    "feedback.buttons.submitting"
+                                )
+                                : `🔄 ${t(
+                                    "feedback.title"
+                                )}`}
 
                         </button>
 

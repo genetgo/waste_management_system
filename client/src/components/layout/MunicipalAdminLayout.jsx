@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 
 import {
@@ -19,6 +19,9 @@ import {
 import useSocketNotification
     from "../../hooks/useSocketNotification";
 
+import notificationService
+    from "../../services/notificationService";
+
 
 const MunicipalAdminLayout = () => {
 
@@ -31,6 +34,14 @@ const MunicipalAdminLayout = () => {
     // ==========================================
 
     useSocketNotification();
+
+
+    // ==========================================
+    // NOTIFICATION COUNT
+    // ==========================================
+
+    const [unreadNotificationCount, setUnreadNotificationCount] =
+        useState(0);
 
 
     // ==========================================
@@ -62,9 +73,63 @@ const MunicipalAdminLayout = () => {
 
 
     // ==========================================
+    // LOAD UNREAD NOTIFICATION COUNT
+    // ==========================================
+
+    const loadUnreadNotificationCount = async () => {
+
+        try {
+
+            const response =
+                await notificationService.getUnreadCount();
+
+            console.log(
+                "SIDEBAR UNREAD COUNT:",
+                response
+            );
+
+            setUnreadNotificationCount(
+                Number(
+                    response.data?.unread || 0
+                )
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Failed to load notification count:",
+                error
+            );
+
+        }
+
+    };
+
+
+    // ==========================================
+    // LOAD COUNT ON PAGE LOAD
+    // ==========================================
+
+    useEffect(() => {
+
+        loadUnreadNotificationCount();
+
+    }, []);
+
+
+    // ==========================================
+    // REFRESH COUNT WHEN RETURNING TO LAYOUT
+    // ==========================================
+
+    useEffect(() => {
+
+        loadUnreadNotificationCount();
+
+    }, [location.pathname]);
+
+
+    // ==========================================
     // MENU ITEMS
-    // Residents REMOVED
-    // Collection Teams ADDED
     // ==========================================
 
     const menuItems = [
@@ -120,7 +185,8 @@ const MunicipalAdminLayout = () => {
         {
             label: "Notifications",
             path: "/municipal-admin/notifications",
-            icon: <FaBell />
+            icon: <FaBell />,
+            notification: true
         },
 
         {
@@ -331,6 +397,8 @@ const MunicipalAdminLayout = () => {
                                 `}
                             >
 
+                                {/* ICON */}
+
                                 <span
                                     className="
                                         text-lg
@@ -343,11 +411,53 @@ const MunicipalAdminLayout = () => {
                                 </span>
 
 
-                                <span className="font-medium">
+                                {/* LABEL */}
+
+                                <span className="font-medium flex-1">
 
                                     {item.label}
 
                                 </span>
+
+
+                                {/* ==================================
+                                    NOTIFICATION COUNT
+                                ================================== */}
+
+                                {item.notification &&
+                                    unreadNotificationCount > 0 && (
+
+                                    <span
+                                        className={`
+                                            min-w-[24px]
+                                            h-[24px]
+
+                                            px-1.5
+
+                                            rounded-full
+
+                                            flex
+                                            items-center
+                                            justify-center
+
+                                            text-xs
+                                            font-bold
+
+                                            ${
+                                                active
+                                                    ? "bg-white text-blue-600"
+                                                    : "bg-red-500 text-white"
+                                            }
+                                        `}
+                                    >
+
+                                        {unreadNotificationCount > 99
+                                            ? "99+"
+                                            : unreadNotificationCount}
+
+                                    </span>
+
+                                )}
 
                             </button>
 
@@ -472,7 +582,7 @@ const MunicipalAdminLayout = () => {
 
 
                     {/* ==================================================
-                        NOTIFICATION
+                        TOP BAR NOTIFICATION
                     ================================================== */}
 
                     <button
@@ -491,11 +601,56 @@ const MunicipalAdminLayout = () => {
                             text-xl
 
                             transition
+
+                            p-2
                         "
                         aria-label="Notifications"
                     >
 
                         <FaBell />
+
+
+                        {/* ==================================
+                            NOTIFICATION BADGE
+                        ================================== */}
+
+                        {unreadNotificationCount > 0 && (
+
+                            <span
+                                className="
+                                    absolute
+                                    -top-1
+                                    -right-1
+
+                                    bg-red-500
+                                    text-white
+
+                                    text-[10px]
+                                    font-bold
+
+                                    min-w-[18px]
+                                    h-[18px]
+
+                                    px-1
+
+                                    rounded-full
+
+                                    flex
+                                    items-center
+                                    justify-center
+
+                                    border-2
+                                    border-white
+                                "
+                            >
+
+                                {unreadNotificationCount > 99
+                                    ? "99+"
+                                    : unreadNotificationCount}
+
+                            </span>
+
+                        )}
 
                     </button>
 

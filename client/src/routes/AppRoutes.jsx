@@ -23,6 +23,8 @@ import ResetPassword from "../pages/auth/ResetPassword";
 // ==================================================
 // SHARED
 // ==================================================
+import About from "../pages/shared/About";
+
 
 import Notifications from "../pages/shared/Notifications";
 import Schedule from "../pages/shared/Schedule";
@@ -97,6 +99,8 @@ export default function AppRoutes() {
                 element={<Home />}
             />
 
+
+<Route path="/about" element={<About />} />
             {/* LOGIN */}
             <Route
                 path={ROUTES.LOGIN}

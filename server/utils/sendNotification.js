@@ -1,3 +1,4 @@
+
 const notificationRepository = require("../repositories/notificationRepository");
 const { getSocket } = require("./socket");
 
@@ -5,7 +6,9 @@ const sendNotification = async ({
     user_id,
     user_role,
     title,
-    message
+    message,
+    notification_type = null,
+    reference_id = null
 }) => {
 
     console.log("=================================");
@@ -14,6 +17,8 @@ const sendNotification = async ({
     console.log("USER ROLE:", user_role);
     console.log("TITLE:", title);
     console.log("MESSAGE:", message);
+    console.log("NOTIFICATION TYPE:", notification_type);
+    console.log("REFERENCE ID:", reference_id);
 
     // ==========================================
     // 1. SAVE TO DATABASE
@@ -24,7 +29,9 @@ const sendNotification = async ({
             user_id,
             user_role,
             title,
-            message
+            message,
+            notification_type,
+            reference_id
         });
 
     console.log(
@@ -39,6 +46,7 @@ const sendNotification = async ({
     const io = getSocket();
 
     if (!io) {
+
         console.log(
             "❌ SOCKET.IO INSTANCE NOT AVAILABLE"
         );

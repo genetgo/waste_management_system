@@ -184,25 +184,22 @@ class RequestService {
         // ===========================================
         // Notify Municipal Admins
         // ===========================================
-        try {
-            const admins =
-                await notificationRepository.getMunicipalAdmins();
-
-            for (const admin of admins) {
-                await sendNotification({
-                    user_id: admin.admin_id,
-                    user_role: "MUNICIPAL_ADMIN",
-                    title: "New On-Demand Request",
-                    message:
-                        "A new waste collection request has been submitted.",
-                });
-            }
-        } catch (notificationError) {
-            console.error(
-                "Admin notification error:",
-                notificationError
-            );
-        }
+        // ===========================================
+// Notify Municipal Admins
+// ===========================================
+try {
+    await notificationRepository.notifyMunicipalAdmins(
+        "New On-Demand Request",
+        "A new waste collection request has been submitted.",
+        "ON_DEMAND_REQUEST",
+        request.request_id
+    );
+} catch (notificationError) {
+    console.error(
+        "Admin notification error:",
+        notificationError
+    );
+}
 
         return request;
     }

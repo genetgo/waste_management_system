@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import ROUTES from "../../constants/routes";
-
+import About from "../shared/About";
 export default function Home() {
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -32,63 +32,83 @@ export default function Home() {
         relative
       "
     >
-      {/* ==========================================
-          LANGUAGE BUTTONS
-      ========================================== */}
-      <div
-        className="
-          absolute
-          top-5
-          right-5
-          flex
-          items-center
-          gap-1
-          bg-white
-          rounded-xl
-          p-1
-          shadow-lg
-        "
-      >
-        <button
-          type="button"
-          onClick={() => changeLanguage("AM")}
-          className={`
-            px-3
-            py-1.5
-            rounded-lg
-            text-sm
-            font-semibold
-            transition
-            ${
-              i18n.language === "AM"
-                ? "bg-emerald-600 text-white"
-                : "text-gray-600 hover:bg-emerald-50"
-            }
-          `}
-        >
-          አማርኛ
-        </button>
+     
+{/* ==========================================
+    LANGUAGE BUTTONS
+========================================== */}
+<div
+  className="
+    absolute
+    top-5
+    right-5
+    z-50
+    inline-flex
+    items-center
+    gap-1
+    bg-white
+    rounded-xl
+    p-1
+    shadow-lg
+    border
+    border-gray-100
+    whitespace-nowrap
+  "
+>
+  {/* ENGLISH FIRST */}
+  <button
+    type="button"
+    onClick={() => changeLanguage("EN")}
+    className={`
+      inline-flex
+      items-center
+      justify-center
+      px-3
+      py-2
+      rounded-lg
+      text-sm
+      font-semibold
+      whitespace-nowrap
+      transition-all
+      duration-200
+      cursor-pointer
+      ${
+        i18n.language === "EN"
+          ? "bg-emerald-600 text-white"
+          : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+      }
+    `}
+  >
+    English
+  </button>
 
-        <button
-          type="button"
-          onClick={() => changeLanguage("EN")}
-          className={`
-            px-3
-            py-1.5
-            rounded-lg
-            text-sm
-            font-semibold
-            transition
-            ${
-              i18n.language === "EN"
-                ? "bg-emerald-600 text-white"
-                : "text-gray-600 hover:bg-emerald-50"
-            }
-          `}
-        >
-          English
-        </button>
-      </div>
+  {/* AMHARIC SECOND */}
+  <button
+    type="button"
+    onClick={() => changeLanguage("AM")}
+    className={`
+      inline-flex
+      items-center
+      justify-center
+      px-3
+      py-2
+      rounded-lg
+      text-sm
+      font-semibold
+      whitespace-nowrap
+      transition-all
+      duration-200
+      cursor-pointer
+      ${
+        i18n.language === "AM"
+          ? "bg-emerald-600 text-white"
+          : "text-gray-600 hover:bg-emerald-50 hover:text-emerald-700"
+      }
+    `}
+  >
+    አማርኛ
+  </button>
+</div>
+
 
       {/* ==========================================
           MAIN CARD
@@ -109,6 +129,7 @@ export default function Home() {
           text-center
         "
       >
+        
         {/* ==========================================
             LOGO
         ========================================== */}
@@ -329,7 +350,31 @@ export default function Home() {
             💬 {t("home.feedback")}
           </button>
         </div>
-
+{/* ABOUT */}
+<div className="flex justify-center mt-3">
+  <button
+    type="button"
+    onClick={() => navigate("/about")}
+    className="
+      px-5
+      py-2.5
+      bg-emerald-600
+      hover:bg-emerald-700
+      active:bg-emerald-800
+      text-white
+      font-semibold
+      text-sm
+      rounded-xl
+      shadow-lg
+      shadow-emerald-600/20
+      transition
+      duration-200
+      whitespace-nowrap
+    "
+  >
+    ℹ️ {t("home.about")}
+  </button>
+</div>
         {/* ==========================================
             FOOTER
         ========================================== */}
@@ -346,7 +391,7 @@ export default function Home() {
           {t("home.footer")}
         </div>
       </div>
+     
     </div>
   );
 }
-

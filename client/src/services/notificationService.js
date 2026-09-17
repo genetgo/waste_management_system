@@ -1,9 +1,10 @@
+
 import API from "./api";
 
 const notificationService = {
 
     // ==========================================
-    // Get Notifications
+    // GET ALL NOTIFICATIONS
     // ==========================================
     getNotifications: async () => {
 
@@ -16,7 +17,7 @@ const notificationService = {
 
 
     // ==========================================
-    // Get Unread Count
+    // GET UNREAD COUNT
     // ==========================================
     getUnreadCount: async () => {
 
@@ -29,12 +30,12 @@ const notificationService = {
 
 
     // ==========================================
-    // Mark One As Read
+    // GET NOTIFICATION DETAILS
     // ==========================================
-    markAsRead: async (id) => {
+    getNotificationDetails: async (notificationId) => {
 
-        const response = await API.patch(
-            `/notifications/${id}/read`
+        const response = await API.get(
+            `/notifications/${notificationId}/details`
         );
 
         return response.data;
@@ -42,7 +43,20 @@ const notificationService = {
 
 
     // ==========================================
-    // Mark All As Read
+    // MARK ONE AS READ
+    // ==========================================
+    markAsRead: async (notificationId) => {
+
+        const response = await API.patch(
+            `/notifications/${notificationId}/read`
+        );
+
+        return response.data;
+    },
+
+
+    // ==========================================
+    // MARK ALL AS READ
     // ==========================================
     markAllAsRead: async () => {
 
@@ -55,12 +69,12 @@ const notificationService = {
 
 
     // ==========================================
-    // Delete One
+    // DELETE ONE
     // ==========================================
-    deleteNotification: async (id) => {
+    deleteNotification: async (notificationId) => {
 
         const response = await API.delete(
-            `/notifications/${id}`
+            `/notifications/${notificationId}`
         );
 
         return response.data;
