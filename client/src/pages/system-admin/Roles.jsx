@@ -14,14 +14,8 @@ import {
 } from "react-icons/fa";
 
 // =====================================================
-// DEFAULT BUILT-IN PERMISSIONS
-// =====================================================
-// IMPORTANT:
-// OTHER is NOT a real permission.
-// It is only a UI trigger for creating a custom permission.
-//
-// Therefore OTHER must NOT be included here.
-// It must NOT appear in the Permission Matrix.
+// DEFAULT PERMISSIONS
+// OTHER IS NOT A REAL PERMISSION
 // =====================================================
 
 const DEFAULT_PERMISSIONS = [
@@ -43,6 +37,17 @@ const DEFAULT_PERMISSIONS = [
   },
 ];
 
+const BUILT_IN_PERMISSIONS = [
+  "VIEW",
+  "CREATE",
+  "UPDATE",
+  "DELETE",
+];
+
+// =====================================================
+// COMPONENT
+// =====================================================
+
 const Roles = () => {
   // =====================================================
   // STATE
@@ -51,6 +56,7 @@ const Roles = () => {
   const [search, setSearch] = useState("");
   const [rolesList, setRolesList] = useState([]);
   const [permissionsMatrix, setPermissionsMatrix] = useState([]);
+
   const [availablePermissions, setAvailablePermissions] =
     useState(DEFAULT_PERMISSIONS);
 
@@ -75,8 +81,6 @@ const Roles = () => {
   // OTHER / CUSTOM PERMISSION
   // =====================================================
 
-  // OTHER is NOT a permission.
-  // It only opens the custom permission form.
   const [otherSelected, setOtherSelected] = useState(false);
 
   const [customPermission, setCustomPermission] = useState({
@@ -85,7 +89,7 @@ const Roles = () => {
   });
 
   // =====================================================
-  // DELETE
+  // DELETE ROLE
   // =====================================================
 
   const [deletingRoleId, setDeletingRoleId] = useState(null);
@@ -166,10 +170,9 @@ const Roles = () => {
   };
 
   // =====================================================
-  // PERMISSION VISIBILITY
+  // NON PERMISSION VALUES
   // =====================================================
 
-  // Workflow/status values are never treated as permissions.
   const NON_PERMISSION_VALUES = new Set([
     "PENDING",
     "APPROVED",
@@ -188,7 +191,7 @@ const Roles = () => {
       return false;
     }
 
-    // OTHER is a UI trigger, NOT a real permission.
+    // OTHER IS ONLY A UI TRIGGER
     if (key === "OTHER") {
       return false;
     }
@@ -201,61 +204,68 @@ const Roles = () => {
   // =====================================================
 
   const mergePermissions = (...permissionLists) => {
-  const map = new Map();
+    const map = new Map();
 
-  permissionLists.flat().forEach((permission) => {
-    const name = getPermissionName(permission);
-
-    if (!name) {
-      return;
-    }
-
-    const key = normalize(name);
-
-    if (!isVisiblePermissionName(key)) {
-      return;
-    }
-
-    const description =
-      getPermissionDescription(permission);
-
-    const permissionId =
-      permission?.permission_id ??
-      permission?.id ??
-      null;
-
-    const isCustom =
-      permission?.is_custom === true;
-
-    if (!map.has(key)) {
-      map.set(key, {
-        permission_id: permissionId,
-        permission_name: key,
-        description,
-        is_custom: isCustom,
-      });
-    } else {
-      const existing = map.get(key);
-
-      if (!existing.description && description) {
-        existing.description = description;
+    permissionLists.flat().forEach((permission) => {
+      if (permission == null) {
+        return;
       }
 
-      if (
-        existing.permission_id == null &&
-        permissionId != null
-      ) {
-        existing.permission_id = permissionId;
+      const name = getPermissionName(permission);
+
+      if (!name) {
+        return;
       }
 
-      if (isCustom) {
-        existing.is_custom = true;
-      }
-    }
-  });
+      const key = normalize(name);
 
-  return Array.from(map.values());
-};
+      if (!isVisiblePermissionName(key)) {
+        return;
+      }
+
+      const description =
+        getPermissionDescription(permission);
+
+      const permissionId =
+        permission?.permission_id ??
+        permission?.id ??
+        null;
+
+      const isCustom =
+        permission?.is_custom === true;
+
+      if (!map.has(key)) {
+        map.set(key, {
+          permission_id: permissionId,
+          permission_name: key,
+          description,
+          is_custom: isCustom,
+        });
+      } else {
+        const existing = map.get(key);
+
+        if (
+          !existing.description &&
+          description
+        ) {
+          existing.description = description;
+        }
+
+        if (
+          existing.permission_id == null &&
+          permissionId != null
+        ) {
+          existing.permission_id = permissionId;
+        }
+
+        if (isCustom) {
+          existing.is_custom = true;
+        }
+      }
+    });
+
+    return Array.from(map.values());
+  };
 
   // =====================================================
   // PERMISSIONS TO SHOW
@@ -270,6 +280,18 @@ const Roles = () => {
           rolePermissions.push(permission);
         });
       }
+
+      if (Array.isArray(role?.permissionIds)) {
+        role.permissionIds.forEach((permission) => {
+          rolePermissions.push(permission);
+        });
+      }
+
+      if (Array.isArray(role?.permission_ids)) {
+        role.permission_ids.forEach((permission) => {
+          rolePermissions.push(permission);
+        });
+      }
     });
 
     return mergePermissions(
@@ -277,7 +299,10 @@ const Roles = () => {
       availablePermissions,
       rolePermissions
     );
-  }, [availablePermissions, rolesList]);
+  }, [
+    availablePermissions,
+    rolesList,
+  ]);
 
   // =====================================================
   // LOAD ROLES
@@ -293,11 +318,13 @@ const Roles = () => {
       );
 
       console.log(
-        "ROLES API RESPONSE:",
-        response.data
+        "========== ROLES API RESPONSE =========="
       );
 
-      const responseData = response?.data || {};
+      console.log(response.data);
+
+      const responseData =
+        response?.data || {};
 
       const data =
         responseData?.data &&
@@ -313,16 +340,21 @@ const Roles = () => {
 
       if (Array.isArray(data?.roles)) {
         allRoles = data.roles;
-      } else if (Array.isArray(data?.data?.roles)) {
+      } else if (
+        Array.isArray(data?.data?.roles)
+      ) {
         allRoles = data.data.roles;
-      } else if (Array.isArray(responseData?.roles)) {
+      } else if (
+        Array.isArray(responseData?.roles)
+      ) {
         allRoles = responseData.roles;
       }
 
-      // Resident is not managed from this page.
-      const roles = allRoles.filter(
-        (role) => !isResidentRole(role)
-      );
+      const roles =
+        allRoles.filter(
+          (role) =>
+            !isResidentRole(role)
+        );
 
       // =================================================
       // BACKEND PERMISSIONS
@@ -330,28 +362,44 @@ const Roles = () => {
 
       let backendPermissions = [];
 
-      if (Array.isArray(data?.availablePermissions)) {
+      if (
+        Array.isArray(
+          data?.availablePermissions
+        )
+      ) {
         backendPermissions =
           data.availablePermissions;
-      } else if (Array.isArray(data?.available_permissions)) {
+      } else if (
+        Array.isArray(
+          data?.available_permissions
+        )
+      ) {
         backendPermissions =
           data.available_permissions;
-      } else if (Array.isArray(data?.permissionsList)) {
+      } else if (
+        Array.isArray(
+          data?.permissionsList
+        )
+      ) {
         backendPermissions =
           data.permissionsList;
       }
 
       const filteredBackendPermissions =
-        backendPermissions.filter((permission) =>
-          isVisiblePermissionName(
-            getPermissionName(permission)
-          )
+        backendPermissions.filter(
+          (permission) =>
+            isVisiblePermissionName(
+              getPermissionName(
+                permission
+              )
+            )
         );
 
-      const mergedPermissions = mergePermissions(
-        DEFAULT_PERMISSIONS,
-        filteredBackendPermissions
-      );
+      const mergedPermissions =
+        mergePermissions(
+          DEFAULT_PERMISSIONS,
+          filteredBackendPermissions
+        );
 
       // =================================================
       // PERMISSION MATRIX
@@ -359,25 +407,58 @@ const Roles = () => {
 
       let matrix = [];
 
-      if (Array.isArray(data?.permissions)) {
+      if (
+        Array.isArray(
+          data?.permissions
+        )
+      ) {
         matrix = data.permissions;
-      } else if (Array.isArray(data?.permissionMatrix)) {
-        matrix = data.permissionMatrix;
-      } else if (Array.isArray(data?.permission_matrix)) {
-        matrix = data.permission_matrix;
+      } else if (
+        Array.isArray(
+          data?.permissionMatrix
+        )
+      ) {
+        matrix =
+          data.permissionMatrix;
+      } else if (
+        Array.isArray(
+          data?.permission_matrix
+        )
+      ) {
+        matrix =
+          data.permission_matrix;
       }
 
-      const filteredMatrix = matrix.filter(
-        (item) => !isResidentRole(item)
-      );
+      const filteredMatrix =
+        matrix.filter(
+          (item) =>
+            !isResidentRole(item)
+        );
 
       setRolesList(roles);
-      setPermissionsMatrix(filteredMatrix);
+      setPermissionsMatrix(
+        filteredMatrix
+      );
 
       setAvailablePermissions(
         mergedPermissions.length
           ? mergedPermissions
           : DEFAULT_PERMISSIONS
+      );
+
+      console.log(
+        "ROLES:",
+        roles
+      );
+
+      console.log(
+        "PERMISSIONS:",
+        mergedPermissions
+      );
+
+      console.log(
+        "MATRIX:",
+        filteredMatrix
       );
     } catch (err) {
       console.error(
@@ -407,45 +488,197 @@ const Roles = () => {
   }, []);
 
   // =====================================================
-  // GET ROLE PERMISSIONS
+  // GET ROLE PERMISSION NAMES
+  // IMPORTANT:
+  // Supports:
+  //   permissions: ["VIEW", "CREATE"]
+  //   permissions: [{ permission_name: "VIEW" }]
+  //   permissionIds: [1, 2]
+  //   permission_ids: [1, 2]
   // =====================================================
 
   const getRolePermissionNames = (role) => {
-    const result = [];
+    const result = new Set();
 
-    // =================================================
-    // role.permissions
-    // =================================================
+    // ---------------------------------------------------
+    // ADD PERMISSION HELPER
+    // ---------------------------------------------------
 
-    if (Array.isArray(role?.permissions)) {
-      role.permissions.forEach((permission) => {
-        const name =
-          getPermissionName(permission);
+    const addPermission = (permission) => {
+      if (
+        permission === null ||
+        permission === undefined
+      ) {
+        return;
+      }
 
-        if (!name) {
-          return;
+      // -----------------------------------------------
+      // STRING
+      // -----------------------------------------------
+
+      if (
+        typeof permission ===
+        "string"
+      ) {
+        const key =
+          normalize(permission);
+
+        if (
+          isVisiblePermissionName(
+            key
+          )
+        ) {
+          result.add(key);
         }
 
-        const normalizedName =
+        return;
+      }
+
+      // -----------------------------------------------
+      // OBJECT WITH NAME
+      // -----------------------------------------------
+
+      const name =
+        permission?.permission_name ||
+        permission?.permissionName ||
+        permission?.name;
+
+      if (name) {
+        const key =
           normalize(name);
 
         if (
           isVisiblePermissionName(
-            normalizedName
+            key
           )
         ) {
-          result.push(normalizedName);
+          result.add(key);
         }
-      });
+
+        return;
+      }
+
+      // -----------------------------------------------
+      // OBJECT WITH ID ONLY
+      // -----------------------------------------------
+
+      const permissionId =
+        permission?.permission_id ??
+        permission?.id;
+
+      if (
+        permissionId !== null &&
+        permissionId !== undefined
+      ) {
+        const matched =
+          permissionsToShow.find(
+            (p) =>
+              Number(
+                p?.permission_id ??
+                p?.id
+              ) ===
+              Number(permissionId)
+          );
+
+        if (matched) {
+          const matchedName =
+            normalize(
+              getPermissionName(
+                matched
+              )
+            );
+
+          if (
+            isVisiblePermissionName(
+              matchedName
+            )
+          ) {
+            result.add(
+              matchedName
+            );
+          }
+        }
+      }
+    };
+
+    // =================================================
+    // 1. role.permissions
+    // =================================================
+
+    if (
+      Array.isArray(
+        role?.permissions
+      )
+    ) {
+      role.permissions.forEach(
+        addPermission
+      );
     }
 
     // =================================================
-    // Permission Matrix
+    // 2. role.permissionIds
     // =================================================
 
-    const roleName = normalizeRoleName(
-      getRoleName(role)
-    );
+    if (
+      Array.isArray(
+        role?.permissionIds
+      )
+    ) {
+      role.permissionIds.forEach(
+        addPermission
+      );
+    }
+
+    // =================================================
+    // 3. role.permission_ids
+    // =================================================
+
+    if (
+      Array.isArray(
+        role?.permission_ids
+      )
+    ) {
+      role.permission_ids.forEach(
+        addPermission
+      );
+    }
+
+    // =================================================
+    // 4. assignedPermissions
+    // =================================================
+
+    if (
+      Array.isArray(
+        role?.assignedPermissions
+      )
+    ) {
+      role.assignedPermissions.forEach(
+        addPermission
+      );
+    }
+
+    // =================================================
+    // 5. assigned_permissions
+    // =================================================
+
+    if (
+      Array.isArray(
+        role?.assigned_permissions
+      )
+    ) {
+      role.assigned_permissions.forEach(
+        addPermission
+      );
+    }
+
+    // =================================================
+    // 6. ROLE MATRIX
+    // =================================================
+
+    const roleName =
+      normalizeRoleName(
+        getRoleName(role)
+      );
 
     const matrixRow =
       permissionsMatrix.find(
@@ -456,9 +689,9 @@ const Roles = () => {
       );
 
     if (matrixRow) {
-      // =================================================
-      // permissions array
-      // =================================================
+      // -----------------------------------------------
+      // Matrix permissions
+      // -----------------------------------------------
 
       if (
         Array.isArray(
@@ -466,32 +699,37 @@ const Roles = () => {
         )
       ) {
         matrixRow.permissions.forEach(
-          (permission) => {
-            const name =
-              getPermissionName(
-                permission
-              );
-
-            if (!name) {
-              return;
-            }
-
-            const key = normalize(name);
-
-            if (
-              isVisiblePermissionName(
-                key
-              )
-            ) {
-              result.push(key);
-            }
-          }
+          addPermission
         );
       }
 
-      // =================================================
-      // dynamic permission keys
-      // =================================================
+      // -----------------------------------------------
+      // Matrix permission IDs
+      // -----------------------------------------------
+
+      if (
+        Array.isArray(
+          matrixRow.permissionIds
+        )
+      ) {
+        matrixRow.permissionIds.forEach(
+          addPermission
+        );
+      }
+
+      if (
+        Array.isArray(
+          matrixRow.permission_ids
+        )
+      ) {
+        matrixRow.permission_ids.forEach(
+          addPermission
+        );
+      }
+
+      // -----------------------------------------------
+      // Dynamic permission columns
+      // -----------------------------------------------
 
       permissionsToShow.forEach(
         (permission) => {
@@ -500,43 +738,72 @@ const Roles = () => {
               permission
             );
 
+          if (!permissionName) {
+            return;
+          }
+
           const key =
-            normalize(permissionName);
+            normalize(
+              permissionName
+            );
+
+          if (
+            !isVisiblePermissionName(
+              key
+            )
+          ) {
+            return;
+          }
+
+          const lower =
+            key.toLowerCase();
 
           const possibleKeys = [
             permissionName,
             key,
-            key.toLowerCase(),
-            `can_${key.toLowerCase()}`,
-            `has_${key.toLowerCase()}`,
-            `${key.toLowerCase()}_permission`,
+            lower,
+            `can_${lower}`,
+            `has_${lower}`,
+            `${lower}_permission`,
           ];
 
           const found =
             possibleKeys.some(
-              (possibleKey) =>
-                matrixRow?.[
-                  possibleKey
-                ] === true ||
-                matrixRow?.[
-                  possibleKey
-                ] === 1 ||
-                matrixRow?.[
-                  possibleKey
-                ] === "true" ||
-                matrixRow?.[
-                  possibleKey
-                ] === "1"
+              (possibleKey) => {
+                const value =
+                  matrixRow?.[
+                    possibleKey
+                  ];
+
+                return (
+                  value === true ||
+                  value === 1 ||
+                  value === "1" ||
+                  String(value)
+                    .toLowerCase() ===
+                    "true"
+                );
+              }
             );
 
           if (found) {
-            result.push(key);
+            result.add(key);
           }
         }
       );
     }
 
-    return [...new Set(result)];
+    const finalPermissions =
+      Array.from(result);
+
+    console.log(
+      `ROLE "${getRoleName(
+        role
+      )}" PERMISSIONS:`,
+      finalPermissions
+    );
+
+    return finalPermissions;
   };
 
   // =====================================================
@@ -579,19 +846,33 @@ const Roles = () => {
 
   // =====================================================
   // OPEN EDIT MODAL
+  // FIXED
   // =====================================================
 
   const openEditModal = (role) => {
-    const allSelectedPermissions =
-      getRolePermissionNames(role);
+    console.log(
+      "================================"
+    );
 
-    // OTHER is never included because it is not
-    // a real permission.
+    console.log(
+      "EDIT ROLE CLICKED:"
+    );
+
+    console.log(role);
+
     const selectedPermissions =
-      allSelectedPermissions.filter(
-        (permission) =>
-          normalize(permission) !== "OTHER"
-      );
+      getRolePermissionNames(role)
+        .filter(
+          (permission) =>
+            isVisiblePermissionName(
+              permission
+            )
+        );
+
+    console.log(
+      "SELECTED PERMISSIONS:",
+      selectedPermissions
+    );
 
     setEditingRole(role);
 
@@ -603,8 +884,6 @@ const Roles = () => {
         selectedPermissions,
     });
 
-    // OTHER is only used to open the custom
-    // permission UI.
     setOtherSelected(false);
 
     setCustomPermission({
@@ -616,7 +895,7 @@ const Roles = () => {
   };
 
   // =====================================================
-  // CLOSE ROLE MODAL
+  // CLOSE MODAL
   // =====================================================
 
   const closeRoleModal = () => {
@@ -658,10 +937,12 @@ const Roles = () => {
   };
 
   // =====================================================
-  // TOGGLE ROLE PERMISSION
+  // TOGGLE PERMISSION
   // =====================================================
 
-  const togglePermission = (permissionName) => {
+  const togglePermission = (
+    permissionName
+  ) => {
     if (savingRole) {
       return;
     }
@@ -669,12 +950,13 @@ const Roles = () => {
     const normalized =
       normalize(permissionName);
 
-    // =================================================
-    // OTHER IS ONLY A UI TRIGGER
-    // =================================================
-
-    if (normalized === "OTHER") {
-      setOtherSelected((prev) => !prev);
+    // OTHER IS ONLY UI
+    if (
+      normalized === "OTHER"
+    ) {
+      setOtherSelected(
+        (prev) => !prev
+      );
 
       setCustomPermission({
         name: "",
@@ -684,15 +966,20 @@ const Roles = () => {
       return;
     }
 
-    // =================================================
-    // NORMAL PERMISSION
-    // =================================================
+    if (
+      !isVisiblePermissionName(
+        normalized
+      )
+    ) {
+      return;
+    }
 
     setRoleForm((prev) => {
       const exists =
         prev.permissions.some(
           (permission) =>
-            normalize(permission) === normalized
+            normalize(permission) ===
+            normalized
         );
 
       if (exists) {
@@ -701,7 +988,9 @@ const Roles = () => {
           permissions:
             prev.permissions.filter(
               (permission) =>
-                normalize(permission) !== normalized
+                normalize(
+                  permission
+                ) !== normalized
             ),
         };
       }
@@ -740,286 +1029,277 @@ const Roles = () => {
   // ADD CUSTOM PERMISSION
   // =====================================================
 
-  const handleAddCustomPermission = async () => {
-    if (savingRole) {
-      return;
-    }
+  const handleAddCustomPermission =
+    async () => {
+      if (savingRole) {
+        return;
+      }
 
-    const name =
-      customPermission.name.trim();
+      const name =
+        customPermission.name.trim();
 
-    const description =
-      customPermission.description.trim();
+      const description =
+        customPermission.description.trim();
 
-    // =================================================
-    // VALIDATION
-    // =================================================
+      if (!name) {
+        alert(
+          "Custom permission name is required."
+        );
+        return;
+      }
 
-    if (!name) {
-      alert(
-        "Custom permission name is required."
-      );
-      return;
-    }
+      if (name.length < 2) {
+        alert(
+          "Permission name must contain at least 2 characters."
+        );
+        return;
+      }
 
-    if (name.length < 2) {
-      alert(
-        "Permission name must contain at least 2 characters."
-      );
-      return;
-    }
+      if (!description) {
+        alert(
+          "Custom permission description is required."
+        );
+        return;
+      }
 
-    if (!description) {
-      alert(
-        "Custom permission description is required."
-      );
-      return;
-    }
+      const normalized =
+        normalize(name);
 
-    const normalized =
-      normalize(name);
+      if (!normalized) {
+        alert(
+          "Invalid custom permission name."
+        );
+        return;
+      }
 
-    if (!normalized) {
-      alert(
-        "Invalid custom permission name."
-      );
-      return;
-    }
+      if (
+        normalized === "OTHER"
+      ) {
+        alert(
+          "OTHER is reserved for the custom permission option."
+        );
+        return;
+      }
 
-    // OTHER can never be created as a
-    // custom permission.
-    if (normalized === "OTHER") {
-      alert(
-        "OTHER is reserved for the custom permission option."
-      );
-      return;
-    }
+      const exists =
+        permissionsToShow.some(
+          (permission) =>
+            normalize(
+              getPermissionName(
+                permission
+              )
+            ) === normalized
+        );
 
-    // =================================================
-    // DUPLICATE CHECK
-    // =================================================
+      if (exists) {
+        alert(
+          "This permission already exists."
+        );
+        return;
+      }
 
-    const exists =
-      permissionsToShow.some(
-        (permission) =>
+      try {
+        const response =
+          await API.post(
+            "/system-admin/permissions",
+            {
+              permission_name:
+                normalized,
+              description,
+            }
+          );
+
+        const responseData =
+          response?.data || {};
+
+        const createdPermission =
+          responseData?.data ||
+          responseData?.permission ||
+          responseData;
+
+        const permissionId =
+          createdPermission?.permission_id ??
+          createdPermission?.id ??
+          null;
+
+        const createdName =
           normalize(
-            getPermissionName(permission)
-          ) === normalized
-      );
+            createdPermission?.permission_name ||
+              createdPermission?.permissionName ||
+              normalized
+          );
 
-    if (exists) {
-      alert(
-        "This permission already exists."
-      );
-      return;
-    }
+        const createdDescription =
+          createdPermission?.description ||
+          description;
 
-    try {
-      // =================================================
-      // SAVE CUSTOM PERMISSION TO DATABASE
-      // =================================================
-
-      const response =
-        await API.post(
-          "/system-admin/permissions",
-          {
-            permission_name: normalized,
-            description,
-          }
-        );
-
-      const responseData =
-        response?.data || {};
-
-      const createdPermission =
-        responseData?.data ||
-        responseData?.permission ||
-        responseData;
-
-      const permissionId =
-        createdPermission?.permission_id ??
-        createdPermission?.id ??
-        null;
-
-      const createdName =
-        normalize(
-          createdPermission?.permission_name ||
-          createdPermission?.permissionName ||
-          normalized
-        );
-
-      const createdDescription =
-        createdPermission?.description ||
-        description;
-
-      const newPermission = {
-        permission_id:
-          permissionId,
-        permission_name:
-          createdName,
-        description:
-          createdDescription,
-        is_custom: true,
-      };
-
-      // =================================================
-      // ADD TO AVAILABLE PERMISSIONS
-      // =================================================
-
-      setAvailablePermissions((prev) =>
-        mergePermissions(
-          prev,
-          [newPermission]
-        )
-      );
-
-      // =================================================
-      // SELECT NEW PERMISSION FOR CURRENT ROLE
-      // =================================================
-
-      setRoleForm((prev) => ({
-        ...prev,
-        permissions: [
-          ...new Set([
-            ...prev.permissions,
+        const newPermission = {
+          permission_id:
+            permissionId,
+          permission_name:
             createdName,
-          ]),
-        ],
-      }));
+          description:
+            createdDescription,
+          is_custom: true,
+        };
 
-      // =================================================
-      // CLOSE OTHER UI
-      // =================================================
+        // Add to permissions
+        setAvailablePermissions(
+          (prev) =>
+            mergePermissions(
+              prev,
+              [newPermission]
+            )
+        );
 
-      setOtherSelected(false);
+        // Automatically select
+        // new permission
+        setRoleForm((prev) => ({
+          ...prev,
+          permissions: [
+            ...new Set([
+              ...prev.permissions,
+              createdName,
+            ]),
+          ],
+        }));
 
-      setCustomPermission({
-        name: "",
-        description: "",
-      });
+        setOtherSelected(false);
 
-      alert(
-        "Custom permission added successfully."
-      );
-    } catch (err) {
-      console.error(
-        "ADD CUSTOM PERMISSION ERROR:",
-        err
-      );
+        setCustomPermission({
+          name: "",
+          description: "",
+        });
 
-      alert(
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.message ||
-        "Failed to add custom permission."
-      );
-    }
-  };
+        alert(
+          "Custom permission added successfully."
+        );
+      } catch (err) {
+        console.error(
+          "ADD CUSTOM PERMISSION ERROR:",
+          err
+        );
+
+        alert(
+          err?.response?.data
+            ?.message ||
+            err?.response?.data
+              ?.error ||
+            err?.message ||
+            "Failed to add custom permission."
+        );
+      }
+    };
+
   // =====================================================
   // DELETE CUSTOM PERMISSION
   // =====================================================
 
-  const handleDeleteCustomPermission = async (permission) => {
-    try {
-      const permissionId =
-        permission?.permission_id ??
-        permission?.id ??
-        null;
+  const handleDeleteCustomPermission =
+    async (permission) => {
+      try {
+        const permissionId =
+          permission?.permission_id ??
+          permission?.id ??
+          null;
 
-      const permissionName =
-        getPermissionName(permission);
+        const permissionName =
+          getPermissionName(
+            permission
+          );
 
-      if (!permissionId) {
-        alert("Permission ID not found.");
-        return;
-      }
+        if (!permissionId) {
+          alert(
+            "Permission ID not found."
+          );
+          return;
+        }
 
-      if (!permissionName) {
-        alert("Permission name not found.");
-        return;
-      }
+        if (!permissionName) {
+          alert(
+            "Permission name not found."
+          );
+          return;
+        }
 
-      // Built-in permissions cannot be deleted
-      const normalizedName =
-        normalize(permissionName);
+        const normalizedName =
+          normalize(
+            permissionName
+          );
 
-      const builtInPermissions = [
-        "VIEW",
-        "CREATE",
-        "UPDATE",
-        "DELETE",
-      ];
-
-      if (
-        builtInPermissions.includes(
-          normalizedName
-        )
-      ) {
-        alert(
-          "Built-in permissions cannot be deleted."
-        );
-        return;
-      }
-
-      const confirmed = window.confirm(
-        `Are you sure you want to delete "${permissionName}"?`
-      );
-
-      if (!confirmed) {
-        return;
-      }
-
-      // Delete from database
-      await API.delete(
-        `/system-admin/permissions/${permissionId}`
-      );
-
-      // Remove from available permissions
-      setAvailablePermissions((prev) =>
-        prev.filter(
-          (p) =>
-            Number(
-              p?.permission_id ?? p?.id
-            ) !== Number(permissionId)
-        )
-      );
-
-      // Remove from currently selected role
-      setRoleForm((prev) => ({
-        ...prev,
-        permissions: prev.permissions.filter(
-          (p) =>
-            normalize(p) !==
+        if (
+          BUILT_IN_PERMISSIONS.includes(
             normalizedName
-        ),
-      }));
+          )
+        ) {
+          alert(
+            "Built-in permissions cannot be deleted."
+          );
+          return;
+        }
 
-      // Close OTHER custom form if needed
-      setOtherSelected(false);
+        const confirmed =
+          window.confirm(
+            `Are you sure you want to delete "${permissionName}"?`
+          );
 
-      setCustomPermission({
-        name: "",
-        description: "",
-      });
+        if (!confirmed) {
+          return;
+        }
 
-      alert(
-        "Custom permission deleted successfully."
-      );
+        await API.delete(
+          `/system-admin/permissions/${permissionId}`
+        );
 
-    } catch (err) {
-      console.error(
-        "DELETE CUSTOM PERMISSION ERROR:",
-        err
-      );
+        setAvailablePermissions(
+          (prev) =>
+            prev.filter(
+              (p) =>
+                Number(
+                  p?.permission_id ??
+                    p?.id
+                ) !==
+                Number(permissionId)
+            )
+        );
 
-      alert(
-        err?.response?.data?.message ||
-        err?.response?.data?.error ||
-        err?.message ||
-        "Failed to delete custom permission."
-      );
-    }
-  };
+        setRoleForm((prev) => ({
+          ...prev,
+          permissions:
+            prev.permissions.filter(
+              (p) =>
+                normalize(p) !==
+                normalizedName
+            ),
+        }));
+
+        setOtherSelected(false);
+
+        setCustomPermission({
+          name: "",
+          description: "",
+        });
+
+        alert(
+          "Custom permission deleted successfully."
+        );
+      } catch (err) {
+        console.error(
+          "DELETE CUSTOM PERMISSION ERROR:",
+          err
+        );
+
+        alert(
+          err?.response?.data
+            ?.message ||
+            err?.response?.data
+              ?.error ||
+            err?.message ||
+            "Failed to delete custom permission."
+        );
+      }
+    };
+
   // =====================================================
   // SAVE ROLE
   // =====================================================
@@ -1037,26 +1317,14 @@ const Roles = () => {
     const description =
       roleForm.description.trim();
 
-    // =================================================
-    // ONLY REAL PERMISSIONS ARE SUBMITTED
-    // OTHER IS NEVER SUBMITTED
-    // =================================================
-
+    // ONLY REAL PERMISSIONS
     const selectedPermissions =
       roleForm.permissions.filter(
-        (permission) => {
-          const normalized =
-            normalize(permission);
-
-          return isVisiblePermissionName(
-            normalized
-          );
-        }
+        (permission) =>
+          isVisiblePermissionName(
+            normalize(permission)
+          )
       );
-
-    // =================================================
-    // VALIDATION
-    // =================================================
 
     if (!roleName) {
       alert(
@@ -1073,8 +1341,9 @@ const Roles = () => {
     }
 
     if (
-      normalizeRoleName(roleName) ===
-      "resident"
+      normalizeRoleName(
+        roleName
+      ) === "resident"
     ) {
       alert(
         "Resident cannot be managed from this page."
@@ -1100,8 +1369,7 @@ const Roles = () => {
         name: roleName,
         description,
 
-        // Only real permissions.
-        // OTHER is NOT included.
+        // OTHER NEVER SENT
         permissions:
           selectedPermissions,
 
@@ -1110,7 +1378,11 @@ const Roles = () => {
       };
 
       console.log(
-        "ROLE PAYLOAD:",
+        "========== SAVE ROLE =========="
+      );
+
+      console.log(
+        "PAYLOAD:",
         payload
       );
 
@@ -1120,7 +1392,9 @@ const Roles = () => {
 
       if (editingRole) {
         const roleId =
-          getRoleId(editingRole);
+          getRoleId(
+            editingRole
+          );
 
         if (!roleId) {
           throw new Error(
@@ -1135,7 +1409,8 @@ const Roles = () => {
           );
 
         alert(
-          response?.data?.message ||
+          response?.data
+            ?.message ||
             "Role updated successfully."
         );
       }
@@ -1152,7 +1427,8 @@ const Roles = () => {
           );
 
         alert(
-          response?.data?.message ||
+          response?.data
+            ?.message ||
             "Role created successfully."
         );
       }
@@ -1167,8 +1443,10 @@ const Roles = () => {
       );
 
       alert(
-        err?.response?.data?.message ||
-          err?.response?.data?.error ||
+        err?.response?.data
+          ?.message ||
+          err?.response?.data
+            ?.error ||
           err?.message ||
           "Failed to save role."
       );
@@ -1227,8 +1505,10 @@ const Roles = () => {
       );
 
       alert(
-        err?.response?.data?.message ||
-          err?.response?.data?.error ||
+        err?.response?.data
+          ?.message ||
+          err?.response?.data
+            ?.error ||
           err?.message ||
           "Failed to delete role."
       );
@@ -1241,35 +1521,44 @@ const Roles = () => {
   // FILTER ROLES
   // =====================================================
 
-  const filteredRoles = useMemo(() => {
-    const keyword =
-      search.toLowerCase().trim();
+  const filteredRoles =
+    useMemo(() => {
+      const keyword =
+        search
+          .toLowerCase()
+          .trim();
 
-    if (!keyword) {
-      return rolesList;
-    }
-
-    return rolesList.filter(
-      (role) => {
-        const name =
-          getRoleName(
-            role
-          ).toLowerCase();
-
-        const description =
-          String(
-            role?.description || ""
-          ).toLowerCase();
-
-        return (
-          name.includes(keyword) ||
-          description.includes(
-            keyword
-          )
-        );
+      if (!keyword) {
+        return rolesList;
       }
-    );
-  }, [rolesList, search]);
+
+      return rolesList.filter(
+        (role) => {
+          const name =
+            getRoleName(
+              role
+            ).toLowerCase();
+
+          const description =
+            String(
+              role?.description ||
+                ""
+            ).toLowerCase();
+
+          return (
+            name.includes(
+              keyword
+            ) ||
+            description.includes(
+              keyword
+            )
+          );
+        }
+      );
+    }, [
+      rolesList,
+      search,
+    ]);
 
   // =====================================================
   // STATISTICS
@@ -1281,7 +1570,8 @@ const Roles = () => {
   const totalAssignedUsers =
     rolesList.reduce(
       (sum, role) =>
-        sum + getUserCount(role),
+        sum +
+        getUserCount(role),
       0
     );
 
@@ -1297,8 +1587,10 @@ const Roles = () => {
           );
 
         return (
-          name === "system admin" ||
-          name === "municipal admin"
+          name ===
+            "system admin" ||
+          name ===
+            "municipal admin"
         );
       }
     ).length;
@@ -1313,7 +1605,8 @@ const Roles = () => {
 
         return (
           name === "collector" ||
-          name === "business owner"
+          name ===
+            "business owner"
         );
       }
     ).length;
@@ -1355,7 +1648,6 @@ const Roles = () => {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
         <div className="text-center">
-
           <div className="inline-block w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
 
           <h2 className="text-xl font-bold text-gray-700 mt-4">
@@ -1365,7 +1657,6 @@ const Roles = () => {
           <p className="text-sm text-gray-500 mt-2">
             Loading data from database
           </p>
-
         </div>
       </div>
     );
@@ -1378,9 +1669,7 @@ const Roles = () => {
   if (error) {
     return (
       <div className="min-h-[400px] flex items-center justify-center p-6">
-
         <div className="bg-white rounded-2xl shadow border p-8 text-center max-w-lg w-full">
-
           <h2 className="text-2xl font-bold text-gray-800">
             Failed to Load Roles
           </h2>
@@ -1396,9 +1685,7 @@ const Roles = () => {
           >
             Retry
           </button>
-
         </div>
-
       </div>
     );
   }
@@ -1410,14 +1697,11 @@ const Roles = () => {
   return (
     <div className="space-y-8">
 
-      {/* =================================================
-          HEADER
-      ================================================= */}
+      {/* HEADER */}
 
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
 
         <div>
-
           <h1 className="text-3xl font-bold text-gray-800">
             Roles & Permissions
           </h1>
@@ -1427,7 +1711,6 @@ const Roles = () => {
             administrators, collectors, business owners,
             and custom roles.
           </p>
-
         </div>
 
         <button
@@ -1438,17 +1721,13 @@ const Roles = () => {
           <FaPlus />
           New Role
         </button>
-
       </div>
 
-      {/* =================================================
-          STATISTICS
-      ================================================= */}
+      {/* STATISTICS */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
         <div className="bg-white rounded-2xl shadow border p-6">
-
           <p className="text-gray-500 text-sm">
             Total Roles
           </p>
@@ -1456,11 +1735,9 @@ const Roles = () => {
           <h2 className="text-4xl font-bold text-indigo-700 mt-2">
             {totalRoles}
           </h2>
-
         </div>
 
         <div className="bg-white rounded-2xl shadow border p-6">
-
           <p className="text-gray-500 text-sm">
             Total Permissions
           </p>
@@ -1468,11 +1745,9 @@ const Roles = () => {
           <h2 className="text-4xl font-bold text-green-600 mt-2">
             {totalPermissionsCount}
           </h2>
-
         </div>
 
         <div className="bg-white rounded-2xl shadow border p-6">
-
           <p className="text-gray-500 text-sm">
             Assigned Users
           </p>
@@ -1480,17 +1755,12 @@ const Roles = () => {
           <h2 className="text-4xl font-bold text-blue-600 mt-2">
             {totalAssignedUsers}
           </h2>
-
         </div>
-
       </div>
 
-      {/* =================================================
-          SEARCH
-      ================================================= */}
+      {/* SEARCH */}
 
       <div className="bg-white rounded-2xl shadow border p-6">
-
         <div className="relative">
 
           <FaSearch className="absolute left-4 top-4 text-gray-400" />
@@ -1506,12 +1776,9 @@ const Roles = () => {
           />
 
         </div>
-
       </div>
 
-      {/* =================================================
-          ROLES TABLE
-      ================================================= */}
+      {/* ROLES TABLE */}
 
       <div className="bg-white rounded-2xl shadow border overflow-hidden">
 
@@ -1522,7 +1789,6 @@ const Roles = () => {
             <thead className="bg-gray-100">
 
               <tr>
-
                 <th className="p-4 text-left">
                   Role
                 </th>
@@ -1538,7 +1804,6 @@ const Roles = () => {
                 <th className="p-4 text-center">
                   Actions
                 </th>
-
               </tr>
 
             </thead>
@@ -1549,13 +1814,19 @@ const Roles = () => {
                 (role) => {
 
                   const roleId =
-                    getRoleId(role);
+                    getRoleId(
+                      role
+                    );
 
                   const roleName =
-                    getRoleName(role);
+                    getRoleName(
+                      role
+                    );
 
                   const userCount =
-                    getUserCount(role);
+                    getUserCount(
+                      role
+                    );
 
                   const permissionCount =
                     getPermissionCount(
@@ -1571,10 +1842,7 @@ const Roles = () => {
                       className="border-t hover:bg-gray-50 transition"
                     >
 
-                      {/* ROLE */}
-
                       <td className="p-4">
-
                         <h3 className="font-bold text-gray-800">
                           {roleName}
                         </h3>
@@ -1583,10 +1851,7 @@ const Roles = () => {
                           {role?.description ||
                             "No description"}
                         </p>
-
                       </td>
-
-                      {/* PERMISSIONS */}
 
                       <td className="p-4">
 
@@ -1597,8 +1862,6 @@ const Roles = () => {
 
                       </td>
 
-                      {/* USERS */}
-
                       <td className="p-4">
 
                         <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-semibold">
@@ -1607,8 +1870,6 @@ const Roles = () => {
                         </span>
 
                       </td>
-
-                      {/* ACTIONS */}
 
                       <td className="p-4">
 
@@ -1655,7 +1916,6 @@ const Roles = () => {
                           </button>
 
                         </div>
-
                       </td>
 
                     </tr>
@@ -1666,14 +1926,12 @@ const Roles = () => {
               {filteredRoles.length ===
                 0 && (
                 <tr>
-
                   <td
                     colSpan="4"
                     className="p-8 text-center text-gray-500"
                   >
                     No roles found.
                   </td>
-
                 </tr>
               )}
 
@@ -1685,9 +1943,7 @@ const Roles = () => {
 
       </div>
 
-      {/* =================================================
-          ROLE SUMMARY
-      ================================================= */}
+      {/* ROLE SUMMARY */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -1725,9 +1981,9 @@ const Roles = () => {
 
       </div>
 
-      {/* =================================================
+      {/* =====================================================
           PERMISSION MATRIX
-      ================================================= */}
+      ===================================================== */}
 
       <div className="bg-white rounded-2xl shadow border p-6">
 
@@ -1784,7 +2040,9 @@ const Roles = () => {
                 (role) => {
 
                   const roleName =
-                    getRoleName(role);
+                    getRoleName(
+                      role
+                    );
 
                   return (
                     <tr
@@ -1832,23 +2090,6 @@ const Roles = () => {
                 }
               )}
 
-              {filteredRoles.length ===
-                0 && (
-                <tr>
-
-                  <td
-                    colSpan={
-                      permissionsToShow.length +
-                      1
-                    }
-                    className="p-8 text-center text-gray-500"
-                  >
-                    No roles found.
-                  </td>
-
-                </tr>
-              )}
-
             </tbody>
 
           </table>
@@ -1857,9 +2098,7 @@ const Roles = () => {
 
       </div>
 
-      {/* =================================================
-          FOOTER SUMMARY
-      ================================================= */}
+      {/* FOOTER SUMMARY */}
 
       <div className="bg-gradient-to-r from-indigo-700 to-purple-700 rounded-2xl p-8 text-white">
 
@@ -1878,7 +2117,6 @@ const Roles = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-8">
 
           <div>
-
             <h3 className="text-4xl font-bold">
               {totalRoles}
             </h3>
@@ -1886,11 +2124,9 @@ const Roles = () => {
             <p className="text-indigo-200">
               Total Roles
             </p>
-
           </div>
 
           <div>
-
             <h3 className="text-4xl font-bold">
               {totalPermissionsCount}
             </h3>
@@ -1898,11 +2134,9 @@ const Roles = () => {
             <p className="text-indigo-200">
               Permissions
             </p>
-
           </div>
 
           <div>
-
             <h3 className="text-4xl font-bold">
               {totalAssignedUsers}
             </h3>
@@ -1910,19 +2144,17 @@ const Roles = () => {
             <p className="text-indigo-200">
               Assigned Users
             </p>
-
           </div>
 
         </div>
 
       </div>
 
-      {/* =================================================
+      {/* =====================================================
           CREATE / EDIT ROLE MODAL
-      ================================================= */}
+      ===================================================== */}
 
       {showRoleModal && (
-
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
           onMouseDown={(e) => {
@@ -1938,9 +2170,7 @@ const Roles = () => {
 
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl max-h-[90vh] overflow-hidden">
 
-            {/* =================================================
-                HEADER
-            ================================================= */}
+            {/* HEADER */}
 
             <div className="flex items-center justify-between p-6 border-b bg-gray-50">
 
@@ -1975,9 +2205,7 @@ const Roles = () => {
 
             </div>
 
-            {/* =================================================
-                FORM
-            ================================================= */}
+            {/* FORM */}
 
             <form
               onSubmit={
@@ -1986,9 +2214,7 @@ const Roles = () => {
               className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-100px)]"
             >
 
-              {/* =================================================
-                  ROLE NAME
-              ================================================= */}
+              {/* ROLE NAME */}
 
               <div>
 
@@ -2015,9 +2241,7 @@ const Roles = () => {
 
               </div>
 
-              {/* =================================================
-                  DESCRIPTION
-              ================================================= */}
+              {/* DESCRIPTION */}
 
               <div>
 
@@ -2044,7 +2268,7 @@ const Roles = () => {
               </div>
 
               {/* =================================================
-                  NORMAL PERMISSIONS
+                  PERMISSIONS
               ================================================= */}
 
               <div>
@@ -2057,9 +2281,13 @@ const Roles = () => {
 
                   <span className="text-xs font-medium text-indigo-600">
                     {
-                      roleForm
-                        .permissions
-                        .length
+                      roleForm.permissions
+                        .filter(
+                          (p) =>
+                            isVisiblePermissionName(
+                              p
+                            )
+                        ).length
                     }{" "}
                     selected
                   </span>
@@ -2068,117 +2296,132 @@ const Roles = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
-                  {permissionsToShow.map((permission) => {
-  const permissionName =
-    getPermissionName(permission);
+                  {permissionsToShow.map(
+                    (permission) => {
 
-  const description =
-    getPermissionDescription(permission);
+                      const permissionName =
+                        getPermissionName(
+                          permission
+                        );
 
-  const normalizedPermission =
-    normalize(permissionName);
+                      const description =
+                        getPermissionDescription(
+                          permission
+                        );
 
-  const checked =
-    roleForm.permissions.some(
-      (item) =>
-        normalize(item) === normalizedPermission
-    );
+                      const normalizedPermission =
+                        normalize(
+                          permissionName
+                        );
 
-  const builtInPermissions = [
-    "VIEW",
-    "CREATE",
-    "UPDATE",
-    "DELETE",
-  ];
+                      const checked =
+                        roleForm.permissions.some(
+                          (item) =>
+                            normalize(
+                              item
+                            ) ===
+                            normalizedPermission
+                        );
 
-  const isBuiltIn =
-    builtInPermissions.includes(
-      normalizedPermission
-    );
+                      const isBuiltIn =
+                        BUILT_IN_PERMISSIONS.includes(
+                          normalizedPermission
+                        );
 
-  const isCustom =
-    !isBuiltIn &&
-    (
-      permission?.is_custom === true ||
-      permission?.permission_id != null ||
-      permission?.id != null
-    );
+                      const isCustom =
+                        !isBuiltIn &&
+                        (
+                          permission?.is_custom ===
+                            true ||
+                          permission?.permission_id !=
+                            null ||
+                          permission?.id !=
+                            null
+                        );
 
-  return (
-    <div
-      key={
-        permission?.permission_id ||
-        permission?.id ||
-        permissionName
-      }
-      className={`p-4 border rounded-xl transition ${
-        checked
-          ? "border-indigo-500 bg-indigo-50"
-          : "border-gray-300 hover:bg-gray-50"
-      }`}
-    >
-      <div className="flex items-start gap-3">
+                      return (
+                        <div
+                          key={
+                            permission?.permission_id ||
+                            permission?.id ||
+                            permissionName
+                          }
+                          className={`p-4 border rounded-xl transition ${
+                            checked
+                              ? "border-indigo-500 bg-indigo-50"
+                              : "border-gray-300 hover:bg-gray-50"
+                          }`}
+                        >
 
-        <label className="flex items-start gap-3 cursor-pointer flex-1">
+                          <div className="flex items-start gap-3">
 
-          <input
-            type="checkbox"
-            checked={checked}
-            disabled={savingRole}
-            onChange={() =>
-              togglePermission(permissionName)
-            }
-            className="mt-1 w-4 h-4"
-          />
+                            <label className="flex items-start gap-3 cursor-pointer flex-1">
 
-          <div className="flex-1">
+                              <input
+                                type="checkbox"
+                                checked={
+                                  checked
+                                }
+                                disabled={
+                                  savingRole
+                                }
+                                onChange={() =>
+                                  togglePermission(
+                                    permissionName
+                                  )
+                                }
+                                className="mt-1 w-4 h-4 accent-indigo-600"
+                              />
 
-            <div className="font-semibold text-gray-800">
-              {permissionName}
-            </div>
+                              <div className="flex-1">
 
-            {description && (
-              <p className="text-xs text-gray-500 mt-1">
-                {description}
-              </p>
-            )}
+                                <div className="font-semibold text-gray-800">
+                                  {permissionName}
+                                </div>
 
-          </div>
+                                {description && (
+                                  <p className="text-xs text-gray-500 mt-1">
+                                    {
+                                      description
+                                    }
+                                  </p>
+                                )}
 
-        </label>
+                              </div>
 
-        {isCustom && (
-          <button
-            type="button"
-            onClick={() =>
-              handleDeleteCustomPermission(permission)
-            }
-            disabled={savingRole}
-            className="p-2 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
-            title={`Delete ${permissionName}`}
-          >
-            <FaTrash />
-          </button>
-        )}
+                            </label>
 
-      </div>
-    </div>
-  );
-})}
+                            {isCustom && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleDeleteCustomPermission(
+                                    permission
+                                  )
+                                }
+                                disabled={
+                                  savingRole
+                                }
+                                className="p-2 text-red-600 bg-red-50 hover:bg-red-600 hover:text-white rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
+                                title={`Delete ${permissionName}`}
+                              >
+                                <FaTrash />
+                              </button>
+                            )}
 
+                          </div>
 
+                        </div>
+                      );
+                    }
+                  )}
 
                 </div>
 
               </div>
 
-
-
-
-
-
               {/* =================================================
-                  OTHER / CUSTOM PERMISSION
+                  OTHER
               ================================================= */}
 
               <div>
@@ -2190,8 +2433,6 @@ const Roles = () => {
                       : "border-gray-300 hover:bg-gray-50"
                   }`}
                 >
-
-                  {/* OTHER TRIGGER */}
 
                   <label className="flex items-start gap-3 cursor-pointer">
 
@@ -2205,15 +2446,17 @@ const Roles = () => {
                       }
                       onChange={() => {
                         setOtherSelected(
-                          (prev) => !prev
+                          (prev) =>
+                            !prev
                         );
 
                         setCustomPermission({
                           name: "",
-                          description: "",
+                          description:
+                            "",
                         });
                       }}
-                      className="mt-1 w-4 h-4"
+                      className="mt-1 w-4 h-4 accent-orange-500"
                     />
 
                     <div className="flex-1">
@@ -2230,12 +2473,7 @@ const Roles = () => {
 
                   </label>
 
-                  {/* =================================================
-                      CUSTOM PERMISSION FORM
-                  ================================================= */}
-
                   {otherSelected && (
-
                     <div className="mt-4 pl-7">
 
                       <div className="p-4 bg-white border border-orange-300 rounded-xl">
@@ -2251,8 +2489,6 @@ const Roles = () => {
                         </div>
 
                         <div className="space-y-4">
-
-                          {/* PERMISSION NAME */}
 
                           <div>
 
@@ -2278,8 +2514,6 @@ const Roles = () => {
 
                           </div>
 
-                          {/* DESCRIPTION */}
-
                           <div>
 
                             <label className="block text-xs font-semibold text-gray-700 mb-2">
@@ -2304,8 +2538,6 @@ const Roles = () => {
 
                           </div>
 
-                          {/* BUTTON */}
-
                           <div className="flex justify-end gap-2 pt-2">
 
                             <button
@@ -2317,7 +2549,8 @@ const Roles = () => {
 
                                 setCustomPermission({
                                   name: "",
-                                  description: "",
+                                  description:
+                                    "",
                                 });
                               }}
                               disabled={
@@ -2349,16 +2582,13 @@ const Roles = () => {
                       </div>
 
                     </div>
-
                   )}
 
                 </div>
 
               </div>
 
-              {/* =================================================
-                  FOOTER
-              ================================================= */}
+              {/* FOOTER */}
 
               <div className="flex justify-end gap-3 pt-5 border-t">
 
@@ -2408,7 +2638,6 @@ const Roles = () => {
           </div>
 
         </div>
-
       )}
 
     </div>
