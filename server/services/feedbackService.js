@@ -238,6 +238,13 @@ const createFeedback = async (feedback) => {
 // Already Viewed -> stays Viewed
 // ===========================================
 
+// ===========================================
+// Mark Feedback As Viewed
+//
+// Pending -> Viewed
+// Already Viewed -> stays Viewed
+// ===========================================
+
 const markFeedbackAsViewed = async (id) => {
     try {
 
@@ -247,12 +254,17 @@ const markFeedbackAsViewed = async (id) => {
             );
         }
 
+        // 1. Change status to Viewed
+        await feedbackRepository.markFeedbackAsViewed(id);
 
+        // 2. Get complete feedback information
+        //    This includes business phone and email
         const feedback =
-            await feedbackRepository.markFeedbackAsViewed(
-                id
-            );
+            await feedbackRepository.getFeedbackById(id);
 
+        if (!feedback) {
+            throw new Error("Feedback not found.");
+        }
 
         return feedback;
 
