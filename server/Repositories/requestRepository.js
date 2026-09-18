@@ -204,7 +204,7 @@ async getRequestsByBusiness(businessId) {
                 b.business_name,
                 b.owner_name,
                 b.phone_number AS phone_number,
-
+b.house_number,
                 r.created_at AS request_date,
 
                 c.full_name AS collector_name,
@@ -243,7 +243,7 @@ async getRequestsByBusiness(businessId) {
                 b.business_name,
                 b.owner_name,
                 b.phone_number AS phone_number,
-
+                b.house_number,
                 r.created_at AS request_date,
 
                 c.full_name AS collector_name,
